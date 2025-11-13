@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -63,7 +64,7 @@ public class CommunityController {
             if (analysisList == null || analysisList.isEmpty()) continue;
 
             // 가장 첫 번째(가장 최신) 분석 결과만 사용
-            AnalysisResult analysisResult = analysisList.get(0);
+            AnalysisResult analysisResult = analysisList.getFirst();
 
             // Score가 null일 경우 기본값 생성
             Score score = Optional.ofNullable(analysisResult.getScore())
@@ -104,7 +105,7 @@ public class CommunityController {
             commentList.add(dto);
         }
 
-        commentList.sort((a, b) -> b.commentId.compareTo(a.commentId));
+        commentList.sort((a, b) -> Objects.requireNonNull(b.getCommentId()).compareTo(Objects.requireNonNull(a.getCommentId())));
 
         Page<CommentResponseDTO> pageingResponseDto = new PageImpl<>(
                 commentList,
