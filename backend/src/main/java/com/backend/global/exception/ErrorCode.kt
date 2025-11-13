@@ -1,11 +1,12 @@
-package com.backend.global.exception;
+package com.backend.global.exception
 
-import lombok.Getter;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatus
 
-@Getter
-public enum ErrorCode {
-
+enum class ErrorCode(
+    val code: String,
+    val status: HttpStatus,
+    val message: String
+) {
     // ========== 공통 에러 ==========
     VALIDATION_FAILED("CMN001", HttpStatus.BAD_REQUEST, "입력값 검증에 실패했습니다."),
     INTERNAL_ERROR("CMN002", HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
@@ -21,18 +22,22 @@ public enum ErrorCode {
     NAME_NOT_FOUND("U003", HttpStatus.NOT_FOUND, "이름이 입력되지 않았습니다."),
     PASSWORD_NOT_FOUND("U004", HttpStatus.NOT_FOUND, "비밀번호가 입력되지 않았습니다."),
     PASSWORD_NOT_EQUAL("U005", HttpStatus.BAD_REQUEST, "비밀번호 확인이 일치하지 않습니다."),
-    EMAIL_NOT_FOUND("U006", HttpStatus.NOT_FOUND, "해당 이메일은 없는 계정입니다.") ,
+    EMAIL_NOT_FOUND("U006", HttpStatus.NOT_FOUND, "해당 이메일은 없는 계정입니다."),
     ALREADY_REGISTERED_EMAIL("U007", HttpStatus.BAD_REQUEST, "이미 회원가입된 이메일입니다."),
     EXPIRATION_ERROR("U008", HttpStatus.BAD_REQUEST, "refreshToken 유효 기간 설정 오류입니다."),
 
     // ========== analysis 도메인 에러 ==========
     INVALID_GITHUB_URL("A001", HttpStatus.BAD_REQUEST, "올바른 GitHub 저장소 URL이 아닙니다."),
-    INVALID_REPOSITORY_PATH("A002", HttpStatus.BAD_REQUEST, "저장소 URL 형식이 잘못되었습니다. 예: https://github.com/{owner}/{repo}"),
+    INVALID_REPOSITORY_PATH(
+        "A002",
+        HttpStatus.BAD_REQUEST,
+        "저장소 URL 형식이 잘못되었습니다. 예: https://github.com/{owner}/{repo}"
+    ),
     ANALYSIS_NOT_FOUND("A003", HttpStatus.BAD_REQUEST, "분석 결과를 찾을 수 없습니다."),
     USER_NOT_FOUND("A004", HttpStatus.FORBIDDEN, "사용자 정보를 찾을 수 없습니다."),
     FORBIDDEN("A005", HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
     ANALYSIS_IN_PROGRESS("A006", HttpStatus.CONFLICT, "이미 분석이 진행 중입니다. 잠시 후 다시 시도해주세요."),
-    ANALYSIS_FAIL("A006", HttpStatus.INTERNAL_SERVER_ERROR, "이미 분석이 진행 중입니다. 잠시 후 다시 시도해주세요."),
+    ANALYSIS_FAIL("A007", HttpStatus.INTERNAL_SERVER_ERROR, "분석 중 오류가 발생했습니다."),  // ← 코드 수정됨
 
     // ========== repository 도메인 에러 ==========
     GITHUB_REPO_NOT_FOUND("G001", HttpStatus.BAD_REQUEST, "GitHub 저장소를 찾을 수 없습니다."),
@@ -48,15 +53,4 @@ public enum ErrorCode {
     NOT_LOGIN_USER("R002", HttpStatus.BAD_REQUEST, "댓글 작성을 위해 로그인이 필요합니다."),
     EMPTY_COMMENT("R003", HttpStatus.BAD_REQUEST, "댓글 내용을 작성해주세요."),
     NOT_WRITER("R004", HttpStatus.BAD_REQUEST, "댓글 작성자가 아닙니다.");
-
-
-    private final String code;
-    private final HttpStatus status;
-    private final String message;
-
-    ErrorCode(String code, HttpStatus status, String message) {
-        this.code = code;
-        this.status = status;
-        this.message = message;
-    }
 }
