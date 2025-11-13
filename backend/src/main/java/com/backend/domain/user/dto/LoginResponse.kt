@@ -1,3 +1,6 @@
-package com.backend.domain.user.dto;
+package com.backend.domain.user.dto
 
-public record LoginResponse(UserDto user) { }
+@JvmRecord
+data class LoginResponse(
+    val user: UserDto
+)
