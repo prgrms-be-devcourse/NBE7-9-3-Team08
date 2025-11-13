@@ -44,7 +44,7 @@ public class CommunityController {
      *
      */
 
-    // publisRepositories = true (공개여부 : 공개함) 리포지토리 조회
+    // publicRepositories = true (공개여부 : 공개함) 리포지토리 조회
     // 공개 리포지토리 조회
     @GetMapping("/repositories")
     public ResponseEntity<Page<CommunityResponseDTO>> getPublicRepositories(
@@ -76,15 +76,15 @@ public class CommunityController {
         }
 
         // 최신순 정렬
-        communityRepositories.sort((a, b) -> b.getCreateDate().compareTo(a.getCreateDate()));
+        communityRepositories.sort((a, b) -> b.createDate().compareTo(a.createDate()));
 
-        Page<CommunityResponseDTO> pageingResponseDto = new PageImpl<>(
+        Page<CommunityResponseDTO> PageingResponseDto = new PageImpl<>(
                 communityRepositories,
                 publicRepository.getPageable(),
                 publicRepository.getTotalElements()
         );
 
-        return ResponseEntity.ok(pageingResponseDto);
+        return ResponseEntity.ok(PageingResponseDto);
     }
 
     // 분석 결과 당 댓글 조회
