@@ -76,7 +76,7 @@ public class CommunityController {
         }
 
         // 최신순 정렬
-        communityRepositories.sort((a, b) -> b.createDate.compareTo(a.createDate));
+        communityRepositories.sort((a, b) -> b.getCreateDate().compareTo(a.getCreateDate()));
 
         Page<CommunityResponseDTO> pageingResponseDto = new PageImpl<>(
                 communityRepositories,

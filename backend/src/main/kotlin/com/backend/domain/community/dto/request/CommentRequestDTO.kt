@@ -4,5 +4,3 @@ data class CommentRequestDTO(
     val memberId: Long,
     val comment: String
 ){}
-
-

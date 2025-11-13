@@ -3,9 +3,7 @@ package com.backend.domain.community.dto.response
 import com.backend.domain.analysis.entity.AnalysisResult
 import com.backend.domain.analysis.entity.Score
 import com.backend.domain.repository.entity.Repositories
-import com.backend.domain.repository.entity.RepositoryLanguage
 import java.time.LocalDateTime
-import java.util.stream.Collectors
 
 data class CommunityResponseDTO(
     val userName: String,
@@ -27,9 +25,7 @@ data class CommunityResponseDTO(
         repositories.getId(),
         analysis.getSummary(),
         repositories.getDescription(),
-        repositories.getLanguages().stream()
-            .map<String> { language: RepositoryLanguage? -> language!!.getLanguage().name }
-            .collect(Collectors.toList()),
+        repositories.getLanguages().map { it.language.name },
         score.getTotalScore(),
         analysis.getCreateDate(),
         repositories.isPublicRepository(),
