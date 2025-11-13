@@ -1,6 +1,6 @@
 'use client'
 
-import { useRepositories } from '@/hooks/community/useCommunity'
+import {useCommunity } from '@/hooks/community/useCommunity'
 import RepositoryCard from './RepoCard'
 import { Button } from '@/components/ui/Button' // ✅ 소문자 b로 경로 통일 (shadcn 규칙)
 import { Loader2 } from 'lucide-react'
@@ -15,7 +15,7 @@ export default function RepositoryList() {
     page,
     setPage,
     totalPages,
-  } = useRepositories()
+  } = useCommunity()
 
   // ✅ 로딩 상태
   if (loading)
