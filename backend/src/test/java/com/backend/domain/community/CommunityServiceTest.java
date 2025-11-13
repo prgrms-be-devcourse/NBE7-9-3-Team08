@@ -200,59 +200,152 @@ class CommunityServiceTest {
     // 댓글 수정 테스트
     // ------------------------------------------------------
 
-//    @Test
-//    @DisplayName("댓글 수정 성공 - updateComment 호출됨")
-//    void modifyComment_success() {
-//        Comment comment = mock(Comment.class);
-//        when(commentRepository.findById(1L))
-//                .thenReturn(Optional.of(comment));
-//
-//        communityService.modifyComment(1L, "new text");
-//
-//        verify(commentRepository, times(1)).findById(1L);
-//        verify(comment, times(1)).updateComment("new text");
-//    }
+    @Test
+    @DisplayName("댓글 수정 성공 - 작성자 본인일 때 수정됨")
+    void modifyComment_success() {
+        Comment comment = Comment.builder()
+                .id(1L)
+                .memberId(10L)
+                .comment("old")
+                .deleted(false)
+                .build();
 
-//    @Test
-//    @DisplayName("댓글 수정 실패 - 존재하지 않으면 예외 발생")
-//    void modifyComment_notFound_throws() {
-//        when(commentRepository.findById(1L))
-//                .thenReturn(Optional.empty());
-//
-//        BusinessException ex = assertThrows(BusinessException.class,
-//                () -> communityService.modifyComment(1L, "new text"));
-//
-//        assertEquals(ErrorCode.COMMENT_NOT_FOUND, ex.getErrorCode());
-//    }
+        when(commentRepository.findById(1L))
+                .thenReturn(Optional.of(comment));
+
+        communityService.modifyComment(1L, "new content", 10L);
+
+        assertEquals("new content", comment.getComment());
+    }
+
+
+    @Test
+    @DisplayName("댓글 수정 실패 - 댓글이 존재하지 않음")
+    void modifyComment_notFound() {
+        when(commentRepository.findById(1L))
+                .thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(
+                BusinessException.class,
+                () -> communityService.modifyComment(1L, "new", 10L)
+        );
+
+        assertEquals(ErrorCode.COMMENT_NOT_FOUND, ex.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 - 작성자가 아님")
+    void modifyComment_notWriter() {
+        Comment comment = Comment.builder()
+                .id(1L)
+                .memberId(10L)
+                .comment("old")
+                .deleted(false)
+                .build();
+
+        when(commentRepository.findById(1L))
+                .thenReturn(Optional.of(comment));
+
+        BusinessException ex = assertThrows(
+                BusinessException.class,
+                () -> communityService.modifyComment(1L, "new", 99L)
+        );
+
+        assertEquals(ErrorCode.NOT_WRITER, ex.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 수정 실패 - 내용이 비어있음")
+    void modifyComment_emptyContent() {
+        Comment comment = Comment.builder()
+                .id(1L)
+                .memberId(10L)
+                .comment("old")
+                .deleted(false)
+                .build();
+
+        when(commentRepository.findById(1L))
+                .thenReturn(Optional.of(comment));
+
+        BusinessException ex = assertThrows(
+                BusinessException.class,
+                () -> communityService.modifyComment(1L, "", 10L)
+        );
+
+        assertEquals(ErrorCode.EMPTY_COMMENT, ex.getErrorCode());
+    }
+
 
     // ------------------------------------------------------
     // 댓글 삭제 테스트 (Soft Delete)
     // ------------------------------------------------------
 
-//    @Test
-//    @DisplayName("댓글 삭제 성공 - 존재하는 댓글 SoftDelete 처리")
-//    void deleteComment_success() {
-//        Comment comment = Comment.builder()
-//                .id(1L).comment("target").deleted(false).build();
-//        when(commentRepository.findByIdAndDeleted(1L, false))
-//                .thenReturn(Optional.of(comment));
-//
-//        communityService.deleteComment(1L);
-//
-//        verify(commentRepository, times(1)).findByIdAndDeleted(1L, false);
-//        verify(commentRepository, times(1)).delete(comment);
-//    }
+    @Test
+    @DisplayName("댓글 삭제 성공 - 작성자 본인일 때 삭제됨")
+    void deleteComment_success() {
+        // given
+        Comment comment = Comment.builder()
+                .id(1L)
+                .memberId(10L)
+                .comment("hello")
+                .deleted(false)
+                .build();
 
-//    @Test
-//    @DisplayName("댓글 삭제 실패 - 존재하지 않으면 예외 발생")
-//    void deleteComment_notFound_throws() {
-//        when(commentRepository.findByIdAndDeleted(1L, false))
-//                .thenReturn(Optional.empty());
-//
-//        BusinessException ex = assertThrows(BusinessException.class,
-//                () -> communityService.deleteComment(1L));
-//
-//        assertEquals(ErrorCode.COMMENT_NOT_FOUND, ex.getErrorCode());
-//        verify(commentRepository, never()).delete(any());
-//    }
+        when(commentRepository.findByIdAndDeleted(1L, false))
+                .thenReturn(Optional.of(comment));
+
+        // when
+        communityService.deleteComment(1L, 10L);
+
+        // then
+        verify(commentRepository, times(1)).delete(comment);
+    }
+
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - commentId가 null")
+    void deleteComment_invalidInput() {
+        BusinessException ex = assertThrows(
+                BusinessException.class,
+                () -> communityService.deleteComment(null, 10L)
+        );
+
+        assertEquals(ErrorCode.INVALID_INPUT_VALUE, ex.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - 댓글이 존재하지 않음")
+    void deleteComment_notFound() {
+        when(commentRepository.findByIdAndDeleted(1L, false))
+                .thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(
+                BusinessException.class,
+                () -> communityService.deleteComment(1L, 10L)
+        );
+
+        assertEquals(ErrorCode.COMMENT_NOT_FOUND, ex.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - 작성자가 아님")
+    void deleteComment_notWriter() {
+        Comment comment = Comment.builder()
+                .id(1L)
+                .memberId(10L) // 작성자 id
+                .comment("hello")
+                .deleted(false)
+                .build();
+
+        when(commentRepository.findByIdAndDeleted(1L, false))
+                .thenReturn(Optional.of(comment));
+
+        BusinessException ex = assertThrows(
+                BusinessException.class,
+                () -> communityService.deleteComment(1L, 99L)  // 다른 사용자
+        );
+
+        assertEquals(ErrorCode.NOT_WRITER, ex.getErrorCode());
+        verify(commentRepository, never()).delete(any());
+    }
 }

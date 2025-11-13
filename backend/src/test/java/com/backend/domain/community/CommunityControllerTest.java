@@ -12,6 +12,7 @@ import com.backend.domain.user.entity.User;
 import com.backend.domain.user.repository.UserRepository;
 import com.backend.domain.user.util.JwtUtil;
 import jakarta.persistence.EntityManager;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -172,9 +173,13 @@ class CommunityControllerTest {
     @Test
     @DisplayName("댓글 수정 → 내용이 변경된다")
     void modifyComment_success() throws Exception {
+        // jwtUtil mock: 로그인된 사용자라고 가정
+        when(jwtUtil.getUserId(any(HttpServletRequest.class)))
+                .thenReturn(testUser.getId());
+
         Comment comment = commentRepository.save(Comment.builder()
                 .analysisResult(testAnalysis)
-                .memberId(testUser.getId())
+                .memberId(testUser.getId())   // 본인 댓글
                 .comment("기존 댓글")
                 .deleted(false)
                 .build());
@@ -189,13 +194,18 @@ class CommunityControllerTest {
         assertThat(updated.getComment()).isEqualTo("수정된 댓글");
     }
 
+
     // 🔹 댓글 삭제 (Soft Delete)
     @Test
     @DisplayName("댓글 삭제 → SoftDelete로 deleted=true로 변경된다")
     void deleteComment_success() throws Exception {
+        // jwt mock 설정
+        when(jwtUtil.getUserId(any(HttpServletRequest.class)))
+                .thenReturn(testUser.getId());
+
         Comment comment = commentRepository.save(Comment.builder()
                 .analysisResult(testAnalysis)
-                .memberId(testUser.getId())
+                .memberId(testUser.getId())  // 본인 댓글
                 .comment("삭제 대상 댓글")
                 .deleted(false)
                 .build());
@@ -210,6 +220,7 @@ class CommunityControllerTest {
         Comment deleted = commentRepository.findById(comment.getId()).orElseThrow();
         assertThat(deleted.isDeleted()).isTrue();
     }
+
 
     // 🔹 공개 리포지토리 조회
     @Test
