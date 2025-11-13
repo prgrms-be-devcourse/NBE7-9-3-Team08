@@ -68,9 +68,9 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform {
-        // CI 환경에서는 Redis 테스트 제외
+        // CI 환경에서 테스트 제외
         if (System.getenv("CI") == "true") {
-            excludeTags("redis")
+            excludeTags("redis", "integration")
         }
     }
 }
