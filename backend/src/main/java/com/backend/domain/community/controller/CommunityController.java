@@ -168,7 +168,7 @@ public class CommunityController {
         }
 
         // ✅ 본인 검증을 위해 userId 전달
-        communityService.modifyComment(commentId, updateDto.newComment(), jwtUserId);
+        communityService.modifyComment(commentId, updateDto.newComment, jwtUserId);
 
         return ResponseEntity.ok("댓글 수정 완료");
     }
