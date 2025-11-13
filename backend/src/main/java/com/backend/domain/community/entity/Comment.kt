@@ -12,7 +12,7 @@ import org.hibernate.annotations.SQLDelete
 @Builder  // service는 java라서 추가, 추후 삭제 예정
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE Comment SET deleted = true WHERE id = ?") // 조회 시에 기본적으로 deleted = false인 것을만 조회하도록 설정 -> 관리자 조회 시에는 삭제 처리 된 것도 조회 필요
-data class Comment(
+class Comment(
     // 댓글 id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,6 +36,26 @@ data class Comment(
     var deleted : Boolean = false
 
 ) : BaseEntity() {
+    companion object {
+        @JvmStatic
+        fun create(
+            analysisResult: AnalysisResult,
+            memberId: Long,
+            content: String,
+            deleted: Boolean = false
+        ): Comment {
+            require(content.isNotBlank()) { "댓글 내용은 비어 있을 수 없습니다." }
+
+            return Comment(
+                analysisResult = analysisResult,
+                memberId = memberId,
+                comment = content,
+                deleted = deleted
+            )
+        }
+    }
+
+
     fun updateComment(newContent: String) {
         require(newContent.isBlank()) { "댓글 내용은 비어 있을 수 없습니다." }
         this.comment = newContent

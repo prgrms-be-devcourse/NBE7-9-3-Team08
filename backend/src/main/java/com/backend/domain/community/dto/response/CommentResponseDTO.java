@@ -19,7 +19,7 @@ public record CommentResponseDTO(
                 userName,
                 comment.getComment(),
                 comment.getCreateDate(),
-                comment.isDeleted()
+                comment.getDeleted()
         );
     }
 }

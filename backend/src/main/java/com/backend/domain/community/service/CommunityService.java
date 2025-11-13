@@ -49,11 +49,7 @@ public class CommunityService {
             throw new BusinessException(ErrorCode.EMPTY_COMMENT);
         }
 
-        Comment comment = Comment.builder()
-                .analysisResult(analysisResult)
-                .memberId(memberId)
-                .comment(content)
-                .build();
+        Comment comment = Comment.create(analysisResult, memberId, content, false);
 
         return commentRepository.save(comment);
     }
@@ -80,7 +76,7 @@ public class CommunityService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
 
         // 🔒 작성자 본인 확인
-        if (!targetComment.getMemberId().equals(jwtUserId)) {
+        if (!(targetComment.getMemberId() == jwtUserId)) {
             throw new BusinessException(ErrorCode.NOT_WRITER); // 권한 없음
         }
 
@@ -93,7 +89,7 @@ public class CommunityService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
 
         // 🔒 작성자 본인 확인
-        if (!targetComment.getMemberId().equals(jwtUserId)) {
+        if (!(targetComment.getMemberId() == jwtUserId)) {
             throw new BusinessException(ErrorCode.NOT_WRITER);
         }
 
