@@ -104,7 +104,7 @@ public class CommunityController {
             commentList.add(dto);
         }
 
-        commentList.sort((a, b) -> b.commentId().compareTo(a.commentId()));
+        commentList.sort((a, b) -> b.commentId.compareTo(a.commentId));
 
         Page<CommentResponseDTO> pageingResponseDto = new PageImpl<>(
                 commentList,

@@ -121,25 +121,15 @@ class CommunityControllerTest {
 
         Comment saved = commentRepository.findTopByOrderByIdDesc().orElseThrow();
         assertThat(saved.getComment()).isEqualTo("통합 테스트 댓글입니다.");
-        assertThat(saved.isDeleted()).isFalse();
+        assertThat(saved.getDeleted()).isFalse();
     }
 
     // 🔹 댓글 조회 (SoftDelete 제외)
     @Test
     @DisplayName("댓글 조회 → SoftDelete(false) 댓글만 반환된다")
     void getComments_success() throws Exception {
-        commentRepository.save(Comment.builder()
-                .analysisResult(testAnalysis)
-                .memberId(testUser.getId())
-                .comment("첫 댓글")
-                .deleted(false)
-                .build());
-        commentRepository.save(Comment.builder()
-                .analysisResult(testAnalysis)
-                .memberId(testUser.getId())
-                .comment("삭제된 댓글")
-                .deleted(true)
-                .build());
+        commentRepository.save(Comment.create(testAnalysis, testUser.getId(), "첫 댓글", false));
+        commentRepository.save(Comment.create(testAnalysis, testUser.getId(), "삭제된 댓글", true));
 
         mockMvc.perform(get("/api/community/" + testAnalysis.getId() + "/comments"))
                 .andExpect(status().isOk())
@@ -152,12 +142,7 @@ class CommunityControllerTest {
     @DisplayName("댓글 페이징 조회 → 지정된 크기만 반환된다")
     void getComments_paging_success() throws Exception {
         for (int i = 1; i <= 7; i++) {
-            commentRepository.save(Comment.builder()
-                    .analysisResult(testAnalysis)
-                    .memberId(testUser.getId())
-                    .comment("댓글 " + i)
-                    .deleted(false)
-                    .build());
+            commentRepository.save(Comment.create(testAnalysis, testUser.getId(), "댓글 " + i, false));
         }
 
         mockMvc.perform(get("/api/community/" + testAnalysis.getId() + "/comments")
@@ -177,12 +162,7 @@ class CommunityControllerTest {
         when(jwtUtil.getUserId(any(HttpServletRequest.class)))
                 .thenReturn(testUser.getId());
 
-        Comment comment = commentRepository.save(Comment.builder()
-                .analysisResult(testAnalysis)
-                .memberId(testUser.getId())   // 본인 댓글
-                .comment("기존 댓글")
-                .deleted(false)
-                .build());
+        Comment comment = commentRepository.save(Comment.create(testAnalysis, testUser.getId(), "기존 댓글", false));
 
         mockMvc.perform(patch("/api/community/modify/" + comment.getId() + "/comment")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -203,12 +183,7 @@ class CommunityControllerTest {
         when(jwtUtil.getUserId(any(HttpServletRequest.class)))
                 .thenReturn(testUser.getId());
 
-        Comment comment = commentRepository.save(Comment.builder()
-                .analysisResult(testAnalysis)
-                .memberId(testUser.getId())  // 본인 댓글
-                .comment("삭제 대상 댓글")
-                .deleted(false)
-                .build());
+        Comment comment = commentRepository.save(Comment.create(testAnalysis, testUser.getId(), "삭제 대상 댓글", false));
 
         mockMvc.perform(delete("/api/community/delete/" + comment.getId()))
                 .andExpect(status().isOk())
@@ -218,7 +193,7 @@ class CommunityControllerTest {
         em.clear();
 
         Comment deleted = commentRepository.findById(comment.getId()).orElseThrow();
-        assertThat(deleted.isDeleted()).isTrue();
+        assertThat(deleted.getDeleted()).isTrue();
     }
 
 
@@ -235,18 +210,8 @@ class CommunityControllerTest {
     @Test
     @DisplayName("댓글 조회 시 deleted=true인 댓글은 제외된다")
     void getComments_excludeDeleted() throws Exception {
-        commentRepository.save(Comment.builder()
-                .analysisResult(testAnalysis)
-                .memberId(testUser.getId())
-                .comment("보이는 댓글")
-                .deleted(false)
-                .build());
-        commentRepository.save(Comment.builder()
-                .analysisResult(testAnalysis)
-                .memberId(testUser.getId())
-                .comment("삭제된 댓글")
-                .deleted(true)
-                .build());
+        commentRepository.save(Comment.create(testAnalysis, testUser.getId(), "보이는 댓글", false));
+        commentRepository.save(Comment.create(testAnalysis, testUser.getId(), "삭제된  댓글", true));
 
         mockMvc.perform(get("/api/community/" + testAnalysis.getId() + "/comments"))
                 .andExpect(status().isOk())
@@ -259,12 +224,7 @@ class CommunityControllerTest {
     void getComments_pagination() throws Exception {
         // given: 댓글 3개 저장
         for (int i = 1; i <= 3; i++) {
-            commentRepository.save(Comment.builder()
-                    .analysisResult(testAnalysis)
-                    .memberId(testUser.getId())
-                    .comment("댓글 " + i)
-                    .deleted(false)
-                    .build());
+            commentRepository.save(Comment.create(testAnalysis, testUser.getId(), "댓글 " + i, false));
         }
 
         // when & then

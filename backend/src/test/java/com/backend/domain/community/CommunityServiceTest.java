@@ -86,13 +86,8 @@ class CommunityServiceTest {
         // given
         AnalysisResult analysisResult = AnalysisResult.builder().id(1L).build();
 
-        Comment comment1 = Comment.builder()
-                .id(1L).analysisResult(analysisResult)
-                .memberId(1L).comment("first").deleted(false).build();
-
-        Comment comment2 = Comment.builder()
-                .id(2L).analysisResult(analysisResult)
-                .memberId(1L).comment("second").deleted(false).build();
+        Comment comment1 = Comment.create(analysisResult, 1L, "first", false);
+        Comment comment2 = Comment.create(analysisResult, 1L, "second", false);
 
         when(commentRepository.findByAnalysisResultIdAndDeletedOrderByIdDesc(1L, false))
                 .thenReturn(List.of(comment2, comment1)); // 최신순
@@ -128,8 +123,8 @@ class CommunityServiceTest {
         // given
         AnalysisResult analysisResult = AnalysisResult.builder().id(1L).build();
 
-        Comment c1 = Comment.builder().id(1L).comment("one").deleted(false).build();
-        Comment c2 = Comment.builder().id(2L).comment("two").deleted(false).build();
+        Comment c1 = Comment.create(analysisResult, 1L, "one", false);
+        Comment c2 = Comment.create(analysisResult, 2L, "two", false);
         List<Comment> list = List.of(c2, c1);
 
         Page<Comment> page = new PageImpl<>(list);
@@ -143,7 +138,7 @@ class CommunityServiceTest {
 
         // then
         assertEquals(2, result.getContent().size());
-        assertEquals("two", result.getContent().get(0).getComment());
+        assertEquals("two", result.getContent().getFirst().getComment());
         verify(commentRepository, times(1))
                 .findByAnalysisResultIdAndDeletedOrderByIdDesc(1L, false, pageable);
     }
@@ -160,9 +155,7 @@ class CommunityServiceTest {
         when(analysisResultRepository.findById(1L))
                 .thenReturn(Optional.of(analysisResult));
 
-        Comment saved = Comment.builder()
-                .id(1L).analysisResult(analysisResult)
-                .memberId(1L).comment("write ok").deleted(false).build();
+        Comment saved = Comment.create(analysisResult, 1L, "write ok", false);
         when(commentRepository.save(any(Comment.class))).thenReturn(saved);
 
         // when
@@ -203,12 +196,9 @@ class CommunityServiceTest {
     @Test
     @DisplayName("댓글 수정 성공 - 작성자 본인일 때 수정됨")
     void modifyComment_success() {
-        Comment comment = Comment.builder()
-                .id(1L)
-                .memberId(10L)
-                .comment("old")
-                .deleted(false)
-                .build();
+
+        AnalysisResult analysisResult = AnalysisResult.builder().id(1L).build();
+        Comment comment = Comment.create(analysisResult, 10L, "old", false);
 
         when(commentRepository.findById(1L))
                 .thenReturn(Optional.of(comment));
@@ -236,12 +226,9 @@ class CommunityServiceTest {
     @Test
     @DisplayName("댓글 수정 실패 - 작성자가 아님")
     void modifyComment_notWriter() {
-        Comment comment = Comment.builder()
-                .id(1L)
-                .memberId(10L)
-                .comment("old")
-                .deleted(false)
-                .build();
+
+        AnalysisResult analysisResult = AnalysisResult.builder().id(1L).build();
+        Comment comment = Comment.create(analysisResult, 10L, "old", false);
 
         when(commentRepository.findById(1L))
                 .thenReturn(Optional.of(comment));
@@ -257,12 +244,9 @@ class CommunityServiceTest {
     @Test
     @DisplayName("댓글 수정 실패 - 내용이 비어있음")
     void modifyComment_emptyContent() {
-        Comment comment = Comment.builder()
-                .id(1L)
-                .memberId(10L)
-                .comment("old")
-                .deleted(false)
-                .build();
+
+        AnalysisResult analysisResult = AnalysisResult.builder().id(1L).build();
+        Comment comment = Comment.create(analysisResult, 10L, "old", false);
 
         when(commentRepository.findById(1L))
                 .thenReturn(Optional.of(comment));
@@ -284,12 +268,8 @@ class CommunityServiceTest {
     @DisplayName("댓글 삭제 성공 - 작성자 본인일 때 삭제됨")
     void deleteComment_success() {
         // given
-        Comment comment = Comment.builder()
-                .id(1L)
-                .memberId(10L)
-                .comment("hello")
-                .deleted(false)
-                .build();
+        AnalysisResult analysisResult = AnalysisResult.builder().id(1L).build();
+        Comment comment = Comment.create(analysisResult, 10L, "hello", false);
 
         when(commentRepository.findByIdAndDeleted(1L, false))
                 .thenReturn(Optional.of(comment));
@@ -330,12 +310,8 @@ class CommunityServiceTest {
     @Test
     @DisplayName("댓글 삭제 실패 - 작성자가 아님")
     void deleteComment_notWriter() {
-        Comment comment = Comment.builder()
-                .id(1L)
-                .memberId(10L) // 작성자 id
-                .comment("hello")
-                .deleted(false)
-                .build();
+        AnalysisResult analysisResult = AnalysisResult.builder().id(1L).build();
+        Comment comment = Comment.create(analysisResult, 10L, "hello", false);
 
         when(commentRepository.findByIdAndDeleted(1L, false))
                 .thenReturn(Optional.of(comment));

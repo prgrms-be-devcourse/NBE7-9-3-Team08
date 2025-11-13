@@ -63,19 +63,8 @@ class CommentRepositoryTest {
         // given
         AnalysisResult analysisResult = setupData();
 
-        Comment comment1 = Comment.builder()
-                .comment("첫 번째 댓글")
-                .memberId(10L)
-                .analysisResult(analysisResult)
-                .deleted(false)
-                .build();
-
-        Comment comment2 = Comment.builder()
-                .comment("두 번째 댓글")
-                .memberId(20L)
-                .analysisResult(analysisResult)
-                .deleted(false)
-                .build();
+        Comment comment1 = Comment.create(analysisResult, 10L, "첫 번째 댓글", false);
+        Comment comment2 = Comment.create(analysisResult, 10L, "두 번째 댓글", false);
 
         commentRepository.save(comment1);
         commentRepository.save(comment2);
@@ -98,12 +87,7 @@ class CommentRepositoryTest {
         AnalysisResult analysisResult = setupData();
 
         for (int i = 1; i <= 5; i++) {
-            Comment comment = Comment.builder()
-                    .comment("댓글 " + i)
-                    .memberId((long) i)
-                    .analysisResult(analysisResult)
-                    .deleted(false)
-                    .build();
+            Comment comment = Comment.create(analysisResult, (long) i, "댓글 " + i, false);
             commentRepository.save(comment);
         }
         em.flush();
@@ -127,12 +111,7 @@ class CommentRepositoryTest {
         // given
         AnalysisResult analysisResult = setupData();
 
-        Comment comment = Comment.builder()
-                .comment("삭제 테스트용 댓글")
-                .memberId(99L)
-                .analysisResult(analysisResult)
-                .deleted(false)
-                .build();
+        Comment comment = Comment.create(analysisResult, 99L, "삭제 테스트용 댓글", false);
 
         commentRepository.save(comment);
         em.flush();
@@ -151,6 +130,6 @@ class CommentRepositoryTest {
         // then - 삭제 후 상태 확인
         Optional<Comment> deleted = commentRepository.findByIdAndDeleted(comment.getId(), true);
         assertThat(deleted).isPresent();
-        assertThat(deleted.get().isDeleted()).isTrue();
+        assertThat(deleted.get().getDeleted()).isTrue();
     }
 }

@@ -83,6 +83,7 @@ public class CommunityService {
         commentRepository.delete(targetComment);
     }
 
+    // 댓글 수정
     @Transactional // ✅ 트랜잭션 readOnly=false로 override
     public void modifyComment(Long commentId, String newContent, Long jwtUserId) {
         Comment targetComment = commentRepository.findById(commentId)
