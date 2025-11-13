@@ -3,6 +3,9 @@ plugins {
 	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
     kotlin("jvm")
+    kotlin("plugin.jpa") version "1.9.25"
+    kotlin("plugin.noarg") version "1.9.25"
+    kotlin("plugin.allopen") version "1.9.25"
 }
 
 group = "com"
@@ -25,9 +28,16 @@ repositories {
 	mavenCentral()
 }
 
+noArg {
+    annotation("jakarta.persistence.Entity")
+}
+
+allOpen {
+    annotation("jakarta.persistence.Entity")
+}
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
     //openai api랑 전용 .env reader 추가
