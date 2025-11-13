@@ -41,6 +41,46 @@ public class User {
     @LastModifiedDate
     private LocalDateTime updateDate;
 
+    public Long getId() {
+        return id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public String getGithubToken() {
+        return githubToken;
+    }
+
+    public LocalDateTime getCreateDate() {
+        return createDate;
+    }
+
+    public LocalDateTime getUpdateDate() {
+        return updateDate;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public LocalDateTime getDeleteDate() {
+        return deleteDate;
+    }
+
     private boolean deleted =false;
     private LocalDateTime deleteDate;
 

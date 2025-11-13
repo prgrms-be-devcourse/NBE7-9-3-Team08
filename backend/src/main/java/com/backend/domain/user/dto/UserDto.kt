@@ -1,19 +1,18 @@
-package com.backend.domain.user.dto;
+package com.backend.domain.user.dto
 
-import com.backend.domain.user.entity.User;
+import com.backend.domain.user.entity.User
 
-public record UserDto (
-        Long id,
-        String email,
-        String name,
-        String imageUrl
-){
-    public UserDto(User user){
-        this(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
-                user.getImageUrl()
-        );
-    }
+@JvmRecord
+data class UserDto(
+    val id: Long,
+    val email: String,
+    val name: String,
+    val imageUrl: String?
+) {
+    constructor(user: User) : this(
+        user.id,
+        user.email,
+        user.name,
+        user.imageUrl
+    )
 }

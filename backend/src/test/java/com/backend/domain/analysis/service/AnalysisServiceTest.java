@@ -1,15 +1,9 @@
 package com.backend.domain.analysis.service;
 
-import com.backend.domain.analysis.lock.RedisLockManager;
 import com.backend.domain.evaluation.service.EvaluationService;
 import com.backend.domain.repository.dto.response.RepositoryData;
-import com.backend.domain.repository.entity.Repositories;
-import com.backend.domain.repository.repository.RepositoryJpaRepository;
 import com.backend.domain.repository.service.RepositoryService;
-import com.backend.domain.user.service.EmailService;
-import com.backend.domain.user.util.JwtUtil;
 import com.backend.global.exception.BusinessException;
-import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,15 +12,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.then;
 import java.util.Optional;
-
-import static com.backend.domain.repository.dto.RepositoryDataFixture.createMinimal;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
