@@ -1,0 +1,180 @@
+package com.backend.domain.evaluation.service
+
+import com.backend.domain.analysis.entity.AnalysisResult
+import com.backend.domain.analysis.entity.Score
+import com.backend.domain.analysis.repository.AnalysisResultRepository
+import com.backend.domain.analysis.repository.ScoreRepository
+import com.backend.domain.evaluation.dto.AiDto
+import com.backend.domain.evaluation.dto.EvaluationDto.AiResult
+import com.backend.domain.evaluation.dto.EvaluationDto.Scores
+import com.backend.domain.repository.dto.response.RepositoryData
+import com.backend.domain.repository.entity.Repositories
+import com.backend.domain.repository.repository.RepositoryJpaRepository
+import com.backend.global.exception.BusinessException
+import com.backend.global.exception.ErrorCode
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
+import java.util.regex.Pattern
+
+@Service
+class EvaluationService(
+    private val aiService: AiService,
+    private val objectMapper: ObjectMapper,
+    private val repositoryJpaRepository: RepositoryJpaRepository,
+    private val analysisResultRepository: AnalysisResultRepository,
+    private val scoreRepository: ScoreRepository,
+) {
+
+    private val log = LoggerFactory.getLogger(EvaluationService::class.java)
+
+    /**
+     * RepositoryData + userId 를 받아서
+     * 1) OpenAI로 품질 평가를 요청하고
+     * 2) AnalysisResult / Score 엔티티를 저장한 뒤
+     * 3) 저장된 AnalysisResult의 id 를 반환한다.
+     */
+    @Transactional
+    fun evaluateAndSave(data: RepositoryData, userId: Long): Long {
+        val ai: AiResult = callAiAndParse(data)
+
+        val url = extractRepositoryUrl(data)
+        if (url.isNullOrBlank()) {
+            log.error("repositoryUrl is null or blank in RepositoryData")
+            throw BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND)
+        }
+
+        val repo: Repositories = repositoryJpaRepository.findByHtmlUrlAndUserId(url, userId)
+            .orElseThrow { BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND) }
+
+        // Lombok @Builder 대신 명시적인 생성자 사용
+        val analysis = AnalysisResult(
+            repo,
+            safe(ai.summary),
+            joinBullets(ai.strengths),
+            joinBullets(ai.improvements),
+            LocalDateTime.now(),
+        )
+
+        // AnalysisResult 먼저 저장
+        val saved = analysisResultRepository.save(analysis)
+
+        val sc: Scores = ai.scores
+
+        // Score 도 @Builder 대신 명시적 생성자 사용
+        val score = Score(
+            saved,          // 저장된 analysis 에 연결
+            sc.readme,
+            sc.test,
+            sc.commit,
+            sc.cicd,
+        )
+
+        scoreRepository.save(score)
+
+        val analysisResultId = getAnalysisResultId(saved)
+        log.info("✅ Evaluation saved. analysisResultId={}", analysisResultId)
+
+        return analysisResultId
+    }
+
+    /**
+     * OpenAI API 호출 + 응답(JSON) → AiResult DTO 파싱
+     */
+    fun callAiAndParse(data: RepositoryData): AiResult {
+        return try {
+            val content = objectMapper.writeValueAsString(data)
+
+            val prompt = """
+                You are a senior software engineering reviewer.
+                Analyze the given GitHub repository data and return ONLY a valid JSON. No commentary.
+                Scoring: total 100 (README 0~30, TEST 0~30, COMMIT 0~25, CICD 0~15).
+                Consider test folders, CI configs (.github/workflows), commit frequency/messages, README depth, etc.
+                
+                JSON schema:
+                {
+                  "summary": "one-paragraph summary in Korean",
+                  "strengths": ["...","..."],
+                  "improvements": ["...","..."],
+                  "scores": {
+                    "readme": 0,
+                    "test": 0,
+                    "commit": 0,
+                    "cicd": 0
+                  }
+                }
+            """.trimIndent()
+
+            val res: AiDto.CompleteResponse =
+                aiService.complete(AiDto.CompleteRequest(content, prompt))
+
+            val raw = res.result
+            val json = extractJson(raw)
+
+            objectMapper.readValue(json, AiResult::class.java)
+        } catch (e: Exception) {
+            log.error("AI evaluation failed", e)
+            throw BusinessException(ErrorCode.INTERNAL_ERROR)
+        }
+    }
+
+    /**
+     * OpenAI 응답에서 ```json 코드블럭 제거 + 가장 바깥 JSON 객체만 추출
+     */
+    private fun extractJson(text: String?): String {
+        require(text != null) { "AI result is null" }
+
+        val cleaned = text.replace("```json", "```").trim()
+        val matcher = Pattern.compile("\\{.*}", Pattern.DOTALL).matcher(cleaned)
+
+        return if (matcher.find()) matcher.group() else cleaned
+    }
+
+    /**
+     * 리스트를 "- bullet" 형식의 멀티라인 문자열로 변환
+     */
+    private fun joinBullets(list: List<String>?): String {
+        if (list.isNullOrEmpty()) return ""
+
+        return list
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .joinToString(separator = "\n") { "- $it" }
+    }
+
+    private fun safe(s: String?): String =
+        s?.trim() ?: ""
+
+    /**
+     * Lombok가 생성하는 getter(getId)를 Kotlin이 못 보는 상황이라
+     * 리플렉션으로 id 필드를 직접 읽어온다.
+     */
+    private fun getAnalysisResultId(analysisResult: AnalysisResult): Long {
+        return try {
+            val field = AnalysisResult::class.java.getDeclaredField("id")
+            field.isAccessible = true
+            (field.get(analysisResult) as? Long)
+                ?: throw IllegalStateException("AnalysisResult.id is null")
+        } catch (e: Exception) {
+            log.error("Failed to read AnalysisResult.id via reflection", e)
+            throw BusinessException(ErrorCode.INTERNAL_ERROR)
+        }
+    }
+
+    /**
+     * RepositoryData.repositoryUrl 도 Lombok @Data 가 만드는 getter 에 의존하지 않고
+     * reflection 으로 직접 읽는다.
+     */
+    private fun extractRepositoryUrl(data: RepositoryData): String? {
+        return try {
+            val field = RepositoryData::class.java.getDeclaredField("repositoryUrl")
+            field.isAccessible = true
+            field.get(data) as? String
+        } catch (e: Exception) {
+            log.error("Failed to read RepositoryData.repositoryUrl via reflection", e)
+            null
+        }
+    }
+}
