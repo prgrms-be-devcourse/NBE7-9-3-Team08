@@ -28,6 +28,12 @@ repositories {
 	mavenCentral()
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
 noArg {
     annotation("jakarta.persistence.Entity")
 }
@@ -71,5 +77,10 @@ dependencies {
 }
 
 tasks.withType<Test> {
-	useJUnitPlatform()
+    useJUnitPlatform {
+        // CI 환경에서 테스트 제외
+        if (System.getenv("CI") == "true") {
+            excludeTags("redis", "integration")
+        }
+    }
 }

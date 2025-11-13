@@ -2,10 +2,22 @@ package com.backend.domain.analysis.service;
 
 import com.backend.domain.evaluation.service.EvaluationService;
 import com.backend.domain.repository.service.RepositoryService;
+import com.backend.domain.user.util.JwtUtil;
+import com.backend.global.exception.BusinessException;
+import jakarta.servlet.http.Cookie;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import java.util.Optional;
+
+import static com.backend.domain.repository.dto.RepositoryDataFixture.createMinimal;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -22,6 +34,23 @@ class AnalysisServiceTest {
 
     @MockitoBean
     private SseProgressNotifier sseProgressNotifier;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
+
+    @MockitoBean
+    private RedisLockManager lockManager;
+
+    @MockitoBean
+    private RepositoryJpaRepository repositoryJpaRepository;
+
+    private MockHttpServletRequest createAuthenticatedRequest(Long userId) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        Cookie jwtCookie = new Cookie("accessToken", "fake-jwt-token");
+        request.setCookies(jwtCookie);
+        given(jwtUtil.getUserId(request)).willReturn(userId);
+        return request;
+    }
 
 //    @Test
 //    @DisplayName("analyze → 수집 후 evaluateAndSave 한 번 호출")
