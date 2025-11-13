@@ -1,12 +1,11 @@
 package com.backend.domain.analysis.service;
 
+import com.backend.domain.analysis.lock.RedisLockManager;
 import com.backend.domain.evaluation.service.EvaluationService;
 import com.backend.domain.repository.dto.response.RepositoryData;
+import com.backend.domain.repository.repository.RepositoryJpaRepository;
 import com.backend.domain.repository.service.RepositoryService;
-<<<<<<< HEAD
-=======
 import com.backend.domain.user.util.JwtUtil;
->>>>>>> main
 import com.backend.global.exception.BusinessException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +21,7 @@ import static com.backend.domain.repository.dto.RepositoryDataFixture.createMini
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
+
 @SpringBootTest
 @ActiveProfiles("test")
 class AnalysisServiceTest {
