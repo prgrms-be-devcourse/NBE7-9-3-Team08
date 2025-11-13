@@ -7,12 +7,12 @@ data class CommentWriteResponseDTO(
     val commentId: Long?,
     val memberId: Long,
     val comment: String,
-    val createDate: LocalDateTime
+    val createDate: LocalDateTime?
 ) {
     constructor(comment: Comment) : this(
         comment.id,
         comment.memberId,
         comment.comment,
-        comment.getCreateDate()
+        comment.createDate
     )
 }

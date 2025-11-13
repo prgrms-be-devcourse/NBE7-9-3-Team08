@@ -8,7 +8,7 @@ data class CommentResponseDTO(
     val memberId: Long,
     val name: String,
     val comment: String,
-    val createDate: LocalDateTime,
+    val createDate: LocalDateTime?,
     val deleted: Boolean
 ) {
     constructor(comment: Comment, userName: String) : this(
@@ -16,7 +16,7 @@ data class CommentResponseDTO(
         comment.memberId,
         userName,
         comment.comment,
-        comment.getCreateDate(),
+        comment.createDate,
         comment.deleted
     )
 }
