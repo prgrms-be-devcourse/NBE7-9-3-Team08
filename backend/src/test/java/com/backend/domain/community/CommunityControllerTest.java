@@ -119,7 +119,7 @@ class CommunityControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.comment").value("통합 테스트 댓글입니다."));
 
-        Comment saved = commentRepository.findTopByOrderByIdDesc().orElseThrow();
+        Comment saved = commentRepository.findTopByOrderByIdDesc();
         assertThat(saved.getComment()).isEqualTo("통합 테스트 댓글입니다.");
         assertThat(saved.getDeleted()).isFalse();
     }

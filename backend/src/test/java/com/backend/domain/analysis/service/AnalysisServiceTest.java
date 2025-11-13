@@ -1,23 +1,18 @@
 package com.backend.domain.analysis.service;
 
+import com.backend.domain.analysis.lock.RedisLockManager;
 import com.backend.domain.evaluation.service.EvaluationService;
+import com.backend.domain.repository.repository.RepositoryJpaRepository;
 import com.backend.domain.repository.service.RepositoryService;
 import com.backend.domain.user.util.JwtUtil;
-import com.backend.global.exception.BusinessException;
 import jakarta.servlet.http.Cookie;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.Optional;
-
-import static com.backend.domain.repository.dto.RepositoryDataFixture.createMinimal;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.mockito.BDDMockito.given;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -72,7 +67,7 @@ class AnalysisServiceTest {
 //        assertThat(captor.getValue()).isNotNull();
 //        then(repositoryService).should().fetchAndSaveRepository("owner", "repo", any());
 //    }
-
+//
 //    @Test
 //    @DisplayName("analyze → 잘못된 URL이면 evaluateAndSave 호출 안 함")
 //    void analyze_invalidUrl_doesNotCallEvaluate() {
@@ -87,7 +82,7 @@ class AnalysisServiceTest {
 //        then(repositoryService).shouldHaveNoInteractions();
 //        then(evaluationService).shouldHaveNoInteractions();
 //    }
-
+//
 //    @Test
 //    @DisplayName("analyze → 인증되지 않은 사용자는 분석 불가")
 //    void analyze_unauthenticated_throwsException() {
@@ -103,7 +98,7 @@ class AnalysisServiceTest {
 //        then(repositoryService).shouldHaveNoInteractions();
 //        then(evaluationService).shouldHaveNoInteractions();
 //    }
-
+//
 //    @Test
 //    @DisplayName("analyze → 중복 분석 요청 시 락 획득 실패")
 //    void analyze_duplicateRequest_throwsException() {
