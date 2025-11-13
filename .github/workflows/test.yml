@@ -51,3 +51,5 @@ jobs:
         if: always()
         with:
           files: backend/build/test-results/**/*.xml
+          comment_mode: always
+          check_name: Test Results
