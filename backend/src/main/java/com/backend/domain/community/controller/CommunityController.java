@@ -130,8 +130,8 @@ public class CommunityController {
 
         Comment saved = communityService.addComment(
                 analysisResultId,
-                requestDto.memberId(),
-                requestDto.comment()
+                requestDto.memberId,
+                requestDto.comment
         );
         return ResponseEntity.ok(new CommentWriteResponseDTO(saved));
     }
