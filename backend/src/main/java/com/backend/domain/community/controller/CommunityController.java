@@ -78,13 +78,13 @@ public class CommunityController {
         // 최신순 정렬
         communityRepositories.sort((a, b) -> b.createDate().compareTo(a.createDate()));
 
-        Page<CommunityResponseDTO> PageingResponseDto = new PageImpl<>(
+        Page<CommunityResponseDTO> PageResponseDto = new PageImpl<>(
                 communityRepositories,
                 publicRepository.getPageable(),
                 publicRepository.getTotalElements()
         );
 
-        return ResponseEntity.ok(PageingResponseDto);
+        return ResponseEntity.ok(PageResponseDto);
     }
 
     // 분석 결과 당 댓글 조회
