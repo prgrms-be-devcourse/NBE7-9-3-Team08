@@ -4,10 +4,12 @@ import com.backend.domain.analysis.entity.AnalysisResult
 import com.backend.global.entity.BaseEntity
 import jakarta.persistence.*
 import lombok.AccessLevel
+import lombok.Builder
 import lombok.NoArgsConstructor
 import org.hibernate.annotations.SQLDelete
 
 @Entity
+@Builder  // service는 java라서 추가, 추후 삭제 예정
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE Comment SET deleted = true WHERE id = ?") // 조회 시에 기본적으로 deleted = false인 것을만 조회하도록 설정 -> 관리자 조회 시에는 삭제 처리 된 것도 조회 필요
 data class Comment(
