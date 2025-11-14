@@ -184,7 +184,7 @@ public class BaseInitData {
         }
 
         repositoryJpaRepository.save(repository);
-        System.out.println("저장소 생성 완료: " + name + " (소유자: " + user.getName() + ", 언어: " + languages + ")");
+        System.out.println("저장소 생성 완료: " + name + " (소유자: " + user.name + ", 언어: " + languages + ")");
     }
 
     /**

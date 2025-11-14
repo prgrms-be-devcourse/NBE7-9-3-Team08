@@ -33,7 +33,7 @@ public record RepositoryResponse(
                         .map(lang -> lang.getLanguage().name())
                         .collect(Collectors.toList()),
                 repositories.getCreateDate(),
-                repositories.getUser().getId()
+                repositories.getUser().id
         );
     }
 }
