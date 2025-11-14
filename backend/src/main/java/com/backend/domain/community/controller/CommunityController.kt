@@ -38,13 +38,13 @@ class CommunityController(
 
         publicRepository.forEach { repo ->
 
-            // 🔥 repo.id 직접 사용
+            // 프로퍼티 사용
             val repoId = repo.id ?: return@forEach
 
             val analysisResult = analysisService
                 .getAnalysisResultList(repoId)
                 .firstOrNull() ?: return@forEach
-
+            
             val score = analysisResult.score ?: Score(analysisResult, 0, 0, 0, 0)
 
             communityRepositories.add(
@@ -76,7 +76,7 @@ class CommunityController(
 
         comments.forEach { comment ->
 
-            // userName 직접 접근
+            // 프로퍼티 사용
             val user = userService.getUserNameByUserId(comment.memberId)
             val name = user.name
 

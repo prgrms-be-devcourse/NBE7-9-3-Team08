@@ -18,6 +18,7 @@ data class CommunityResponseDTO(
 ) {
     constructor(repositories: Repositories, analysis: AnalysisResult, score: Score) : this(
 
+        // 프로퍼티 접근으로 수정
         userName = repositories.user.name,
         userImage = repositories.user.imageUrl,
 
