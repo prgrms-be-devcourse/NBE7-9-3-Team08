@@ -1,116 +1,79 @@
-package com.backend.domain.user.entity;
+package com.backend.domain.user.entity
 
-import com.backend.global.exception.BusinessException;
-import com.backend.global.exception.ErrorCode;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Where;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import com.backend.global.exception.BusinessException
+import com.backend.global.exception.ErrorCode
+import jakarta.persistence.*
+import org.hibernate.annotations.SQLRestriction
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.time.LocalDateTime
 
-import java.time.LocalDateTime;
-
-@NoArgsConstructor
-@Getter
 @Entity
-@EntityListeners(AuditingEntityListener.class)
-@Where(clause = "deleted=false")
+@EntityListeners(AuditingEntityListener::class)
+@SQLRestriction("is_deleted = false")
+//@Where(clause = "isDeleted=false")
 @Table(name = "member")
-public class User {
+class User(
+    @JvmField
+    @field:Column(unique = true, nullable = false)
+    var email: String,
+    @JvmField
+    @field:Column(nullable = false)
+    var password: String,
+    @JvmField
+    @field:Column(nullable = false)
+    var name: String
+) {
+    constructor() : this(
+        email = "",
+        password = "",
+        name = ""
+    )
+
+    @JvmField
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(unique = true, nullable = false)
-    private String email;
-    @Column(nullable = false)
-    private String password;
-    @Column(nullable = false)
-    private String name;
+    var id: Long? = null
 
     @Column
-    private String imageUrl;
+    var imageUrl: String? = null
+        private set
 
-    private String githubToken;
+    val githubToken: String? = null
 
     @CreatedDate
     @Column(updatable = false)
-    private LocalDateTime createDate;
+    var createDate: LocalDateTime? = null
 
     @LastModifiedDate
-    private LocalDateTime updateDate;
+    var updateDate: LocalDateTime? = null
 
-    public Long getId() {
-        return id;
+    var isDeleted: Boolean = false
+
+    var deleteDate: LocalDateTime? = null
+
+    fun delete() {
+        this.isDeleted = true
+        this.deleteDate = LocalDateTime.now()
     }
 
-    public String getEmail() {
-        return email;
+    fun restore() {
+        this.isDeleted = false
+        this.deleteDate = null
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public String getGithubToken() {
-        return githubToken;
-    }
-
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
-
-    public LocalDateTime getUpdateDate() {
-        return updateDate;
-    }
-
-    public boolean isDeleted() {
-        return deleted;
-    }
-
-    public LocalDateTime getDeleteDate() {
-        return deleteDate;
-    }
-
-    private boolean deleted =false;
-    private LocalDateTime deleteDate;
-
-    public void delete(){
-        this.deleted=true;
-        this.deleteDate =  LocalDateTime.now();
-    }
-
-    public void restore(){
-        this.deleted=false;
-        this.deleteDate =  null;
-    }
-
-    public User(String email, String password, String name) {
-        this.email = email;
-        this.password = password;
-        this.name = name;
-    }
-
-    public void changeName(String name){
-        if(this.name==null || name.trim().isEmpty()){
-            throw new BusinessException(ErrorCode.NAME_NOT_FOUND);
+    fun changeName(name: String) {
+        if (this.name == null || name.trim { it <= ' ' }.isEmpty()) {
+            throw BusinessException(ErrorCode.NAME_NOT_FOUND)
         }
-        this.name = name;
+        this.name = name
     }
 
-    public void changePassword(String password){
-        if(this.password==null || password.trim().isEmpty()){
-            throw new BusinessException(ErrorCode.PASSWORD_NOT_FOUND);
+    fun changePassword(password: String) {
+        if (this.password == null || password.trim { it <= ' ' }.isEmpty()) {
+            throw BusinessException(ErrorCode.PASSWORD_NOT_FOUND)
         }
-        this.password = password;
+        this.password = password
     }
 }

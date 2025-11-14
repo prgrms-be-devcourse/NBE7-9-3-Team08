@@ -1,19 +1,18 @@
-package com.backend.domain.user.repository;
+package com.backend.domain.user.repository
 
-import com.backend.domain.user.entity.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import com.backend.domain.user.entity.User
+import org.springframework.data.jpa.repository.JpaRepository
 
-import java.util.Optional;
+interface UserRepository : JpaRepository<User, Long> {
+    //Optional대신 nullable 타입반환
+    fun findByEmail(email: String): User?
 
-public interface UserRepository extends JpaRepository<User,Long> {
-    Optional<User> findByEmail(String email);
+    /*
 
-    @Query("SELECT u FROM User u WHERE u.email = :email AND u.deleted = true")
+    @Query("SELECT u FROM User u WHERE u.email = :email AND u.isDeleted = true")
     Optional<User> findByEmailIncludeDeleted(@Param("email") String email);
+*/
+    fun existsByEmail(email: String): Boolean
 
-    boolean existsByEmail(String email);
-
-    User findNameById(Long userId);
+    fun findNameById(userId: Long): User?
 }

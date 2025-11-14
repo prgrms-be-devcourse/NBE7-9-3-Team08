@@ -4,7 +4,7 @@ import com.backend.domain.user.entity.User
 
 @JvmRecord
 data class UserDto(
-    val id: Long,
+    val id: Long?,
     val email: String,
     val name: String,
     val imageUrl: String?
