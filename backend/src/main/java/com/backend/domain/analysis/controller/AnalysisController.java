@@ -41,7 +41,7 @@ public class AnalysisController {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
         }
 
-        Long repositoryId  = analysisService.analyze(request.githubUrl(), httpRequest);
+        Long repositoryId  = analysisService.analyze(request.getGithubUrl(), httpRequest);
         AnalysisStartResponse response = new AnalysisStartResponse(repositoryId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
