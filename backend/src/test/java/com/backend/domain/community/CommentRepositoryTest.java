@@ -58,7 +58,7 @@ class CommentRepositoryTest {
     }
 
     @Test
-    @DisplayName("✅ 1. analysisResultId 기준으로 삭제되지 않은 댓글을 ID 내림차순 정렬하여 조회한다")
+    @DisplayName("analysisResultId 기준으로 삭제되지 않은 댓글을 ID 내림차순 정렬하여 조회한다")
     void findByAnalysisResultIdAndDeletedOrderByIdDesc_success() {
         // given
         AnalysisResult analysisResult = setupData();
@@ -81,7 +81,7 @@ class CommentRepositoryTest {
     }
 
     @Test
-    @DisplayName("✅ 2. 페이징 기반으로 댓글을 조회한다 (삭제되지 않은 것만)")
+    @DisplayName("페이징 기반으로 댓글을 조회한다 (삭제되지 않은 것만)")
     void findByAnalysisResultIdAndDeletedOrderByIdDesc_paging() {
         // given
         AnalysisResult analysisResult = setupData();
@@ -106,7 +106,7 @@ class CommentRepositoryTest {
     }
 
     @Test
-    @DisplayName("✅ 3. 댓글 ID와 deleted 상태로 단건 조회 및 soft delete 검증")
+    @DisplayName("댓글 ID와 deleted 상태로 단건 조회 및 soft delete 검증")
     void findByIdAndDeleted_success() {
         // given
         AnalysisResult analysisResult = setupData();

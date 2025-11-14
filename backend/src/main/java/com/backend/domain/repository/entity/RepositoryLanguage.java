@@ -5,7 +5,6 @@ import lombok.*;
 
 @Entity
 @Table(name = "repository_language")
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class RepositoryLanguage {
@@ -30,5 +29,17 @@ public class RepositoryLanguage {
         this.id = id;
         this.repositories = repositories;
         this.language = language;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Repositories getRepositories() {
+        return repositories;
+    }
+
+    public Language getLanguage() {
+        return language;
     }
 }
