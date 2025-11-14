@@ -18,3 +18,4 @@
 - [ ] Analysis
 - [ ] Evaluation
 - [ ] Community
+- [ ] Global
