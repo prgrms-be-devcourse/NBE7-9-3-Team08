@@ -23,7 +23,7 @@ public record CommunityResponseDTO(
 ) {
     public CommunityResponseDTO(Repositories repositories, AnalysisResult analysis, Score score) {
         this(
-                repositories.getUser().getName(),
+                repositories.getUser().name,
                 repositories.getUser().getImageUrl(),
                 repositories.getName(),
                 repositories.getId(),

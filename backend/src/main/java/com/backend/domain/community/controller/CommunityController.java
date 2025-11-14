@@ -100,7 +100,7 @@ public class CommunityController {
         for(Comment comment : comments){
             User userName = userService.getUserNameByUserId(comment.getMemberId());
 
-            CommentResponseDTO dto = new CommentResponseDTO(comment, userName.getName());
+            CommentResponseDTO dto = new CommentResponseDTO(comment, userName.name);
             commentList.add(dto);
         }
 

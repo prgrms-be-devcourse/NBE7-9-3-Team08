@@ -129,13 +129,13 @@ class CommunityControllerTest {
     void getComments_success() throws Exception {
         commentRepository.save(Comment.builder()
                 .analysisResult(testAnalysis)
-                .memberId(testUser.getId())
+                .memberId(testUser.id)
                 .comment("첫 댓글")
                 .deleted(false)
                 .build());
         commentRepository.save(Comment.builder()
                 .analysisResult(testAnalysis)
-                .memberId(testUser.getId())
+                .memberId(testUser.id)
                 .comment("삭제된 댓글")
                 .deleted(true)
                 .build());
@@ -153,7 +153,7 @@ class CommunityControllerTest {
         for (int i = 1; i <= 7; i++) {
             commentRepository.save(Comment.builder()
                     .analysisResult(testAnalysis)
-                    .memberId(testUser.getId())
+                    .memberId(testUser.id)
                     .comment("댓글 " + i)
                     .deleted(false)
                     .build());
@@ -174,7 +174,7 @@ class CommunityControllerTest {
     void modifyComment_success() throws Exception {
         Comment comment = commentRepository.save(Comment.builder()
                 .analysisResult(testAnalysis)
-                .memberId(testUser.getId())
+                .memberId(testUser.id)
                 .comment("기존 댓글")
                 .deleted(false)
                 .build());
@@ -195,7 +195,7 @@ class CommunityControllerTest {
     void deleteComment_success() throws Exception {
         Comment comment = commentRepository.save(Comment.builder()
                 .analysisResult(testAnalysis)
-                .memberId(testUser.getId())
+                .memberId(testUser.id)
                 .comment("삭제 대상 댓글")
                 .deleted(false)
                 .build());
@@ -226,13 +226,13 @@ class CommunityControllerTest {
     void getComments_excludeDeleted() throws Exception {
         commentRepository.save(Comment.builder()
                 .analysisResult(testAnalysis)
-                .memberId(testUser.getId())
+                .memberId(testUser.id)
                 .comment("보이는 댓글")
                 .deleted(false)
                 .build());
         commentRepository.save(Comment.builder()
                 .analysisResult(testAnalysis)
-                .memberId(testUser.getId())
+                .memberId(testUser.id)
                 .comment("삭제된 댓글")
                 .deleted(true)
                 .build());
@@ -250,7 +250,7 @@ class CommunityControllerTest {
         for (int i = 1; i <= 3; i++) {
             commentRepository.save(Comment.builder()
                     .analysisResult(testAnalysis)
-                    .memberId(testUser.getId())
+                    .memberId(testUser.id)
                     .comment("댓글 " + i)
                     .deleted(false)
                     .build());
