@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 data class CommunityResponseDTO(
     val userName: String,
-    val userImage: String,
+    val userImage: String?,
     val repositoryName: String,
     val repositoryId: Long,
     val summary: String,
