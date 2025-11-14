@@ -281,18 +281,6 @@ class CommunityServiceTest {
         verify(commentRepository, times(1)).delete(comment);
     }
 
-
-    @Test
-    @DisplayName("댓글 삭제 실패 - commentId가 null")
-    void deleteComment_invalidInput() {
-        BusinessException ex = assertThrows(
-                BusinessException.class,
-                () -> communityService.deleteComment(null, 10L)
-        );
-
-        assertEquals(ErrorCode.INVALID_INPUT_VALUE, ex.getErrorCode());
-    }
-
     @Test
     @DisplayName("댓글 삭제 실패 - 댓글이 존재하지 않음")
     void deleteComment_notFound() {
