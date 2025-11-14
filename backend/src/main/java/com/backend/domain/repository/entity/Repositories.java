@@ -8,7 +8,6 @@ import com.backend.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
         )
             }
 )
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Repositories extends BaseEntity {
     @Id
@@ -125,5 +123,46 @@ public class Repositories extends BaseEntity {
                             .build();
                     this.addLanguage(repositoryLanguage);
                 });
+    }
+
+    // 테스트 전용 ID 설정 메서드
+    public void setIdForTest(Long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public List<AnalysisResult> getAnalysisResults() {
+        return analysisResults;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getHtmlUrl() {
+        return htmlUrl;
+    }
+
+    public boolean isPublicRepository() {
+        return publicRepository;
+    }
+
+    public String getMainBranch() {
+        return mainBranch;
+    }
+
+    public List<RepositoryLanguage> getLanguages() {
+        return languages;
     }
 }

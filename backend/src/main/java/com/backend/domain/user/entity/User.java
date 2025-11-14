@@ -3,7 +3,6 @@ package com.backend.domain.user.entity;
 import com.backend.global.exception.BusinessException;
 import com.backend.global.exception.ErrorCode;
 import jakarta.persistence.*;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
@@ -13,7 +12,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
-@Getter
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Where(clause = "deleted=false")
@@ -72,5 +70,49 @@ public class User {
             throw new BusinessException(ErrorCode.PASSWORD_NOT_FOUND);
         }
         this.password = password;
+    }
+
+    // ==========================
+    //        GETTERS
+    // ==========================
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public String getGithubToken() {
+        return githubToken;
+    }
+
+    public LocalDateTime getCreateDate() {
+        return createDate;
+    }
+
+    public LocalDateTime getUpdateDate() {
+        return updateDate;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public LocalDateTime getDeleteDate() {
+        return deleteDate;
     }
 }

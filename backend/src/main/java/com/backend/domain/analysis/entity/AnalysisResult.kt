@@ -3,6 +3,7 @@ package com.backend.domain.analysis.entity
 import com.backend.domain.community.entity.Comment
 import com.backend.domain.repository.entity.Repositories
 import jakarta.persistence.*
+import lombok.Getter
 import java.time.LocalDateTime
 
 @Entity
