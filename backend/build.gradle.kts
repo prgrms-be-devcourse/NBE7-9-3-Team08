@@ -1,8 +1,9 @@
 plugins {
 	java
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.spring") version "1.9.25"
 	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
-    kotlin("jvm")
     kotlin("plugin.jpa") version "1.9.25"
     kotlin("plugin.noarg") version "1.9.25"
     kotlin("plugin.allopen") version "1.9.25"
@@ -72,6 +73,7 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok:1.18.32")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
     testImplementation("org.assertj:assertj-core:3.26.3")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
     implementation(kotlin("stdlib-jdk8"))
 
 }

@@ -1,11 +1,12 @@
-package com.backend.global.response;
+package com.backend.global.response
 
-import lombok.Getter;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatus
 
-@Getter
-public enum ResponseCode {
-
+enum class ResponseCode(
+    val code: String,
+    val status: HttpStatus,
+    val message: String
+) {
     OK("200", HttpStatus.OK, "정상적으로 완료되었습니다."),
     CREATED("201", HttpStatus.CREATED, "정상적으로 생성되었습니다."),
     BAD_REQUEST("400", HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
@@ -15,14 +16,4 @@ public enum ResponseCode {
     METHOD_NOT_ALLOWED("405", HttpStatus.METHOD_NOT_ALLOWED, "지원하지 않는 HTTP 메서드입니다."),
     CONFLICT("409", HttpStatus.CONFLICT, "이미 존재하는 리소스입니다."),
     INTERNAL_SERVER_ERROR("500", HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러가 발생했습니다.");
-
-    private final String code;
-    private final HttpStatus status;
-    private final String message;
-
-    ResponseCode(String code, HttpStatus status, String message) {
-        this.code = code;
-        this.status = status;
-        this.message = message;
-    }
 }
