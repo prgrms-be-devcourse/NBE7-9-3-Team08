@@ -1,12 +1,10 @@
 plugins {
-	java
+    java
     kotlin("jvm") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
-	id("org.springframework.boot") version "3.5.6"
-	id("io.spring.dependency-management") version "1.1.7"
+    id("org.springframework.boot") version "3.5.6"
+    id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "1.9.25"
-    kotlin("plugin.noarg") version "1.9.25"
-    kotlin("plugin.allopen") version "1.9.25"
 }
 
 group = "com"
@@ -33,14 +31,6 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }
-}
-
-noArg {
-    annotation("jakarta.persistence.Entity")
-}
-
-allOpen {
-    annotation("jakarta.persistence.Entity")
 }
 
 dependencies {

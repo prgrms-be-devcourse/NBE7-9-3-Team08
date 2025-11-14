@@ -9,10 +9,10 @@ import java.time.LocalDateTime
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
-abstract class BaseEntity {
+open class BaseEntity {
 
     @CreatedDate
     @Column(updatable = false)
-    var createDate: LocalDateTime? = null
+    open var createDate: LocalDateTime? = null
         protected set
 }
