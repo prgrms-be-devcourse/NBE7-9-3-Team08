@@ -19,7 +19,8 @@ class EvaluationServiceTest {
     @Autowired private RepositoryJpaRepository repositoryJpaRepository;
     @Autowired private AnalysisResultRepository analysisResultRepository;
     @Autowired private UserRepository userRepository;
-    @Autowired EntityManager em;
+    @Autowired
+    EntityManager em;
 
     @MockitoBean
     private AiService aiService; // 실제 OpenAI 호출 막고 고정 JSON 사용

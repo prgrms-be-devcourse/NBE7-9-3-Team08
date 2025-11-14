@@ -58,24 +58,13 @@ class CommentRepositoryTest {
     }
 
     @Test
-    @DisplayName("✅ 1. analysisResultId 기준으로 삭제되지 않은 댓글을 ID 내림차순 정렬하여 조회한다")
+    @DisplayName("analysisResultId 기준으로 삭제되지 않은 댓글을 ID 내림차순 정렬하여 조회한다")
     void findByAnalysisResultIdAndDeletedOrderByIdDesc_success() {
         // given
         AnalysisResult analysisResult = setupData();
 
-        Comment comment1 = Comment.builder()
-                .comment("첫 번째 댓글")
-                .memberId(10L)
-                .analysisResult(analysisResult)
-                .deleted(false)
-                .build();
-
-        Comment comment2 = Comment.builder()
-                .comment("두 번째 댓글")
-                .memberId(20L)
-                .analysisResult(analysisResult)
-                .deleted(false)
-                .build();
+        Comment comment1 = Comment.create(analysisResult, 10L, "첫 번째 댓글", false);
+        Comment comment2 = Comment.create(analysisResult, 10L, "두 번째 댓글", false);
 
         commentRepository.save(comment1);
         commentRepository.save(comment2);
@@ -92,18 +81,13 @@ class CommentRepositoryTest {
     }
 
     @Test
-    @DisplayName("✅ 2. 페이징 기반으로 댓글을 조회한다 (삭제되지 않은 것만)")
+    @DisplayName("페이징 기반으로 댓글을 조회한다 (삭제되지 않은 것만)")
     void findByAnalysisResultIdAndDeletedOrderByIdDesc_paging() {
         // given
         AnalysisResult analysisResult = setupData();
 
         for (int i = 1; i <= 5; i++) {
-            Comment comment = Comment.builder()
-                    .comment("댓글 " + i)
-                    .memberId((long) i)
-                    .analysisResult(analysisResult)
-                    .deleted(false)
-                    .build();
+            Comment comment = Comment.create(analysisResult, (long) i, "댓글 " + i, false);
             commentRepository.save(comment);
         }
         em.flush();
@@ -122,17 +106,12 @@ class CommentRepositoryTest {
     }
 
     @Test
-    @DisplayName("✅ 3. 댓글 ID와 deleted 상태로 단건 조회 및 soft delete 검증")
+    @DisplayName("댓글 ID와 deleted 상태로 단건 조회 및 soft delete 검증")
     void findByIdAndDeleted_success() {
         // given
         AnalysisResult analysisResult = setupData();
 
-        Comment comment = Comment.builder()
-                .comment("삭제 테스트용 댓글")
-                .memberId(99L)
-                .analysisResult(analysisResult)
-                .deleted(false)
-                .build();
+        Comment comment = Comment.create(analysisResult, 99L, "삭제 테스트용 댓글", false);
 
         commentRepository.save(comment);
         em.flush();
@@ -151,6 +130,6 @@ class CommentRepositoryTest {
         // then - 삭제 후 상태 확인
         Optional<Comment> deleted = commentRepository.findByIdAndDeleted(comment.getId(), true);
         assertThat(deleted).isPresent();
-        assertThat(deleted.get().isDeleted()).isTrue();
+        assertThat(deleted.get().getDeleted()).isTrue();
     }
 }
