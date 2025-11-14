@@ -1,218 +1,201 @@
-package com.backend.domain.user.controller;
+package com.backend.domain.user.controller
 
-import com.backend.domain.user.dto.UserDto;
-import com.backend.domain.user.entity.User;
-import com.backend.domain.user.service.JwtService;
-import com.backend.domain.user.service.UserService;
-import com.backend.domain.user.util.JwtUtil;
-import com.backend.global.response.ApiResponse;
-import jakarta.mail.MessagingException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import com.backend.domain.user.dto.UserDto
+import com.backend.domain.user.entity.User
+import com.backend.domain.user.service.JwtService
+import com.backend.domain.user.service.UserService
+import com.backend.domain.user.util.JwtUtil
+import com.backend.global.exception.BusinessException
+import com.backend.global.exception.ErrorCode
+import com.backend.global.response.ApiResponse
+import jakarta.mail.MessagingException
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.Valid
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.NotBlank
+import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequiredArgsConstructor
-public class UserController {
-    private final UserService userService;
-    private final JwtService jwtService;
-    private final JwtUtil jwtUtil;
+class UserController(
+    private val userService: UserService,
+    private val jwtService: JwtService,
+    private val jwtUtil: JwtUtil
+) {
+    // id를 입력받아 회원이 존재하면 해당 회원을 반환하는 api
+    @JvmRecord
+    data class GetRequest(
+        @field:NotBlank(message = "이메일은 필수 입력값 입니다.")
+        @field:Email(message = "이메일 형식이 아닙니다.")
+        val email : String
+    )
 
-    /**
-     * id를 입력받아 회원이 존재하면 해당 회원을 반환하는 api입니다.
-     *
-     * @param id
-     * @return
-     */
-
-    record GetRequest(
-            @NotBlank(message = "이메일은 필수 입력값 입니다.")
-            @Email(message = "이메일 형식이 아닙니다.")
-            String email
-    ){
-
-    }
-
-    record GetResponse(
-            UserDto userDto
-    ){
-
-    }
+    @JvmRecord
+    data class GetResponse(
+        val userDto: UserDto
+    )
 
     @GetMapping("/api/user")
-    public ApiResponse<GetResponse> getUser(
-            @Valid @RequestBody GetRequest request
-    ){
-        User user = userService.findByEmail(request.email);
-        return ApiResponse.success(new GetResponse(new UserDto(user)));
+    fun getUser(
+        @Valid @RequestBody request: GetRequest
+    ): ApiResponse<GetResponse> {
+        val user = userService.findByEmail(request.email)
+        return ApiResponse.success(GetResponse(UserDto(user)))
     }
 
 
-    /**
-     * 모든 회원을 조회하는 api입니다.
-     * @param userDtoList
-     */
+    //모든 회원을 조회하는 api
+    @JvmRecord
+    data class GetUsersResponse(
+        val userDtoList: List<UserDto>
+    )
 
 
-    record GetUsersResponse(
-            List<UserDto> userDtoList
-    ){
+    @get:GetMapping("/api/users")
+    val users: ApiResponse<GetUsersResponse>
+        get() {
+            println("다건 조회")
+            val users: List<User> = userService.findByAll()
 
-    }
+            val userDtoList = users.map{ UserDto(it) }
 
-
-    @GetMapping("/api/users")
-    public ApiResponse<GetUsersResponse> getUsers(){
-        System.out.println("다건 조회");
-        List<User> users = userService.findByAll();
-
-        List<UserDto> userDtoList = users.stream()
-                .map(UserDto::new)
-                .toList();
-
-        return ApiResponse.success(new GetUsersResponse(userDtoList));
-    }
+            return ApiResponse.success(GetUsersResponse(userDtoList))
+        }
 
 
-    /**
-     * email, password, passwrodCheck, name을 입력받아 회원가입을 진행하는 api입니다.
-     *
-     * @param email, password, passwrodCheck, name
-     * @return
-     */
+    //email, password, passwrodCheck, name을 입력받아 회원가입을 진행하는 api
+    @JvmRecord
+    data class JoinRequest(
+        @field:NotBlank(message = "이메일은 필수 입력값 입니다.")
+        @field:Email(message = "이메일 형식이 아닙니다.")
+        val email: String,
 
-    record JoinRequest (
-            @NotBlank(message = "이메일은 필수 입력값 입니다.")
-            @Email(message = "이메일 형식이 아닙니다.")
-            String email,
+        @field:NotBlank(message = "비밀번호는 필수 입력값 입니다.")
+        val password: String,
 
-            @NotBlank(message = "비밀번호는 필수 입력값 입니다.")
-            String password,
+        @field:NotBlank(message = "비밀번호 확인은 필수 입력값 입니다.")
+        val passwordCheck:  String,
 
-            @NotBlank(message = "비밀번호 확인은 필수 입력값 입니다.")
-            String passwordCheck,
-
-            @NotBlank(message = "사용자 이름은 필수 입력값 입니다.")
-            String name
-    ){
-
-    }
-
-    record JoinResponse (
-            UserDto userDto
-    ){
-
-    }
+        @field:NotBlank(message = "사용자 이름은 필수 입력값 입니다.")
+        val name: String
+    )
+//여기부터
+    @JvmRecord
+    data class JoinResponse(
+        val userDto: UserDto
+    )
 
     @PostMapping("/api/user")
-    public ApiResponse<JoinResponse> join(
-            @Valid @RequestBody JoinRequest joinRequest
-    ) throws MessagingException {
-        User user = userService.join(joinRequest.email, joinRequest.password, joinRequest.passwordCheck, joinRequest.name);
+    @Throws(MessagingException::class)
+    fun join(
+        @Valid @RequestBody joinRequest: JoinRequest
+    ): ApiResponse<JoinResponse> {
+        val user = userService.join(
+            joinRequest.email,
+            joinRequest.password,
+            joinRequest.passwordCheck,
+            joinRequest.name
+        )
 
-        return ApiResponse.success(new JoinResponse(new UserDto(user)));
+        return ApiResponse.success(JoinResponse(UserDto(user)))
     }
 
-    /**
-     * soft delete
-     */
-    record DeleteRequest (
-            @NotBlank(message = "이메일은 필수 입력값 입니다.")
-            @Email(message = "이메일 형식이 아닙니다.")
-            String email
-    ){
+    //soft delete
+    @JvmRecord
+    data class DeleteRequest(
+        @field:NotBlank(message = "이메일은 필수 입력값 입니다.")
+        @field:Email(message = "이메일 형식이 아닙니다.")
+        val email: String
+    )
 
-    }
-    record DeleteResponse (
-            UserDto userDto
-    ){
+    @JvmRecord
+    data class DeleteResponse(
+        val userDto: UserDto
+    )
 
-    }
     @DeleteMapping("/api/user")
-    public ApiResponse<DeleteResponse> softDelete(
-            @Valid @RequestBody DeleteRequest deleteRequest
-    ){
-        User softDeleteUser = userService.softdelete(deleteRequest.email);
-        return  ApiResponse.success(new DeleteResponse(new UserDto(softDeleteUser)));
+    fun softDelete(
+        @Valid @RequestBody deleteRequest: DeleteRequest
+    ): ApiResponse<DeleteResponse> {
+        val softDeleteUser: User = userService.softdelete(deleteRequest.email)
+        return ApiResponse.success(DeleteResponse(UserDto(softDeleteUser)))
     }
 
 
-    /**
-     * 이름 변경
-     */
-    record ModifyNameRequest (
-            @NotBlank(message = "이름은 필수 입력값 입니다.")
-            String name
-    ){
+    //이름 변경
+    @JvmRecord
+    data class ModifyNameRequest(
+        @field:NotBlank(message = "이름은 필수 입력값 입니다.")
+        val name: String
+    )
 
-    }
-    record ModifyNameResponse (
-            UserDto userDto
-    ){
+    @JvmRecord
+    data class ModifyNameResponse(
+        val userDto: UserDto
+    )
 
-    }
     @PostMapping("/api/user/name")
-    public  ApiResponse<ModifyNameResponse> modifyName(
-            HttpServletRequest request,
-            @Valid @RequestBody ModifyNameRequest modifyNameRequest
-    ){
-        String email = jwtUtil.getEmail(request);
-        System.out.println("email: " + email);
-        System.out.println("변경전 name :" + modifyNameRequest.name);
-        User user = userService.modifyName(email, modifyNameRequest.name);
+    fun modifyName(
+        request: HttpServletRequest,
+        @Valid @RequestBody modifyNameRequest: ModifyNameRequest
+    ): ApiResponse<ModifyNameResponse> {
+        val email : String? = jwtUtil.getEmail(request)
 
-        System.out.println("변경후 name :" + user.getName());
-        return ApiResponse.success(new ModifyNameResponse(new UserDto(user)));
+        if(email.isNullOrBlank()){
+            throw BusinessException(ErrorCode.EMAIL_NOT_FOUND)
+        }
+
+        println("email: ${email}")
+        println("변경전 name : ${modifyNameRequest.name}")
+        val user = userService.modifyName(email, modifyNameRequest.name)
+
+        println("변경후 name : ${user.name}")
+        return ApiResponse.success(ModifyNameResponse(UserDto(user)))
     }
 
-    /**
-     * 비밀번호 변경
-     */
-    record ModifyPasswordRequest (
-            @NotBlank(message = "비밀번호는 필수 입력값 입니다.")
-            String password,
-            String passwordCheck
-    ){
+    //비밀번호 변경
+    @JvmRecord
+    data class ModifyPasswordRequest(
+        @field:NotBlank(message = "비밀번호는 필수 입력값 입니다.")
+        val password: String,
+        @field:NotBlank(message = "비밀번호는 필수 입력값 입니다.")
+        val passwordCheck: String
+    )
 
-    }
-    record ModifyPasswordResponse (
-            UserDto userDto
-    ){
+    @JvmRecord
+    data class ModifyPasswordResponse(
+        val userDto: UserDto
+    )
 
-    }
     @PostMapping("/api/user/password")
-    public ApiResponse<ModifyPasswordResponse> modifyPassword(
-            HttpServletRequest request,
-            @Valid @RequestBody ModifyPasswordRequest  modifyPasswordRequest
-    ){
-        String email = jwtUtil.getEmail(request);
-        User user = userService.modifyPassword(email, modifyPasswordRequest.password, modifyPasswordRequest.passwordCheck);
-        return ApiResponse.success(new ModifyPasswordResponse(new UserDto(user)));
+    fun modifyPassword(
+        request: HttpServletRequest,
+        @Valid  @RequestBody modifyPasswordRequest: ModifyPasswordRequest
+    ): ApiResponse<ModifyPasswordResponse> {
+        val email = jwtUtil.getEmail(request)
+        if(email.isNullOrBlank()){
+            throw BusinessException(ErrorCode.EMAIL_NOT_FOUND)
+        }
+
+        val user = userService.modifyPassword(
+            email,
+            modifyPasswordRequest.password,
+            modifyPasswordRequest.passwordCheck
+        )
+        return ApiResponse.success(ModifyPasswordResponse(UserDto(user)))
     }
 
+    //삭제된 유저 복구
+    @JvmRecord
+    data class RestoreRequest(
+        @field:NotBlank(message = "이메일은 필수 입력값 입니다.")
+        @field:Email(message = "이메일 형식이 아닙니다.")
+        val email: String
+    )
 
-    /**
-     * 삭제된 유저 복구
-     */
-
-    record RestoreRequest (
-            @NotBlank(message = "이메일은 필수 입력값 입니다.")
-            @Email(message = "이메일 형식이 아닙니다.")
-            String email
-    ){
-
-    }
-    record RestoreResponse (
-            UserDto userDto
-    ){
-
-    }
-
+    @JvmRecord
+    data class RestoreResponse(
+        val userDto: UserDto
+    )  /*
     @PostMapping("/api/user/restore")
     public ApiResponse<RestoreResponse> restoreUser(
             @Valid @RequestBody RestoreRequest restoreRequest
@@ -221,5 +204,5 @@ public class UserController {
         User user = userService.restore(restoreRequest.email);
         return ApiResponse.success(new RestoreResponse(new UserDto(user)));
     }
-
+*/
 }

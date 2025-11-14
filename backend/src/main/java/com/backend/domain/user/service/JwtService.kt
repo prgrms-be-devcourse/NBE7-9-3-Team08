@@ -24,7 +24,7 @@ class JwtService(
     fun login(
         email: String,
         password: String
-    ): List<String>? {
+    ): List<String> {
         val user: User = userRepository.findByEmail(email)
                 ?:throw BusinessException(ErrorCode.EMAIL_NOT_FOUND)
 

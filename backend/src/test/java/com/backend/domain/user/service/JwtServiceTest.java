@@ -5,6 +5,7 @@ package com.backend.domain.user.service;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
+@Tag("redis")
 public class JwtServiceTest {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
