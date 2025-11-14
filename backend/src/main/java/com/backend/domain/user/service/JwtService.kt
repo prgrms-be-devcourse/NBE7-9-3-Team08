@@ -28,11 +28,12 @@ class JwtService(
         val user: User = userRepository.findByEmail(email)
                 ?:throw BusinessException(ErrorCode.EMAIL_NOT_FOUND)
 
+        var userId = user.id ?: throw BusinessException(ErrorCode.USER_NOT_FOUND)
         //비밀번호 체크
         if (checkPassword(email, password)) {
             //email에 대응하는 비밀번호가 맞다면 jwt, refreshToken 발급
-            val jwtToken = jwtUtil.createToken(user.email, user.name, user.id)
-            val refreshToken = refreshTokenUtil.createToken(user.id)
+            val jwtToken = jwtUtil.createToken(user.email, user.name, userId)
+            val refreshToken = refreshTokenUtil.createToken(userId)
             return listOf(jwtToken, refreshToken)
         } else {
             throw BusinessException(ErrorCode.LOGIN_FAILED)
