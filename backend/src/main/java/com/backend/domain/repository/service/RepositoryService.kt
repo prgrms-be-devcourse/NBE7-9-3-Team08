@@ -144,20 +144,19 @@ class RepositoryService(
 
         val languages = gitHubDataFetcher.fetchLanguages(owner, repo)
 
-        repositoryJpaRepository.findByHtmlUrlAndUserId(
+        val existing = repositoryJpaRepository.findByHtmlUrlAndUserId(
             repoInfo.htmlUrl ?: "unknown",
             userId
-        ).ifPresentOrElse(
-            { existing ->
-                existing.updateFrom(repoInfo)
-                existing.updateLanguagesFrom(languages)
-            },
-            {
-                val newRepo = repositoriesMapper.toEntity(repoInfo, user)
-                newRepo.updateLanguagesFrom(languages)
-                repositoryJpaRepository.save(newRepo)
-            }
         )
+
+        if (existing != null) {
+            existing.updateFrom(repoInfo)
+            existing.updateLanguagesFrom(languages)
+        } else {
+            val newRepo = repositoriesMapper.toEntity(repoInfo, user)
+            newRepo.updateLanguagesFrom(languages)
+            repositoryJpaRepository.save(newRepo)
+        }
     }
 
     fun findRepositoryByUser(userId: Long): List<Repositories> =

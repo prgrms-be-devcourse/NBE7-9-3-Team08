@@ -62,7 +62,7 @@ class RepositoryServiceTest {
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
-        assertThat(repoEntity).isPresent();
+        assertThat(repoEntity).isNotNull();
     }
 
     @Test
@@ -82,7 +82,7 @@ class RepositoryServiceTest {
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
-        assertThat(repoEntity).isPresent();
+        assertThat(repoEntity).isNotNull();
     }
 
     @Test
@@ -102,7 +102,7 @@ class RepositoryServiceTest {
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
-        assertThat(repoEntity).isPresent();
+        assertThat(repoEntity).isNotNull();
     }
 
     @Test
@@ -122,7 +122,7 @@ class RepositoryServiceTest {
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
-        assertThat(repoEntity).isPresent();
+        assertThat(repoEntity).isNotNull();
     }
 
     @Test
@@ -142,7 +142,7 @@ class RepositoryServiceTest {
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
-        assertThat(repoEntity).isPresent();
+        assertThat(repoEntity).isNotNull();
     }
 
     @Test
@@ -162,7 +162,7 @@ class RepositoryServiceTest {
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
-        assertThat(repoEntity).isPresent();
+        assertThat(repoEntity).isNotNull();
     }
 
     @Test
@@ -182,7 +182,7 @@ class RepositoryServiceTest {
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
-        assertThat(repoEntity).isPresent();
+        assertThat(repoEntity).isNotNull();
     }
 
     @Test
@@ -202,7 +202,7 @@ class RepositoryServiceTest {
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
-        assertThat(repoEntity).isPresent();
+        assertThat(repoEntity).isNotNull();
     }
 
     @Test
@@ -222,7 +222,7 @@ class RepositoryServiceTest {
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
-        assertThat(repoEntity).isPresent();
+        assertThat(repoEntity).isNotNull();
     }
 
     @Test
@@ -242,7 +242,7 @@ class RepositoryServiceTest {
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
-        assertThat(repoEntity).isPresent();
+        assertThat(repoEntity).isNotNull();
     }
 
     @Test
@@ -262,7 +262,7 @@ class RepositoryServiceTest {
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
-        assertThat(repoEntity).isPresent();
+        assertThat(repoEntity).isNotNull();
     }
 
     @Test
