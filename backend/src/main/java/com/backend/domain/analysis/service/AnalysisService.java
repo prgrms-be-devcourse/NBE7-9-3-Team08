@@ -330,8 +330,8 @@ public class AnalysisService {
         return repositories.stream()
                 .map(repo -> {
                     Optional<AnalysisResult> latestAnalysis =
-                            analysisResultRepository
-                                    .findTopByRepositoriesIdOrderByCreateDateDesc(repo.getId());
+                            Optional.ofNullable(analysisResultRepository
+                                    .findTopByRepositoriesIdOrderByCreateDateDesc(repo.getId()));
 
                     return latestAnalysis.map(analysis ->
                             RepositoryComparisonResponse.from(repo, analysis)
