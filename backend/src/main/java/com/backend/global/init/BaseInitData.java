@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Profile({"local","dev"}) // 필요시 주석처리 하세요 test에는 BaseInitData 안 들어가게 만든 겁니다
@@ -163,22 +164,23 @@ public class BaseInitData {
                                                List<Language> languages, User user) {
 
         // Repository 생성 (User 연관관계 포함 - 빌더에 user 파라미터 사용)
-        Repositories repository = Repositories.builder()
-                .user(user)  // 중요: User 연관관계 설정
-                .name(name)
-                .description(description)
-                .htmlUrl(htmlUrl)
-                .publicRepository(isPublic)
-                .mainBranch(mainBranch)
-                .build();
+        Repositories repository = Repositories.create(
+                user,
+                name,
+                description,
+                htmlUrl,
+                isPublic,
+                mainBranch,
+                Collections.emptyList()
+        );
 
         // 언어 설정
         if (languages != null && !languages.isEmpty()) {
             for (Language language : languages) {
-                RepositoryLanguage repoLanguage = RepositoryLanguage.builder()
-                        .language(language)
-                        .repositories(repository)
-                        .build();
+                RepositoryLanguage repoLanguage = new RepositoryLanguage(
+                        repository,
+                        language
+                );
                 repository.addLanguage(repoLanguage);
             }
         }
@@ -236,7 +238,7 @@ public class BaseInitData {
                 scoreRepository.save(score);
 
                 System.out.println(String.format("분석 결과 생성 완료: %s (v%d, 날짜: %s)",
-                        repo.name, versionIndex + 1, analysisDate.toLocalDate()));
+                        repo.getName(), versionIndex + 1, analysisDate.toLocalDate()));
             }
         }
 
