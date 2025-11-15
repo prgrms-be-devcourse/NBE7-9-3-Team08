@@ -48,10 +48,10 @@ public class IssueInfoMapper {
 
     private RepositoryData.IssueInfo convertToIssueInfo(IssueResponse issue) {
         RepositoryData.IssueInfo issueInfo = new RepositoryData.IssueInfo();
-        issueInfo.setTitle(issue.title());
-        issueInfo.setState(issue.state());
-        issueInfo.setCreatedAt(parseGitHubDate(issue.created_at()));
-        issueInfo.setClosedAt(parseGitHubDate(issue.closed_at()));
+        issueInfo.setTitle(issue.title);
+        issueInfo.setState(issue.state);
+        issueInfo.setCreatedAt(parseGitHubDate(issue.created_at));
+        issueInfo.setClosedAt(parseGitHubDate(issue.closed_at));
         return issueInfo;
     }
 

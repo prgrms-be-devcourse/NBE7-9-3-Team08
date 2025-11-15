@@ -72,7 +72,7 @@ public class RepositoryService {
             // 1. 기본 정보 수집 및 매핑 + Repositories 테이블 저장
             safeSendSse(userId, "status", "GitHub 연결 중");
             RepoResponse repoInfo = gitHubDataFetcher.fetchRepositoryInfo(owner, repo);
-            validateRepositorySize(repoInfo.size());
+            validateRepositorySize(repoInfo.size);
             repositoryInfoMapper.mapBasicInfo(data, repoInfo);
 
             // 2. 커밋 데이터 수집 및 매핑
@@ -89,7 +89,7 @@ public class RepositoryService {
 
             // 4. 보안 관리 데이터 수집 및 매핑
             safeSendSse(userId, "status", "보안 구성 분석");
-            TreeResponse tree = gitHubDataFetcher.fetchRepositoryTreeInfo(owner, repo, repoInfo.defaultBranch()).orElse(null);
+            TreeResponse tree = gitHubDataFetcher.fetchRepositoryTreeInfo(owner, repo, repoInfo.defaultBranch).orElse(null);
             securityInfoMapper.mapSecurityInfo(data, tree);
 
             // 5. 테스트 데이터 수집 및 매핑
@@ -139,7 +139,7 @@ public class RepositoryService {
 
         Map<String, Integer> languagesData = gitHubDataFetcher.fetchLanguages(owner, repo);
 
-        repositoryJpaRepository.findByHtmlUrlAndUserId(repoInfo.htmlUrl(), userId)
+        repositoryJpaRepository.findByHtmlUrlAndUserId(repoInfo.htmlUrl, userId)
                 .ifPresentOrElse(existing -> {
                     existing.updateFrom(repoInfo);
                     existing.updateLanguagesFrom(languagesData);

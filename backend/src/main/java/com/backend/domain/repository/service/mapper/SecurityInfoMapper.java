@@ -88,7 +88,7 @@ public class SecurityInfoMapper {
     );
 
     public void mapSecurityInfo(RepositoryData data, TreeResponse response) {
-        if (response == null || response.tree() == null || response.tree().isEmpty()) {
+        if (response == null || response.tree == null || response.tree.isEmpty()) {
             setEmptySecurityData(data);
             return;
         }
@@ -114,12 +114,12 @@ public class SecurityInfoMapper {
     }
 
     private List<String> extractFilePaths(TreeResponse response) {
-        if (response == null || response.tree() == null) {
+        if (response == null || response.tree == null) {
             return Collections.emptyList();
         }
 
-        return response.tree().stream()
-                .filter(item -> "blob".equals(item.type()))
+        return response.tree.stream()
+                .filter(item -> "blob".equals(item.type))
                 .map(TreeResponse.TreeItem::path)
                 .collect(Collectors.toList());
     }

@@ -25,13 +25,13 @@ public class CommitInfoMapper {
         }
 
         // 마지막 커밋 시점
-        CommitResponse.CommitDetails commit = response.get(0).commit();
+        CommitResponse.CommitDetails commit = response.get(0).commit;
         if (commit == null) {
             setDefaultValues(data);
             return;
         }
-        LocalDateTime lastCommitDate = commit.author() != null
-                ? parseCommitDate(commit.author().date())
+        LocalDateTime lastCommitDate = commit.author != null
+                ? parseCommitDate(commit.author.date)
                 : LocalDateTime.now();
         data.setLastCommitDate(lastCommitDate);
 
@@ -88,7 +88,7 @@ public class CommitInfoMapper {
     private RepositoryData.CommitInfo createCommitInfoFromMessage(CommitResponse commitResponse) {
         RepositoryData.CommitInfo commitInfo = new RepositoryData.CommitInfo();
 
-        CommitResponse.CommitDetails commit = commitResponse.commit();
+        CommitResponse.CommitDetails commit = commitResponse.commit;
 
         String message = Optional.ofNullable(commit)
                 .map(CommitResponse.CommitDetails::message)
@@ -101,7 +101,7 @@ public class CommitInfoMapper {
 
         Optional.ofNullable(commit)
                 .map(CommitResponse.CommitDetails::author)
-                .map(author -> parseCommitDate(author.date()))
+                .map(author -> parseCommitDate(author.date))
                 .ifPresent(commitInfo::setCommittedDate);
 
         return commitInfo;

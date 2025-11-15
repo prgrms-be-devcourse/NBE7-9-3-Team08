@@ -77,7 +77,7 @@ public class GitHubDataFetcher {
                     TreeResponse.class, owner, repoName, defaultBranch
             );
 
-            if (tree == null || tree.tree() == null || tree.tree().isEmpty()) {
+            if (tree == null || tree.tree == null || tree.tree.isEmpty()) {
                 return Optional.empty();
             }
 
@@ -100,7 +100,7 @@ public class GitHubDataFetcher {
             LocalDateTime sixMonthsAgo = getSixMonthsAgo();
             return allIssues.stream()
                     .filter(IssueResponse::isPureIssue)
-                    .filter(issue -> parseGitHubDate(issue.created_at()).isAfter(sixMonthsAgo))
+                    .filter(issue -> parseGitHubDate(issue.created_at).isAfter(sixMonthsAgo))
                     .collect(Collectors.toList());
 
         } catch (BusinessException e) {
@@ -120,7 +120,7 @@ public class GitHubDataFetcher {
 
             LocalDateTime sixMonthsAgo = getSixMonthsAgo();
             return allPullRequests.stream()
-                    .filter(pr -> parseGitHubDate(pr.created_at()).isAfter(sixMonthsAgo))
+                    .filter(pr -> parseGitHubDate(pr.created_at).isAfter(sixMonthsAgo))
                     .collect(Collectors.toList());
 
         } catch (BusinessException e) {

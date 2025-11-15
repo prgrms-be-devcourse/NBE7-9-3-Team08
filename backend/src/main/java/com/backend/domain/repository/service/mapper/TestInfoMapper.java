@@ -64,7 +64,7 @@ public class TestInfoMapper {
     );
 
     public void mapTestInfo(RepositoryData data, TreeResponse response) {
-        if (response == null || response.tree().isEmpty() || response.tree() == null) {
+        if (response == null || response.tree.isEmpty() || response.tree == null) {
             setEmptyTestData(data);
             return;
         }
@@ -97,22 +97,22 @@ public class TestInfoMapper {
     }
 
     private List<String> extractAllPaths(TreeResponse response) {
-        if (response == null || response.tree() == null) {
+        if (response == null || response.tree == null) {
             return Collections.emptyList();
         }
 
-        return response.tree().stream()
+        return response.tree.stream()
                 .map(TreeResponse.TreeItem::path)
                 .collect(Collectors.toList());
     }
 
     private List<String> extractFilePaths(TreeResponse response) {
-        if (response == null || response.tree() == null) {
+        if (response == null || response.tree == null) {
             return Collections.emptyList();
         }
 
-        return response.tree().stream()
-                .filter(item -> "blob".equals(item.type()))
+        return response.tree.stream()
+                .filter(item -> "blob".equals(item.type))
                 .map(TreeResponse.TreeItem::path)
                 .collect(Collectors.toList());
     }

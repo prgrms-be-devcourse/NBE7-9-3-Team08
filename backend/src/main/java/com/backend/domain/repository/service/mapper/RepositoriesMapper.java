@@ -11,11 +11,11 @@ public class RepositoriesMapper {
     public Repositories toEntity(RepoResponse response, User user) {
         return Repositories.builder()
                 .user(user)
-                .name(response.name())
-                .description(response.description())
-                .htmlUrl(response.htmlUrl())
+                .name(response.name)
+                .description(response.description)
+                .htmlUrl(response.htmlUrl)
                 .publicRepository(false)
-                .mainBranch(response.defaultBranch())
+                .mainBranch(response.defaultBranch)
                 .build();
     }
 }

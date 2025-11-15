@@ -236,7 +236,7 @@ public class BaseInitData {
                 scoreRepository.save(score);
 
                 System.out.println(String.format("분석 결과 생성 완료: %s (v%d, 날짜: %s)",
-                        repo.getName(), versionIndex + 1, analysisDate.toLocalDate()));
+                        repo.name, versionIndex + 1, analysisDate.toLocalDate()));
             }
         }
 

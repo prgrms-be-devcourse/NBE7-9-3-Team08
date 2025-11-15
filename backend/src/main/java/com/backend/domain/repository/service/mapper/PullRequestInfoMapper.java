@@ -28,7 +28,7 @@ public class PullRequestInfoMapper {
 
         // 6개월 내 머지된 PR 수
         long mergedPRCount = validPrs.stream()
-                .filter(pr -> pr.merged_at() != null)
+                .filter(pr -> pr.merged_at != null)
                 .count();
         data.setMergedPullRequestCountLast6Months((int) mergedPRCount);
 
@@ -48,10 +48,10 @@ public class PullRequestInfoMapper {
 
     private RepositoryData.PullRequestInfo convertToPullRequestInfo(PullRequestResponse pr) {
         RepositoryData.PullRequestInfo pullRequestInfo = new RepositoryData.PullRequestInfo();
-        pullRequestInfo.setTitle(pr.title());
-        pullRequestInfo.setState(pr.state());
-        pullRequestInfo.setCreatedAt(parseGitHubDate(pr.created_at()));
-        pullRequestInfo.setMergedAt(parseGitHubDate(pr.merged_at()));
+        pullRequestInfo.setTitle(pr.title);
+        pullRequestInfo.setState(pr.state);
+        pullRequestInfo.setCreatedAt(parseGitHubDate(pr.created_at));
+        pullRequestInfo.setMergedAt(parseGitHubDate(pr.merged_at));
 
         return pullRequestInfo;
     }
