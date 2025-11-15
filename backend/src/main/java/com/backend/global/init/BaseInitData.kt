@@ -170,23 +170,23 @@ class BaseInitData(
             repeat(count) { ver ->
                 val date = LocalDateTime.now().minusDays((count - ver - 1) * 7L)
 
-                val result = AnalysisResult.builder()
-                    .repositories(repo)
-                    .summary(getAnalysisSummary(idx, ver))
-                    .strengths(getStrengths(idx, ver))
-                    .improvements(getImprovements(idx, ver))
-                    .createDate(date)
-                    .build()
+                val result = AnalysisResult.create(
+                    repositories = repo,
+                    summary = getAnalysisSummary(idx, ver),
+                    strengths = getStrengths(idx, ver),
+                    improvements = getImprovements(idx, ver),
+                    createDate = date
+                )
 
                 val saved = analysisResultRepository.save(result)
 
-                val score = Score.builder()
-                    .analysisResult(saved)
-                    .readmeScore(getReadmeScore(idx, ver))
-                    .testScore(getTestScore(idx, ver))
-                    .commitScore(getCommitScore(idx, ver))
-                    .cicdScore(getCicdScore(idx, ver))
-                    .build()
+                val score = Score.create(
+                    analysisResult = saved,
+                    readmeScore = getReadmeScore(idx, ver),
+                    testScore = getTestScore(idx, ver),
+                    commitScore = getCommitScore(idx, ver),
+                    cicdScore = getCicdScore(idx, ver)
+                )
 
                 scoreRepository.save(score)
 

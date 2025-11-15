@@ -103,7 +103,7 @@ class RepositoryServiceUnitTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(gitHubDataFetcher.fetchRepositoryInfo(anyString(), anyString())).thenReturn(repo);
         when(repositoryJpaRepository.findByHtmlUrlAndUserId(anyString(), anyLong()))
-                .thenReturn(Optional.empty());
+                .thenReturn(null);
         when(gitHubDataFetcher.fetchLanguages(anyString(), anyString()))
                 .thenReturn(Map.of("Java", 12345));
 
@@ -151,7 +151,7 @@ class RepositoryServiceUnitTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(gitHubDataFetcher.fetchRepositoryInfo(anyString(), anyString())).thenReturn(repo);
         when(repositoryJpaRepository.findByHtmlUrlAndUserId(anyString(), anyLong()))
-                .thenReturn(Optional.of(existing));
+                .thenReturn(existing);
         when(gitHubDataFetcher.fetchLanguages(anyString(), anyString()))
                 .thenReturn(Map.of("Java", 999));
 
@@ -170,7 +170,7 @@ class RepositoryServiceUnitTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(gitHubDataFetcher.fetchRepositoryInfo(anyString(), anyString())).thenReturn(repo);
         when(repositoryJpaRepository.findByHtmlUrlAndUserId(anyString(), anyLong()))
-                .thenReturn(Optional.empty());
+                .thenReturn(null);
         when(gitHubDataFetcher.fetchLanguages(anyString(), anyString()))
                 .thenReturn(Map.of());
 
@@ -202,7 +202,7 @@ class RepositoryServiceUnitTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(gitHubDataFetcher.fetchRepositoryInfo(anyString(), anyString())).thenReturn(repo);
         when(repositoryJpaRepository.findByHtmlUrlAndUserId(anyString(), anyLong()))
-                .thenReturn(Optional.empty());
+                .thenReturn(null);
         when(gitHubDataFetcher.fetchLanguages(anyString(), anyString()))
                 .thenReturn(Map.of());
 
@@ -248,7 +248,7 @@ class RepositoryServiceUnitTest {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(gitHubDataFetcher.fetchRepositoryInfo(anyString(), anyString())).thenReturn(repo);
         when(repositoryJpaRepository.findByHtmlUrlAndUserId(anyString(), anyLong()))
-                .thenReturn(Optional.empty());
+                .thenReturn(null);
         when(gitHubDataFetcher.fetchLanguages(anyString(), anyString()))
                 .thenReturn(Map.of());
 

@@ -8,7 +8,6 @@ import com.backend.domain.evaluation.dto.AiDto
 import com.backend.domain.evaluation.dto.EvaluationDto.AiResult
 import com.backend.domain.evaluation.dto.EvaluationDto.Scores
 import com.backend.domain.repository.dto.response.RepositoryData
-import com.backend.domain.repository.entity.Repositories
 import com.backend.domain.repository.repository.RepositoryJpaRepository
 import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
@@ -46,8 +45,10 @@ class EvaluationService(
             throw BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND)
         }
 
-        val repo: Repositories = repositoryJpaRepository.findByHtmlUrlAndUserId(url, userId)
-            .orElseThrow { BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND) }
+        val repo = repositoryJpaRepository
+            .findByHtmlUrlAndUserId(url, userId)
+            ?: throw BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND)
+
 
         // 팩토리 메서드 사용
         val analysis = AnalysisResult.create(
