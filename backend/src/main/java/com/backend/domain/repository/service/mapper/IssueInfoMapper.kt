@@ -41,7 +41,7 @@ class IssueInfoMapper {
         return IssueInfo(
             title = issue.title ?: "",
             state = issue.state ?: "open",
-            createdAt = parseGitHubDate(issue.created_at) ?: LocalDateTime.now(),
+            createdAt = parseGitHubDate(issue.created_at),
             closedAt = parseGitHubDate(issue.closed_at)
         )
     }

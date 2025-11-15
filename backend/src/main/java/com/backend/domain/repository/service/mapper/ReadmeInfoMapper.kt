@@ -37,7 +37,7 @@ class ReadmeInfoMapper {
         data.readmeLength = 0
         data.readmeSectionCount = 0
         data.readmeSectionTitles = emptyList()
-        data.readmeContent = null
+        data.readmeContent = ""
     }
 
     private fun extractSectionTitles(content: String): List<String> {

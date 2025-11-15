@@ -59,7 +59,7 @@ data class RepositoryData(
     data class IssueInfo(
         var title: String = "",
         var state: String = "",
-        var createdAt: LocalDateTime = LocalDateTime.now(),
+        var createdAt: LocalDateTime? = null,
         var closedAt: LocalDateTime? = null
     )
 
