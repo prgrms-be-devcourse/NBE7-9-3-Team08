@@ -171,7 +171,7 @@ public class AnalysisService {
         Long requestUserId = jwtUtil.getUserId(request);  // null 가능 (비로그인)
         validateAccess(analysisResult.getRepositories(), requestUserId);
 
-        return new AnalysisResultResponseDto(analysisResult, analysisResult.getScore());
+        return AnalysisResultResponseDto.from(analysisResult, analysisResult.getScore());
     }
 
     // Repository 삭제

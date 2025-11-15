@@ -40,8 +40,8 @@ class EvaluationService(
     fun evaluateAndSave(data: RepositoryData, userId: Long): Long {
         val ai: AiResult = callAiAndParse(data)
 
-        val url = extractRepositoryUrl(data)
-        if (url.isNullOrBlank()) {
+        val url = data.repositoryUrl
+        if (url.isBlank()) {
             log.error("repositoryUrl is null or blank in RepositoryData")
             throw BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND)
         }
@@ -49,13 +49,13 @@ class EvaluationService(
         val repo: Repositories = repositoryJpaRepository.findByHtmlUrlAndUserId(url, userId)
             .orElseThrow { BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND) }
 
-        // Lombok @Builder 대신 명시적인 생성자 사용
-        val analysis = AnalysisResult(
-            repo,
-            safe(ai.summary),
-            joinBullets(ai.strengths),
-            joinBullets(ai.improvements),
-            LocalDateTime.now(),
+        // 팩토리 메서드 사용
+        val analysis = AnalysisResult.create(
+            repositories = repo,
+            summary = safe(ai.summary),
+            strengths = joinBullets(ai.strengths),
+            improvements = joinBullets(ai.improvements),
+            createDate = LocalDateTime.now(),
         )
 
         // AnalysisResult 먼저 저장
@@ -63,18 +63,20 @@ class EvaluationService(
 
         val sc: Scores = ai.scores
 
-        // Score 도 @Builder 대신 명시적 생성자 사용
-        val score = Score(
-            saved,          // 저장된 analysis 에 연결
-            sc.readme,
-            sc.test,
-            sc.commit,
-            sc.cicd,
+        // 팩토리 메서드 사용
+        val score = Score.create(
+            analysisResult = saved,
+            readmeScore = sc.readme,
+            testScore = sc.test,
+            commitScore = sc.commit,
+            cicdScore = sc.cicd,
         )
 
         scoreRepository.save(score)
 
-        val analysisResultId = getAnalysisResultId(saved)
+        val analysisResultId = saved.id
+            ?: throw IllegalStateException("AnalysisResult.id is null after save")
+
         log.info("✅ Evaluation saved. analysisResultId={}", analysisResultId)
 
         return analysisResultId
@@ -147,34 +149,4 @@ class EvaluationService(
     private fun safe(s: String?): String =
         s?.trim() ?: ""
 
-    /**
-     * Lombok가 생성하는 getter(getId)를 Kotlin이 못 보는 상황이라
-     * 리플렉션으로 id 필드를 직접 읽어온다.
-     */
-    private fun getAnalysisResultId(analysisResult: AnalysisResult): Long {
-        return try {
-            val field = AnalysisResult::class.java.getDeclaredField("id")
-            field.isAccessible = true
-            (field.get(analysisResult) as? Long)
-                ?: throw IllegalStateException("AnalysisResult.id is null")
-        } catch (e: Exception) {
-            log.error("Failed to read AnalysisResult.id via reflection", e)
-            throw BusinessException(ErrorCode.INTERNAL_ERROR)
-        }
-    }
-
-    /**
-     * RepositoryData.repositoryUrl 도 Lombok @Data 가 만드는 getter 에 의존하지 않고
-     * reflection 으로 직접 읽는다.
-     */
-    private fun extractRepositoryUrl(data: RepositoryData): String? {
-        return try {
-            val field = RepositoryData::class.java.getDeclaredField("repositoryUrl")
-            field.isAccessible = true
-            field.get(data) as? String
-        } catch (e: Exception) {
-            log.error("Failed to read RepositoryData.repositoryUrl via reflection", e)
-            null
-        }
-    }
 }
