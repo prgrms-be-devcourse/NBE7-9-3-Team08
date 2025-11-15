@@ -19,7 +19,7 @@ class SecurityInfoMapperTest {
     void mapNullTree_shouldHandleGracefully() {
         RepositoryData data = new RepositoryData();
         mapper.mapSecurityInfo(data, null);
-        assertThat(data.isHasSensitiveFile()).isFalse();
+        assertThat(data.getHasSensitiveFile()).isFalse();
     }
 
     @Test
@@ -52,7 +52,7 @@ class SecurityInfoMapperTest {
                 false
         );
         mapper.mapSecurityInfo(data, tree);
-        assertThat(data.isHasSensitiveFile()).isTrue();
+        assertThat(data.getHasSensitiveFile()).isTrue();
         assertThat(data.getSensitiveFilePaths()).contains("config/secret.json");
     }
 
@@ -70,7 +70,7 @@ class SecurityInfoMapperTest {
                 false
         );
         mapper.mapSecurityInfo(data, tree);
-        assertThat(data.isHasBuildFile()).isTrue();
+        assertThat(data.getHasBuildFile()).isTrue();
         assertThat(data.getBuildFiles()).hasSize(4);
     }
 }

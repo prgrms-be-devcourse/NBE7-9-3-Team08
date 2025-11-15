@@ -28,14 +28,14 @@ data class CommunityResponseDTO(
         summary = analysis.summary,
         description = repositories.description,
 
-        language = repositories.languages
+        language = repositories.getLanguages()
             .map { it.language.name }
             .toMutableList(),
 
         totalScore = score.totalScore,
         createDate = analysis.createDate,
 
-        publicStatus = repositories.isPublic,
+        publicStatus = repositories.publicRepository,
         htmlUrl = repositories.htmlUrl
     )
 }

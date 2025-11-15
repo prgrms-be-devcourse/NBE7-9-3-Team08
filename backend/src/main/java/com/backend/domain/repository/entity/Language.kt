@@ -1,6 +1,6 @@
-package com.backend.domain.repository.entity;
+package com.backend.domain.repository.entity
 
-public enum Language {
+enum class Language {
     // 백엔드 / 시스템
     JAVA,
     PYTHON,

@@ -20,7 +20,7 @@ class CommunityService (
     val analysisResultRepository: AnalysisResultRepository,
     val commentRepository: CommentRepository
 ){
-    val repositoriesPublicTrue: MutableList<Repositories?>
+    val repositoriesPublicTrue: List<Repositories?>
         // 커뮤니티 - 리포지토리 조회
         get() = repositoryJpaRepository.findByPublicRepository(true)
 

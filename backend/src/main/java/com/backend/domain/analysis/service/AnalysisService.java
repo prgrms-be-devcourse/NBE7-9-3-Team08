@@ -150,7 +150,7 @@ public class AnalysisService {
             versionNumber--;
         }
 
-        RepositoryResponse repositoryResponse = new RepositoryResponse(repository);
+        RepositoryResponse repositoryResponse = RepositoryResponse.from(repository);
         return HistoryResponseDto.of(repositoryResponse, versions);
     }
 
@@ -249,7 +249,7 @@ public class AnalysisService {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
-        boolean newStatus = !repository.isPublic();
+        boolean newStatus = !repository.getPublicRepository();
 
         if (newStatus) {
             long analysisCount = analysisResultRepository
@@ -267,7 +267,7 @@ public class AnalysisService {
     // 리포지토리 접근 권한 검증
     private void validateAccess(Repositories repository, Long requestUserId) {
         // 1. 공개 리포지토리는 누구나 접근 가능
-        if (repository.isPublicRepository()) {
+        if (repository.getPublicRepository()) {
             log.debug("공개 리포지토리 접근: repoId={}, requestUserId={}",
                     repository.getId(), requestUserId);
             return;
