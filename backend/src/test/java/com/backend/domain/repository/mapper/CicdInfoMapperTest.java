@@ -19,7 +19,7 @@ class CicdInfoMapperTest {
     void mapNullTree_shouldHandleGracefully() {
         RepositoryData data = new RepositoryData();
         mapper.mapCicdInfo(data, null);
-        assertThat(data.isHasCICD()).isFalse();
+        assertThat(data.getHasCICD()).isFalse();
     }
 
     @Test
@@ -36,7 +36,7 @@ class CicdInfoMapperTest {
                 false
         );
         mapper.mapCicdInfo(data, tree);
-        assertThat(data.isHasCICD()).isTrue();
+        assertThat(data.getHasCICD()).isTrue();
         assertThat(data.getCicdFiles()).hasSize(4);
     }
 
@@ -48,6 +48,6 @@ class CicdInfoMapperTest {
                 List.of(new TreeResponse.TreeItem("infra/DockerFile", "blob")), false
         );
         mapper.mapCicdInfo(data, tree);
-        assertThat(data.isHasDockerfile()).isTrue();
+        assertThat(data.getHasDockerfile()).isTrue();
     }
 }

@@ -43,7 +43,7 @@ class CommitInfoMapperTest {
     void mapCommitWithNullCommitField_shouldBeSafe() {
         RepositoryData data = new RepositoryData();
         CommitResponse nullCommit = org.mockito.Mockito.mock(CommitResponse.class);
-        when(nullCommit.commit).thenReturn(null);
+        when(nullCommit.getCommit()).thenReturn(null);
         assertThatCode(() -> mapper.mapCommitInfo(data, List.of(nullCommit)))
                 .doesNotThrowAnyException();
     }

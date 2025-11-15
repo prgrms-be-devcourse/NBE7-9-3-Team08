@@ -15,24 +15,40 @@ public class RepositoryDataFixture {
      * 최소한의 필수 필드만 채운 RepositoryData
      */
     public static RepositoryData createMinimal() {
-        RepositoryData data = new RepositoryData();
-
-        // 필수 메타정보
-        data.setRepositoryName("test-repo");
-        data.setRepositoryUrl("https://github.com/owner/test-repo");
-        data.setDescription("Test repository");
-        data.setPrimaryLanguage("Java");
-        data.setRepositoryCreatedAt(LocalDateTime.now().minusMonths(6));
-
-        // 빈 리스트로 초기화 (null 방지)
-        data.setRecentCommits(List.of());
-        data.setReadmeSectionTitles(List.of());
-        data.setReadmeContent("");
-        data.setSensitiveFilePaths(List.of());
-        data.setBuildFiles(List.of());
-        data.setCicdFiles(List.of());
-        data.setRecentIssues(List.of());
-        data.setRecentPullRequests(List.of());
+        // Kotlin data class는 기본값이 있으므로 파라미터 없이 생성 가능
+        RepositoryData data = new RepositoryData(
+                "test-repo",  // repositoryName
+                "https://github.com/owner/test-repo",  // repositoryUrl
+                "Test repository",  // description
+                "Java",  // primaryLanguage
+                LocalDateTime.now().minusMonths(6),  // repositoryCreatedAt
+                null,  // lastCommitDate
+                0,  // daysSinceLastCommit
+                0,  // commitCountLast90Days
+                List.of(),  // recentCommits
+                false,  // hasReadme
+                0,  // readmeLength
+                0,  // readmeSectionCount
+                List.of(),  // readmeSectionTitles
+                "",  // readmeContent
+                false,  // hasSensitiveFile
+                List.of(),  // sensitiveFilePaths
+                false,  // hasBuildFile
+                List.of(),  // buildFiles
+                false,  // hasTestDirectory
+                0,  // testFileCount
+                0,  // sourceFileCount
+                0.0,  // testCoverageRatio
+                false,  // hasCICD
+                List.of(),  // cicdFiles
+                false,  // hasDockerfile
+                0,  // issueCountLast6Months
+                0,  // closedIssueCountLast6Months
+                0,  // pullRequestCountLast6Months
+                0,  // mergedPullRequestCountLast6Months
+                List.of(),  // recentIssues
+                List.of()  // recentPullRequests
+        );
 
         return data;
     }
@@ -41,87 +57,68 @@ public class RepositoryDataFixture {
      * 모든 필드가 채워진 완전한 RepositoryData
      */
     public static RepositoryData createComplete() {
-        RepositoryData data = new RepositoryData();
+        return new RepositoryData(
+                // ===== 메타정보 =====
+                "complete-test-repo",
+                "https://github.com/owner/complete-test-repo",
+                "Complete test repository for evaluation",
+                "Java",
+                LocalDateTime.now().minusMonths(6),
 
-        // ===== 메타정보 =====
-        data.setRepositoryName("complete-test-repo");
-        data.setRepositoryUrl("https://github.com/owner/complete-test-repo");
-        data.setDescription("Complete test repository for evaluation");
-        data.setPrimaryLanguage("Java");
-        data.setRepositoryCreatedAt(LocalDateTime.now().minusMonths(6));
+                // ===== 1. 유지보수성 =====
+                LocalDateTime.now().minusDays(1),
+                1,
+                50,
+                List.of(
+                        createCommitInfo("feat: Add new feature", LocalDateTime.now().minusDays(1)),
+                        createCommitInfo("fix: Bug fix", LocalDateTime.now().minusDays(2))
+                ),
 
-        // ===== 1. 유지보수성 =====
-        data.setLastCommitDate(LocalDateTime.now().minusDays(1));
-        data.setDaysSinceLastCommit(1);
-        data.setCommitCountLast90Days(50);
-        data.setRecentCommits(List.of(
-                createCommitInfo("feat: Add new feature", "developer", LocalDateTime.now().minusDays(1)),
-                createCommitInfo("fix: Bug fix", "developer", LocalDateTime.now().minusDays(2))
-        ));
+                // ===== 2. 문서화 품질 =====
+                true,
+                500,
+                3,
+                List.of("Introduction", "Installation", "Usage"),
+                "# Test Repository\n\n## Introduction\nThis is a test.\n\n## Installation\nRun npm install.\n\n## Usage\nRun npm start.",
 
-        // ===== 2. 문서화 품질 =====
-        data.setHasReadme(true);
-        data.setReadmeLength(500);
-        data.setReadmeSectionCount(3);
-        data.setReadmeSectionTitles(List.of("Introduction", "Installation", "Usage"));
-        data.setReadmeContent("# Test Repository\n\n## Introduction\nThis is a test.\n\n## Installation\nRun npm install.\n\n## Usage\nRun npm start.");
+                // ===== 3. 보안 =====
+                false,
+                List.of(),
+                true,
+                List.of("pom.xml"),
 
-        // ===== 3. 보안 =====
-        data.setHasSensitiveFile(false);
-        data.setSensitiveFilePaths(List.of());
-        data.setHasBuildFile(true);
-        data.setBuildFiles(List.of("pom.xml"));
+                // ===== 4. 테스트 구성 =====
+                true,
+                10,
+                20,
+                0.5,
 
-        // ===== 4. 테스트 구성 =====
-        data.setHasTestDirectory(true);
-        data.setTestFileCount(10);
-        data.setSourceFileCount(20);
-        data.setTestCoverageRatio(0.5);
+                // ===== 5. CI/CD =====
+                true,
+                List.of(".github/workflows/ci.yml"),
+                true,
 
-        // ===== 5. CI/CD =====
-        data.setHasCICD(true);
-        data.setCicdFiles(List.of(".github/workflows/ci.yml"));
-        data.setHasDockerfile(true);
-
-        // ===== 6. 커뮤니티 활성도 =====
-        data.setIssueCountLast6Months(5);
-        data.setClosedIssueCountLast6Months(3);
-        data.setPullRequestCountLast6Months(10);
-        data.setMergedPullRequestCountLast6Months(8);
-        data.setRecentIssues(List.of(
-                createIssueInfo("Bug fix needed", "open", LocalDateTime.now().minusDays(2), null)
-        ));
-        data.setRecentPullRequests(List.of(
-                createPullRequestInfo("Add feature X", "merged", LocalDateTime.now().minusDays(3), LocalDateTime.now().minusDays(1))
-        ));
-
-        return data;
+                // ===== 6. 커뮤니티 활성도 =====
+                5,
+                3,
+                10,
+                8,
+                List.of(createIssueInfo("Bug fix needed", "open", LocalDateTime.now().minusDays(2), null)),
+                List.of(createPullRequestInfo("Add feature X", "merged", LocalDateTime.now().minusDays(3), LocalDateTime.now().minusDays(1)))
+        );
     }
 
     // ===== 헬퍼 메서드들 =====
 
-    public static RepositoryData.CommitInfo createCommitInfo(String message, String author, LocalDateTime date) {
-        RepositoryData.CommitInfo commit = new RepositoryData.CommitInfo();
-        commit.setMessage(message);
-        commit.setCommittedDate(date);
-        return commit;
+    public static RepositoryData.CommitInfo createCommitInfo(String message, LocalDateTime date) {
+        return new RepositoryData.CommitInfo(message, date);
     }
 
     public static RepositoryData.IssueInfo createIssueInfo(String title, String state, LocalDateTime createdAt, LocalDateTime closedAt) {
-        RepositoryData.IssueInfo issue = new RepositoryData.IssueInfo();
-        issue.setTitle(title);
-        issue.setState(state);
-        issue.setCreatedAt(createdAt);
-        issue.setClosedAt(closedAt);
-        return issue;
+        return new RepositoryData.IssueInfo(title, state, createdAt, closedAt);
     }
 
     public static RepositoryData.PullRequestInfo createPullRequestInfo(String title, String state, LocalDateTime createdAt, LocalDateTime mergedAt) {
-        RepositoryData.PullRequestInfo pr = new RepositoryData.PullRequestInfo();
-        pr.setTitle(title);
-        pr.setState(state);
-        pr.setCreatedAt(createdAt);
-        pr.setMergedAt(mergedAt);
-        return pr;
+        return new RepositoryData.PullRequestInfo(title, state, createdAt, mergedAt);
     }
 }
