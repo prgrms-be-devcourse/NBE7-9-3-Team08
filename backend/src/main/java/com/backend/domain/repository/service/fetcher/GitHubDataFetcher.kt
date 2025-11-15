@@ -27,13 +27,13 @@ class GitHubDataFetcher(
     private val gitHubApiClient: GitHubApiClient
 ) {
 
-    fun fetchRepositoryInfo(owner: String, repoName: String): RepoResponse? {
+    fun fetchRepositoryInfo(owner: String, repoName: String): RepoResponse {
         return gitHubApiClient.get(
             "/repos/{owner}/{repo}",
             RepoResponse::class.java,
             owner,
             repoName
-        )
+        ) ?: throw BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND)
     }
 
     fun fetchReadmeContent(owner: String, repoName: String): String? {
@@ -96,7 +96,11 @@ class GitHubDataFetcher(
 
             allIssues
                 .filter { it.isPureIssue }
-                .filter { parseGitHubDate(it.created_at!!)!!.isAfter(threshold) }
+                .filter { issue ->
+                    issue.created_at?.let { dateStr ->
+                        parseGitHubDate(dateStr)?.isAfter(threshold) == true
+                    } ?: false
+                }
 
         } catch (e: BusinessException) {
             if (e.errorCode == ErrorCode.GITHUB_REPO_NOT_FOUND) emptyList()
@@ -115,8 +119,11 @@ class GitHubDataFetcher(
 
             val threshold = sixMonthsAgo
 
-            allPullRequests
-                .filter { parseGitHubDate(it.created_at!!)!!.isAfter(threshold) }
+            allPullRequests.filter { pr ->
+                pr.created_at?.let { dateStr ->
+                    parseGitHubDate(dateStr)?.isAfter(threshold) == true
+                } ?: false
+            }
 
         } catch (e: BusinessException) {
             if (e.errorCode == ErrorCode.GITHUB_REPO_NOT_FOUND) emptyList()
