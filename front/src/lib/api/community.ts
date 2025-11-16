@@ -10,16 +10,13 @@ export async function fetchRepositories(page = 0, sort = "latest") {
 }
 
 
-
-
-// ✅ 댓글 조회 (페이징)
+// ✅ 댓글 조회 (페이징) — size 제거
 export async function fetchComments(
   analysisResultId: number,
   page = 0,
-  size = 5
 ): Promise<PageResponse<Comment>> {
   const res = await fetch(
-    `http://localhost:8080/api/community/${analysisResultId}/comments?page=${page}&size=${size}`
+    `http://localhost:8080/api/community/${analysisResultId}/comments?page=${page}`
   )
   if (!res.ok) throw new Error("댓글 조회 실패")
   return res.json()
