@@ -6,9 +6,7 @@ import jakarta.persistence.*
 import org.hibernate.annotations.SQLDelete
 
 @Entity
-// @Builder  // service는 java라서 추가, 추후 삭제 예정
-// @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE Comment SET deleted = true WHERE id = ?") // 조회 시에 기본적으로 deleted = false인 것을만 조회하도록 설정 -> 관리자 조회 시에는 삭제 처리 된 것도 조회 필요
+@SQLDelete(sql = "UPDATE Comment SET deleted = true WHERE id = ?")
 class Comment(
     // 댓글 id
     @Id
@@ -51,7 +49,6 @@ class Comment(
             )
         }
     }
-
 
     fun updateComment(newContent: String) {
         require(newContent.isNotBlank()) { "댓글 내용은 비어 있을 수 없습니다." }

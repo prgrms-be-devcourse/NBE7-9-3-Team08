@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { fetchRepositories } from '@/lib/api/community'
 import type { RepositoryItem, PageResponse } from '@/types/community'
 
@@ -12,8 +12,10 @@ export function useCommunity() {
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
 
+  // 🔥 정렬 기준 (latest | score)
   const [sortType, setSortType] = useState<'latest' | 'score'>('latest')
 
+  // 성능 측정
   const performanceStartRef = useRef(0)
 
   const loadRepositories = async (pageNum = 0) => {
@@ -23,7 +25,7 @@ export function useCommunity() {
     console.log("%c📡 리포지토리 API 요청 시작", "color: #03A9F4")
 
     try {
-      const res: PageResponse<RepositoryItem> = await fetchRepositories(pageNum)
+      const res: PageResponse<RepositoryItem> = await fetchRepositories(pageNum, sortType)
 
       console.log(
         `%c📥 리포지토리 API 응답 시간: ${
@@ -35,6 +37,7 @@ export function useCommunity() {
       setRepositories(res.content ?? [])
       setTotalPages(res.totalPages ?? 0)
       setPage(pageNum)
+
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -42,26 +45,13 @@ export function useCommunity() {
     }
   }
 
+  // page 또는 sortType 변경 시 API 다시 호출
   useEffect(() => {
     loadRepositories(page)
-  }, [page])
-
-  const sortedRepositories = useMemo(() => {
-    if (sortType === 'score') {
-      return repositories.slice().sort((a, b) => (b.totalScore ?? 0) - (a.totalScore ?? 0))
-    }
-
-    const parseDate = (d?: string) => {
-      if (!d) return 0
-      const trimmed = d.includes('.') ? d.split('.')[0] : d
-      return Date.parse(trimmed + 'Z')
-    }
-
-    return repositories.slice().sort((a, b) => parseDate(b.createDate) - parseDate(a.createDate))
-  }, [repositories, sortType])
+  }, [page, sortType])
 
   return {
-    repositories: sortedRepositories,
+    repositories,
     loading,
     error,
     sortType,
