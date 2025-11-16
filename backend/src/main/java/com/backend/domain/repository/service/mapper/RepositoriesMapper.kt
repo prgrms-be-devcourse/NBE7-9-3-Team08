@@ -14,7 +14,7 @@ class RepositoriesMapper {
             name = response.name ?: "unknown",
             description = response.description,
             htmlUrl = response.htmlUrl ?: "unknown",
-            publicRepository = !response.isPrivate,
+            publicRepository = false,
             mainBranch = response.defaultBranch ?: "main",
             languages = emptyList()
         )
