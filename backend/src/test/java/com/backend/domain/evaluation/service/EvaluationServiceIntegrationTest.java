@@ -44,7 +44,7 @@ class EvaluationServiceIntegrationTest {
     void seed() {
         // 1) 유저 시드
         User user = userRepository.save(new User("tester@example.com", "pw", "tester"));
-        userId = user.getId();
+        userId = user.id;
 
         // 2) Repositories 시드 (evaluation이 repo를 찾을 때 htmlUrl로 매칭)
         repoUrl = "https://github.com/test-owner/test-repo";

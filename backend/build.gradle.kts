@@ -1,7 +1,10 @@
 plugins {
-	java
-	id("org.springframework.boot") version "3.5.6"
-	id("io.spring.dependency-management") version "1.1.7"
+    java
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.spring") version "1.9.25"
+    id("org.springframework.boot") version "3.5.6"
+    id("io.spring.dependency-management") version "1.1.7"
+    kotlin("plugin.jpa") version "1.9.25"
 }
 
 group = "com"
@@ -24,9 +27,14 @@ repositories {
 	mavenCentral()
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+}
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
     //openai api랑 전용 .env reader 추가
@@ -55,9 +63,20 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok:1.18.32")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
     testImplementation("org.assertj:assertj-core:3.26.3")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    implementation(kotlin("stdlib-jdk8"))
+
+    testImplementation("io.mockk:mockk:1.13.12")
+    testImplementation("io.mockk:mockk-jvm:1.13.12")
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
 
 }
 
 tasks.withType<Test> {
-	useJUnitPlatform()
+    useJUnitPlatform {
+        // CI 환경에서 테스트 제외
+        if (System.getenv("CI") == "true") {
+            excludeTags("redis", "integration")
+        }
+    }
 }

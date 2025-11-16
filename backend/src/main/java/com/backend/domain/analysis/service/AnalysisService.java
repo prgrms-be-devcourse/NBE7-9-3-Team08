@@ -193,7 +193,7 @@ public class AnalysisService {
         Repositories targetRepository = repositoryJpaRepository.findById(repositoriesId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND));
 
-        if (!targetRepository.getUser().getId().equals(userId)) {
+        if (!targetRepository.getUser().id.equals(userId)) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
@@ -223,7 +223,7 @@ public class AnalysisService {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
         }
 
-        if (!analysisResult.getRepositories().getUser().getId().equals(memberId)) {
+        if (!analysisResult.getRepositories().getUser().id.equals(memberId)) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
@@ -245,7 +245,7 @@ public class AnalysisService {
         Repositories repository = repositoryJpaRepository.findById(repositoryId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND));
 
-        if (!repository.getUser().getId().equals(memberId)) {
+        if (!repository.getUser().id.equals(memberId)) {
             throw new BusinessException(ErrorCode.FORBIDDEN);
         }
 
@@ -281,7 +281,7 @@ public class AnalysisService {
         }
 
         // 3. 비공개 리포지토리는 소유자만 접근 가능
-        Long ownerId = repository.getUser().getId();
+        Long ownerId = repository.getUser().id;
         if (!requestUserId.equals(ownerId)) {
             log.warn("권한 없는 사용자의 비공개 리포지토리 접근: requestUserId={}, ownerId={}, repoId={}",
                     requestUserId, ownerId, repository.getId());

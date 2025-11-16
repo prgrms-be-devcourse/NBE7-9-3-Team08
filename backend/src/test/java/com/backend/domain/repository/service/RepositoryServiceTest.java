@@ -8,6 +8,7 @@ import com.backend.global.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Slf4j
 @SpringBootTest
 @Transactional
+@Tag("integration")
 class RepositoryServiceTest {
 
     @Autowired
@@ -49,7 +51,7 @@ class RepositoryServiceTest {
         // given
         String owner = "prgrms-be-devcourse";
         String repo = "NBE7-9-2-Team01";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -69,7 +71,7 @@ class RepositoryServiceTest {
         // given
         String owner = "prgrms-be-devcourse";
         String repo = "NBE7-9-2-Team02";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -89,7 +91,7 @@ class RepositoryServiceTest {
         // given
         String owner = "prgrms-be-devcourse";
         String repo = "NBE7-9-2-Team3";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -109,7 +111,7 @@ class RepositoryServiceTest {
         // given
         String owner = "prgrms-be-devcourse";
         String repo = "NBE7-9-2-Team04";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -129,7 +131,7 @@ class RepositoryServiceTest {
         // given
         String owner = "prgrms-be-devcourse";
         String repo = "NBE7-9-2-Team05";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -149,7 +151,7 @@ class RepositoryServiceTest {
         // given
         String owner = "prgrms-be-devcourse";
         String repo = "NBE7-9-2-Team06";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -169,7 +171,7 @@ class RepositoryServiceTest {
         // given
         String owner = "prgrms-be-devcourse";
         String repo = "NBE7-9-2-Team07";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -189,7 +191,7 @@ class RepositoryServiceTest {
         // given
         String owner = "prgrms-be-devcourse";
         String repo = "NBE7-9-2-Team08";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -209,7 +211,7 @@ class RepositoryServiceTest {
         // given
         String owner = "prgrms-be-devcourse";
         String repo = "NBE7-9-2-Team9";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -229,7 +231,7 @@ class RepositoryServiceTest {
         // given
         String owner = "prgrms-be-devcourse";
         String repo = "NBE7-9-2-Team10";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -249,7 +251,7 @@ class RepositoryServiceTest {
         // given
         String owner = "Hyeseung-OH";
         String repo = "test";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -269,7 +271,7 @@ class RepositoryServiceTest {
         // given
         String owner = "spring-projects";
         String repo = "spring-boot";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -289,7 +291,7 @@ class RepositoryServiceTest {
         // given
         String owner = "facebook";
         String repo = "react";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when & then
         assertThatThrownBy(() -> repositoryService.fetchAndSaveRepository(owner, repo, userId))
@@ -306,7 +308,7 @@ class RepositoryServiceTest {
         // given - 실제로는 GitHub가 허용하는 특수문자만 가능 (-, _, .)
         String owner = "day8";
         String repo = "re-frame";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
@@ -321,7 +323,7 @@ class RepositoryServiceTest {
         // given
         String owner = "prgrms-be-devcourse";
         String repo = "NBE7-9-2-Team0";
-        Long userId = testUser.getId();
+        Long userId = testUser.id;
 
         // when & then
         assertThatThrownBy(() -> repositoryService.fetchAndSaveRepository(owner, repo, userId))

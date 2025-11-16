@@ -54,6 +54,7 @@ public class SecurityConfig {
                                 "/api/analysis/repositories/{repositoryId}/results/{analysisId}",
                                 "/api/repositories/**",
                                 "/api/ai/complete/**",
+                                "/api/community/repositories",
                                 "/api/community/**"
                         ).permitAll()
                         .anyRequest().authenticated()
