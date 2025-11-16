@@ -3,10 +3,14 @@ package com.backend.domain.analysis.entity
 import com.backend.domain.community.entity.Comment
 import com.backend.domain.repository.entity.Repositories
 import jakarta.persistence.*
+import org.hibernate.annotations.SQLDelete
+import org.hibernate.annotations.Where
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "analysis_result")
+@SQLDelete(sql = "UPDATE analysis_result SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 open class AnalysisResult protected constructor(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "repository_id", nullable = false)
@@ -23,6 +27,9 @@ open class AnalysisResult protected constructor(
 
     @Column(nullable = false, name = "create_date")
     open var createDate: LocalDateTime,
+
+    @Column(nullable = false)
+    var deleted: Boolean = false
 ) {
     protected constructor() : this(
         repositories = Repositories.create(
@@ -46,8 +53,7 @@ open class AnalysisResult protected constructor(
     @OneToOne(
         mappedBy = "analysisResult",
         cascade = [CascadeType.ALL],
-        fetch = FetchType.LAZY,
-        orphanRemoval = true,
+        fetch = FetchType.LAZY
     )
     open var score: Score? = null
         protected set
@@ -55,7 +61,7 @@ open class AnalysisResult protected constructor(
     @OneToMany(
         mappedBy = "analysisResult",
         cascade = [CascadeType.ALL],
-        orphanRemoval = true,
+        fetch = FetchType.LAZY
     )
     open val comments: MutableList<Comment> = mutableListOf()
 

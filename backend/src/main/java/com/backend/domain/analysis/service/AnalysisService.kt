@@ -220,7 +220,7 @@ class AnalysisService(
             throw BusinessException(ErrorCode.FORBIDDEN)
         }
 
-        analysisResultRepository.delete(analysisResult)
+        analysisResult.deleted = true
     }
 
     // 분석 결과 공개 여부 변경
