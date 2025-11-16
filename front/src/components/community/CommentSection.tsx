@@ -115,24 +115,30 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
                 <div className="flex justify-between">
                   <div className="flex gap-3 items-center">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src="/userInit.png" alt={`User #${c.memberId}`} />
+                      <AvatarImage
+                        src={c.userImage ?? "/userInit.png"}   // ✅ 유저 이미지가 있으면 사용, 없으면 기본 이미지
+                        alt={c.name}
+                      />
                       <AvatarFallback>
                         <img src="/userInit.png" alt="기본 이미지" />
                       </AvatarFallback>
                     </Avatar>
+
                     <div>
                       <p className="font-semibold">{c.name}</p>
                     </div>
                   </div>
-                  <span className="text-sm text-muted-foreground">{timeAgo}</span>
+
+                  <span className="text-sm text-muted-foreground">
+                    {timeAgo}
+                  </span>
                 </div>
 
                 <p className="text-[15px] text-gray-800 leading-relaxed">{c.comment}</p>
 
-                {/* ✅ 내 댓글일 경우 버튼 노출 */}
+                {/* 내 댓글이면 버튼 */}
                 {isMyComment && (
                   <div className="flex justify-end gap-2 mt-2">
-                    {/* ✏️ 수정 버튼 */}
                     <Button
                       size="sm"
                       variant="ghost"
@@ -153,7 +159,6 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
                       수정
                     </Button>
 
-                    {/* 🗑️ 삭제 버튼 */}
                     <Button
                       size="sm"
                       variant="ghost"
@@ -175,6 +180,7 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
                   </div>
                 )}
               </Card>
+
             )
           })}
         </div>

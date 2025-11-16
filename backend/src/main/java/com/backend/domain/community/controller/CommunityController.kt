@@ -78,10 +78,9 @@ class CommunityController(
 
             // 프로퍼티 사용
             val user = userService.getUserNameByUserId(comment.memberId)
-            val name = user.name
 
             commentList.add(
-                CommentResponseDTO(comment, name)
+                CommentResponseDTO(comment, user)
             )
         }
 
