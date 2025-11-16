@@ -1,6 +1,6 @@
 ﻿"use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/Button"
@@ -11,8 +11,42 @@ import { useAuth } from "@/hooks/auth/useAuth"
 import { formatDistanceToNow } from "date-fns"
 import { ko } from "date-fns/locale"
 
+// ----------------------------------------------------
+// ⏱ 성능 측정용 useRef 변수 (전역 let 대신)
+// ----------------------------------------------------
+const usePerformanceLog = () => {
+  const fetchStartRef = useRef(0)
+  const fetchEndRef = useRef(0)
+
+  const start = () => {
+    fetchStartRef.current = performance.now()
+    console.log("%c📡 댓글 API 요청 시작", "color: #03A9F4")
+  }
+
+  const end = () => {
+    fetchEndRef.current = performance.now()
+    console.log(
+      `%c📥 댓글 API 응답 시간: ${(fetchEndRef.current - fetchStartRef.current).toFixed(2)} ms`,
+      "color: #FF9800; font-weight: bold;"
+    )
+  }
+
+  const renderComplete = () => {
+    const now = performance.now()
+    console.log(
+      `%c⏱️ 댓글 화면 표시까지 총 시간: ${(now - fetchStartRef.current).toFixed(2)} ms`,
+      "color: #4CAF50; font-weight: bold;"
+    )
+  }
+
+  return { start, end, renderComplete }
+}
+
 export default function CommentSection({ analysisResultId }: { analysisResultId: number }) {
   const { user } = useAuth()
+
+  const performanceLog = usePerformanceLog() // ⏱ 성능 측정 인스턴스
+
   const [content, setContent] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -23,13 +57,21 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
   const [totalPages, setTotalPages] = useState(0)
   const [refreshKey, setRefreshKey] = useState(0)
 
-  // ✅ 댓글 목록 로드
+  // ----------------------------------------------------
+  // 🔥 댓글 목록 로드 + 성능 측정 코드 포함
+  // ----------------------------------------------------
   useEffect(() => {
     let isMounted = true
+
     const loadComments = async () => {
+      performanceLog.start() // API 요청 시작
+
       setLoading(true)
       try {
         const res: PageResponse<Comment> = await fetchComments(analysisResultId, page, size)
+
+        performanceLog.end() // API 응답 시간
+
         if (isMounted) {
           setComments(res.content ?? [])
           setTotalPages(res.totalPages ?? 0)
@@ -48,7 +90,16 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
     }
   }, [analysisResultId, page, size, refreshKey])
 
-  // ✅ 댓글 작성
+  // ----------------------------------------------------
+  // 🔥 댓글 DOM 렌더링 완료 후 측정
+  // ----------------------------------------------------
+  useEffect(() => {
+    if (comments.length > 0) {
+      performanceLog.renderComplete()
+    }
+  }, [comments])
+
+  // 댓글 작성
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) {
@@ -116,7 +167,7 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
                   <div className="flex gap-3 items-center">
                     <Avatar className="h-10 w-10">
                       <AvatarImage
-                        src={c.userImage ?? "/userInit.png"}   // ✅ 유저 이미지가 있으면 사용, 없으면 기본 이미지
+                        src={c.userImage ?? "/userInit.png"}
                         alt={c.name}
                       />
                       <AvatarFallback>
@@ -129,14 +180,13 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
                     </div>
                   </div>
 
-                  <span className="text-sm text-muted-foreground">
-                    {timeAgo}
-                  </span>
+                  <span className="text-sm text-muted-foreground">{timeAgo}</span>
                 </div>
 
-                <p className="text-[15px] text-gray-800 leading-relaxed">{c.comment}</p>
+                <p className="text-[15px] text-gray-800 leading-relaxed whitespace-pre-wrap">
+                  {c.comment}
+                </p>
 
-                {/* 내 댓글이면 버튼 */}
                 {isMyComment && (
                   <div className="flex justify-end gap-2 mt-2">
                     <Button
@@ -180,7 +230,6 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
                   </div>
                 )}
               </Card>
-
             )
           })}
         </div>
@@ -213,21 +262,13 @@ function Pager({
 }) {
   return (
     <div className="mt-4 flex items-center justify-center gap-3">
-      <button
-        className="px-3 py-1 rounded-md border disabled:opacity-50"
-        disabled={page === 0}
-        onClick={onPrev}
-      >
+      <button className="px-3 py-1 rounded-md border disabled:opacity-50" disabled={page === 0} onClick={onPrev}>
         이전
       </button>
       <span className="text-sm text-muted-foreground">
         {totalPages > 0 ? `${page + 1} / ${totalPages}` : "1 / 1"}
       </span>
-      <button
-        className="px-3 py-1 rounded-md border disabled:opacity-50"
-        disabled={page + 1 >= totalPages}
-        onClick={onNext}
-      >
+      <button className="px-3 py-1 rounded-md border disabled:opacity-50" disabled={page + 1 >= totalPages} onClick={onNext}>
         다음
       </button>
     </div>

@@ -1,14 +1,15 @@
 import type { RepositoryItem, Comment, PageResponse } from "@/types/community"
 
 // ✅ 공개 리포지토리 조회 (페이징)
-export async function fetchRepositories(page = 0, size = 5): Promise<PageResponse<RepositoryItem>> {
+export async function fetchRepositories(page = 0): Promise<PageResponse<RepositoryItem>> {
   const res = await fetch(
-    `http://localhost:8080/api/community/repositories?page=${page}&size=${size}`,
+    `http://localhost:8080/api/community/repositories?page=${page}`,
     { cache: "no-store" }
   )
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.json()
 }
+
 
 // ✅ 댓글 조회 (페이징)
 export async function fetchComments(
