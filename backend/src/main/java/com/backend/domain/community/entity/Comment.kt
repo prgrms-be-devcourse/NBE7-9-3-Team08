@@ -22,7 +22,7 @@ class Comment(
 
     // 회원 id
     @Column(name = "member_id", nullable = false)
-    val memberId: Long,
+    val memberId: Long?,
 
     // 댓글 내용
     @Column(columnDefinition = "TEXT", nullable = false)
@@ -30,14 +30,14 @@ class Comment(
 
     // 삭제 여부
     @Column(nullable = false)
-    var deleted : Boolean = false
+    var deleted: Boolean = false
 
 ) : BaseEntity() {
     companion object {
         @JvmStatic
         fun create(
             analysisResult: AnalysisResult,
-            memberId: Long,
+            memberId: Long?,
             content: String,
             deleted: Boolean = false
         ): Comment {

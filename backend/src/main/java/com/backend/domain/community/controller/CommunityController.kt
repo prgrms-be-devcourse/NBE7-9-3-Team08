@@ -44,7 +44,7 @@ class CommunityController(
             val analysisResult = analysisService
                 .getAnalysisResultList(repoId)
                 .firstOrNull() ?: return@forEach
-            
+
             val score = analysisResult.score ?: Score(analysisResult, 0, 0, 0, 0)
 
             communityRepositories.add(
@@ -101,7 +101,7 @@ class CommunityController(
     fun addComment(
         @PathVariable analysisResultId: Long,
         @RequestBody requestDto: CommentRequestDTO,
-        httpRequest: HttpServletRequest?
+        httpRequest: HttpServletRequest
     ): ResponseEntity<CommentWriteResponseDTO> {
 
         jwtUtil.getUserId(httpRequest)
@@ -120,7 +120,7 @@ class CommunityController(
     @DeleteMapping("/delete/{commentId}")
     fun deleteComment(
         @PathVariable commentId: Long,
-        httpRequest: HttpServletRequest?
+        httpRequest: HttpServletRequest
     ): ResponseEntity<String> {
 
         val jwtUserId = jwtUtil.getUserId(httpRequest)
@@ -136,7 +136,7 @@ class CommunityController(
     fun modifyComment(
         @PathVariable commentId: Long,
         @RequestBody updateDto: CommentUpdateRequestDTO,
-        httpRequest: HttpServletRequest?
+        httpRequest: HttpServletRequest
     ): ResponseEntity<String> {
 
         val jwtUserId = jwtUtil.getUserId(httpRequest)

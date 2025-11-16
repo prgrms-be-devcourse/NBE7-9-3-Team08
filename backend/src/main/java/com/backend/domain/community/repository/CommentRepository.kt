@@ -24,5 +24,5 @@ interface CommentRepository : JpaRepository<Comment, Long> {
     fun findTopByOrderByIdDesc(): Comment?
 
     // 댓글 삭제 시, 존재하는 댓글인지 확인 하기 위해서 먼저 조회
-    fun findByIdAndDeleted(commentId: Long, deleted: Boolean): Optional<Comment>
+    fun findByIdAndDeleted(commentId: Long?, deleted: Boolean): Optional<Comment>
 }
