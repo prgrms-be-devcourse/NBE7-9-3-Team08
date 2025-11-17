@@ -1,10 +1,13 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useCommunity } from '@/hooks/community/useCommunity'
 import RepositoryCard from './RepoCard'
 import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+
 
 export default function RepositoryList() {
   const {
@@ -16,7 +19,15 @@ export default function RepositoryList() {
     page,
     setPage,
     totalPages,
-    performanceStartRef, // ← useCommunity에서 받아옴
+    performanceStartRef,
+
+    // 🔍 검색 관련 추가
+    searchKeyword,
+    setSearchKeyword,
+    searchType,
+    setSearchType,
+    fetchSearchResults,
+
   } = useCommunity()
 
   // 🔥 렌더링 완료 측정
@@ -64,13 +75,46 @@ export default function RepositoryList() {
             최신순
           </Button>
           <Button
-            variant={sortType === 'score' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSortType('score')}
+            variant={sortType === "score" ? "default" : "outline"}
+            onClick={() => setSortType("score")}
           >
             점수순
           </Button>
         </div>
+      </div>
+
+      {/* 🔍 검색 영역 */}
+      <div className="flex gap-2 items-center">
+
+        {/* 검색 타입 선택 */}
+        <Select value={searchType} onValueChange={(value) => setSearchType(value as "repoName" | "user")}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="검색 기준 선택" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="repoName">레포지토리 이름</SelectItem>
+            <SelectItem value="user">작성자 이름</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* 검색 입력창 */}
+        <Input
+          placeholder="레포지토리 이름 또는 작성자 이름을 검색하세요"
+          value={searchKeyword}
+          onChange={(e) => setSearchKeyword(e.target.value)}
+          className="flex-1"
+        />
+
+        {/* 검색 버튼 */}
+        <Button
+          variant="default"
+          onClick={() => {
+            setPage(0)
+            fetchSearchResults(0)
+          }}
+        >
+          검색
+        </Button>
       </div>
 
       {/* 리포지토리 목록 */}
@@ -81,7 +125,7 @@ export default function RepositoryList() {
       ) : (
         <div className="flex flex-col gap-6">
           {repositories.map((item) => (
-            <RepositoryCard key={item.repositoryId} item={item} />
+            <RepositoryCard key={item.repositoryId ?? item.id} item={item} />
           ))}
         </div>
       )}

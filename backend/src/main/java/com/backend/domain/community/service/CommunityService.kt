@@ -1,18 +1,15 @@
 package com.backend.domain.community.service
 
-import CommunityResponseDTO
 import com.backend.domain.analysis.repository.AnalysisResultRepository
 import com.backend.domain.community.entity.Comment
 import com.backend.domain.community.entity.Comment.Companion.create
 import com.backend.domain.community.repository.CommentRepository
 import com.backend.domain.repository.entity.Repositories
 import com.backend.domain.repository.repository.RepositoryJpaRepository
-import com.backend.global.dto.PageResponseDTO
 import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -92,40 +89,20 @@ class CommunityService (
     }
 
     // 커뮤니티 - 레포지토리  검색
-    fun searchByRepoName(keyword: String, pageable: Pageable): PageResponseDTO<CommunityResponseDTO> {
-        val pageResult = repositoryJpaRepository
-            .findByNameContainingIgnoreCaseAndPublicRepositoryTrue(keyword, pageable)
+    fun searchPagedByRepoName(content: String, page: Int, size: Int): Page<Repositories> {
 
-        val dtoList = pageResult.map { repo ->
-            val latestAnalysis = analysisResultRepository
-                .findTopByRepositoriesOrderByCreateDateDesc(repo)
-                ?: throw BusinessException(ErrorCode.ANALYSIS_NOT_FOUND)
+        val pageable = PageRequest.of(page, size, Sort.by("createDate").descending())
 
-            val score = latestAnalysis.score
-            CommunityResponseDTO(repo, latestAnalysis, score)
-        }
-
-        return PageResponseDTO(dtoList)
+        return repositoryJpaRepository.findByNameContainingIgnoreCaseAndPublicRepositoryTrue(content, pageable)
     }
 
 
     // 🔍 작성자 이름 기준 검색
-    fun searchByUserName(keyword: String, pageable: Pageable): PageResponseDTO<CommunityResponseDTO> {
-        val pageResult = repositoryJpaRepository
-            .findByUser_NameContainingIgnoreCaseAndPublicRepositoryTrue(keyword, pageable)
+    fun searchPagedByUserName(content: String, page: Int, size: Int): Page<Repositories> {
 
-        val dtoList = pageResult.map { repo ->
+        val pageable = PageRequest.of(page, size, Sort.by("createDate").descending())
 
-            val latestAnalysis = analysisResultRepository
-                .findTopByRepositoriesOrderByCreateDateDesc(repo)
-                ?: throw BusinessException(ErrorCode.ANALYSIS_NOT_FOUND)
-
-            val score = latestAnalysis.score
-
-            CommunityResponseDTO(repo, latestAnalysis, score)
-        }
-
-        return PageResponseDTO(dtoList)
+        return repositoryJpaRepository.findByUser_NameContainingIgnoreCaseAndPublicRepositoryTrue(content, pageable)
     }
 
 }

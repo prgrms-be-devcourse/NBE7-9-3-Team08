@@ -42,3 +42,14 @@ export interface PageResponse<T> {
   first: boolean
   empty: boolean
 }
+
+// 검색 결과 타입 - SearchResultDTO
+export interface SearchResult {
+  id: number;
+  name: string;
+  description: string | null;
+  htmlUrl: string;
+  userName: string;
+  languages: string[];
+  createDate: string;
+}

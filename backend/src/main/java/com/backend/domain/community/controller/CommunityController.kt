@@ -10,13 +10,11 @@ import com.backend.domain.community.dto.response.CommentWriteResponseDTO
 import com.backend.domain.community.service.CommunityService
 import com.backend.domain.user.service.UserService
 import com.backend.domain.user.util.JwtUtil
-import com.backend.global.dto.PageResponseDTO
 import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -81,17 +79,43 @@ class CommunityController(
         @RequestParam(defaultValue = "repoName") searchSort: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "5") size: Int,
-    ): ResponseEntity<PageResponseDTO<CommunityResponseDTO>> {
+        @RequestParam(defaultValue = "latest") sort: String
+    ): ResponseEntity<Page<CommunityResponseDTO>> {
 
-        val pageable = PageRequest.of(page, size)
+        val searchCommunityRepositories = mutableListOf<CommunityResponseDTO>()
 
-        val results = when (searchSort) {
-            "user" -> communityService.searchByUserName(content, pageable)
-            "repoName" -> communityService.searchByRepoName(content, pageable)
-            else -> throw IllegalArgumentException("Invalid searchSort")
+        val publicRepository = when (searchSort) {
+            "user" -> communityService.searchPagedByUserName(content, page, size)
+            else -> communityService.searchPagedByRepoName(content, page, size)
         }
 
-        return ResponseEntity.ok(results)
+        publicRepository.forEach { repo ->
+            val repoId = repo.id ?: return@forEach
+
+            val analysisResult = analysisService
+                .getAnalysisResultList(repoId)
+                .firstOrNull() ?: return@forEach
+
+            val score = analysisResult.score
+                ?: Score.create(analysisResult, 0, 0, 0, 0)
+
+            searchCommunityRepositories.add(
+                CommunityResponseDTO(repo, analysisResult, score)
+            )
+        }
+
+        when (sort) {
+            "score" -> searchCommunityRepositories.sortByDescending { it.totalScore }
+            else -> searchCommunityRepositories.sortByDescending { it.createDate }   // latest
+        }
+
+        val pageResponseDto = PageImpl(
+            searchCommunityRepositories,
+            publicRepository.pageable,
+            publicRepository.totalElements
+        )
+
+        return ResponseEntity.ok(pageResponseDto)
     }
 
 

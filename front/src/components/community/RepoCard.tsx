@@ -2,14 +2,16 @@
 
 import type { RepositoryItem } from '@/types/community'
 import { useRouter } from 'next/navigation'
-import { formatDistanceToNow } from 'date-fns' // ✅ 수정
-import { ko } from 'date-fns/locale'
 import { formatRelativeTimeKST } from '@/lib/utils/formatDate'
 import { Github, ExternalLink } from 'lucide-react'
 
 export default function RepositoryCard({ item }: { item: RepositoryItem }) {
   const router = useRouter()
   const relativeTime = formatRelativeTimeKST(item.createDate)
+
+  // userName fallback
+  const safeUserName = item.userName ?? "Unknown"
+  const userTag = safeUserName.toLowerCase().replace(/\s+/g, "_")
 
   return (
     <article className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 hover:shadow-md transition-all duration-200">
@@ -18,7 +20,7 @@ export default function RepositoryCard({ item }: { item: RepositoryItem }) {
         {item.userImage ? (
           <img
             src={item.userImage || '/userInit.png'}
-            alt={item.userName}
+            alt={safeUserName}
             className="w-10 h-10 rounded-full mr-3"
             onError={(e) => {
               e.currentTarget.onerror = null
@@ -32,10 +34,12 @@ export default function RepositoryCard({ item }: { item: RepositoryItem }) {
             className="w-10 h-10 rounded-full mr-3"
           />
         )}
+
         <div>
-          <p className="font-semibold text-sm">{item.userName}</p>
-          <p className="text-gray-500 text-xs">@{item.userName.toLowerCase()}</p>
+          <p className="font-semibold text-sm">{safeUserName}</p>
+          <p className="text-gray-500 text-xs">@{userTag}</p>
         </div>
+
         <span className="ml-auto text-gray-400 text-xs">{relativeTime}</span>
       </div>
 
@@ -67,7 +71,7 @@ export default function RepositoryCard({ item }: { item: RepositoryItem }) {
 
       {/* 언어 태그 */}
       <div className="mt-3 flex flex-wrap gap-2">
-        {item.language?.map((lang, idx) => ( // ✅ null-safe
+        {item.language?.map((lang, idx) => (
           <span
             key={idx}
             className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full font-medium"
