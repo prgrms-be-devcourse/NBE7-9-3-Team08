@@ -52,5 +52,6 @@ enum class ErrorCode(
     COMMENT_NOT_FOUND("R001", HttpStatus.BAD_REQUEST, "존재하지 않는 댓글입니다."),
     NOT_LOGIN_USER("R002", HttpStatus.BAD_REQUEST, "댓글 작성을 위해 로그인이 필요합니다."),
     EMPTY_COMMENT("R003", HttpStatus.BAD_REQUEST, "댓글 내용을 작성해주세요."),
-    NOT_WRITER("R004", HttpStatus.BAD_REQUEST, "댓글 작성자가 아닙니다.");
+    NOT_WRITER("R004", HttpStatus.BAD_REQUEST, "댓글 작성자가 아닙니다."),
+    NO_SEARCH_CONTENT("R005", HttpStatus.BAD_REQUEST, "입력된 검색어가 없습니다.");
 }

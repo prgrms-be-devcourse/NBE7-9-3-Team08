@@ -22,7 +22,7 @@ class CommunityService (
 ){
     val repositoriesPublicTrue: List<Repositories?>
         // 커뮤니티 - 리포지토리 조회
-        get() = repositoryJpaRepository.findByPublicRepository(true)
+       get() = repositoryJpaRepository.findByPublicRepository(true)
 
     // 공개 여부 true인 Repo 페이징 조회
     fun getPagedRepositoriesPublicTrue(page: Int, size: Int): Page<Repositories> {
@@ -87,4 +87,22 @@ class CommunityService (
 
         targetComment.updateComment(newContent) // ✅ 엔티티 변경 감지
     }
+
+    // 커뮤니티 - 레포지토리  검색
+    fun searchPagedByRepoName(content: String, page: Int, size: Int): Page<Repositories> {
+
+        val pageable = PageRequest.of(page, size, Sort.by("createDate").descending())
+
+        return repositoryJpaRepository.findByNameContainingIgnoreCaseAndPublicRepositoryTrue(content, pageable)
+    }
+
+
+    // 🔍 작성자 이름 기준 검색
+    fun searchPagedByUserName(content: String, page: Int, size: Int): Page<Repositories> {
+
+        val pageable = PageRequest.of(page, size, Sort.by("createDate").descending())
+
+        return repositoryJpaRepository.findByUser_NameContainingIgnoreCaseAndPublicRepositoryTrue(content, pageable)
+    }
+
 }

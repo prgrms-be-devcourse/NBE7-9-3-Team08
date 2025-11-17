@@ -1,7 +1,10 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { fetchRepositories } from '@/lib/api/community'
+import {
+  fetchRepositories,
+  searchRepositories
+} from '@/lib/api/community'
 import type { RepositoryItem, PageResponse } from '@/types/community'
 
 export function useCommunity() {
@@ -12,32 +15,35 @@ export function useCommunity() {
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
 
-  // 🔥 정렬 기준 (latest | score)
+  // 🔥 최신순 / 점수순
   const [sortType, setSortType] = useState<'latest' | 'score'>('latest')
+
+  // 🔍 검색어 + 검색 타입
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const [searchType, setSearchType] = useState<'repoName' | 'user'>('repoName')
+
+  // 검색 모드 여부
+  const [isSearching, setIsSearching] = useState(false)
 
   // 성능 측정
   const performanceStartRef = useRef(0)
 
+  /** 🔵 기본 공개 레포지토리 조회 */
   const loadRepositories = async (pageNum = 0) => {
     setLoading(true)
+    setIsSearching(false)
 
     performanceStartRef.current = performance.now()
-    console.log("%c📡 리포지토리 API 요청 시작", "color: #03A9F4")
 
     try {
-      const res: PageResponse<RepositoryItem> = await fetchRepositories(pageNum, sortType)
-
-      console.log(
-        `%c📥 리포지토리 API 응답 시간: ${
-          (performance.now() - performanceStartRef.current).toFixed(2)
-        } ms`,
-        "color: #FF9800; font-weight: bold;"
+      const res: PageResponse<RepositoryItem> = await fetchRepositories(
+        pageNum,
+        sortType
       )
 
       setRepositories(res.content ?? [])
       setTotalPages(res.totalPages ?? 0)
       setPage(pageNum)
-
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -45,21 +51,68 @@ export function useCommunity() {
     }
   }
 
-  // page 또는 sortType 변경 시 API 다시 호출
+  /** 🔍 검색 실행 */
+  const fetchSearchResults = async (pageNum?: number) => {
+    const page = pageNum ?? 0
+
+    // 검색어 없으면 전체 조회로 전환
+    if (!searchKeyword.trim()) {
+      loadRepositories(0)
+      return
+    }
+
+    setLoading(true)
+    setIsSearching(true)
+
+    try {
+      const res: PageResponse<RepositoryItem> = await searchRepositories({
+        content: searchKeyword,
+        searchSort: searchType,
+        sort: sortType,    // ⭐ 반드시 포함
+        page: page,
+        size: 5
+      })
+
+      setRepositories(res.content ?? [])
+      setTotalPages(res.totalPages ?? 0)
+      setPage(page)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /** 🔄 페이지 or 정렬 변경 시 재조회 */
   useEffect(() => {
-    loadRepositories(page)
+    if (isSearching) {
+      fetchSearchResults(page)
+    } else {
+      loadRepositories(page)
+    }
   }, [page, sortType])
 
   return {
     repositories,
     loading,
     error,
+
+    // 정렬
     sortType,
     setSortType,
+
+    // 페이징
     page,
     setPage,
     totalPages,
-    loadRepositories,
+
+    // 검색
+    searchKeyword,
+    setSearchKeyword,
+    searchType,
+    setSearchType,
+    fetchSearchResults,
+
     performanceStartRef,
   }
 }
