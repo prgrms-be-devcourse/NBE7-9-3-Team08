@@ -26,9 +26,15 @@ class AnalysisAnalyzeService (
         userId: Long,
         githubUrl: String,
         owner: String,
-        repo: String,
-        cacheKey: String
+        repo: String
     ) {
+        val cacheKey = "$userId:$githubUrl"
+
+        if (!lockManager.tryLock(cacheKey)) {
+            log.info("이미 진행 중인 분석이 있습니다. userId={}, repo={}", userId, githubUrl)
+            return
+        }
+
         try {
             safeSendSse(userId, "status", "분석 시작")
 

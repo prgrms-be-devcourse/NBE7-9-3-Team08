@@ -4,13 +4,12 @@ import com.backend.domain.analysis.dto.response.AnalysisResultResponseDto
 import com.backend.domain.analysis.dto.response.HistoryResponseDto
 import com.backend.domain.analysis.dto.response.HistoryResponseDto.AnalysisVersionDto
 import com.backend.domain.analysis.entity.AnalysisResult
-import com.backend.domain.analysis.lock.RedisLockManager
 import com.backend.domain.analysis.repository.AnalysisResultRepository
 import com.backend.domain.repository.dto.response.RepositoryComparisonResponse
 import com.backend.domain.repository.dto.response.RepositoryResponse
 import com.backend.domain.repository.entity.Repositories
 import com.backend.domain.repository.repository.RepositoryJpaRepository
-import com.backend.domain.user.repository.UserRepository
+import com.backend.domain.repository.service.RepositoryService
 import com.backend.domain.user.util.JwtUtil
 import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
@@ -23,10 +22,9 @@ import org.springframework.transaction.annotation.Transactional
 class AnalysisService(
     private val analysisResultRepository: AnalysisResultRepository,
     private val repositoryJpaRepository: RepositoryJpaRepository,
-    private val lockManager: RedisLockManager,
     private val jwtUtil: JwtUtil,
     private val analysisAnalyzeService: AnalysisAnalyzeService,
-    private val userRepository: UserRepository
+    private val repositoryService: RepositoryService
 ) {
 
     companion object {
@@ -44,36 +42,20 @@ class AnalysisService(
         val userId = jwtUtil.getUserId(request) ?: throw BusinessException(ErrorCode.UNAUTHORIZED)
 
         val (owner, repo) = parseGitHubUrl(githubUrl)
-        val cacheKey = "$userId:$githubUrl"
 
-        if (!lockManager.tryLock(cacheKey)) {
-            throw BusinessException(ErrorCode.ANALYSIS_IN_PROGRESS)
-        }
-
-        val user = userRepository.findById(userId)
-            .orElseThrow { BusinessException(ErrorCode.USER_NOT_FOUND) }
-
-        // 1) 이미 존재하는 리포지토리인지 먼저 체크
-        val existingRepo = repositoryJpaRepository.findByHtmlUrlAndUserId(githubUrl, userId)
-        val repositoryId: Long = existingRepo?.id ?: run {
-            // 새 저장소라면 최소 메타 정보만 먼저 저장해서 ID 확보 (선택 사항)
-            // 여기서는 간단히 이름 정도만 넣고, 나머지는 비동기에서 다시 fetch & update하는 방식도 가능
-            val placeholder = Repositories.createMinimal(
-                user,
-                githubUrl,
-                repo,
-            )
-            repositoryJpaRepository.save(placeholder).id
-                ?: throw IllegalStateException("Repository id is null after save")
-        }
+        // 1) 이미 존재하는 Repository인지 검증 후 저장
+        val repositoryId = repositoryService.ensureRepository(
+            userId = userId,
+            githubUrl = githubUrl,
+            repoName = repo
+        )
 
         // 2) GitHub API + OpenAI API 호출은 비동기로 위임
         analysisAnalyzeService.runAnalysisAsync(
             userId = userId,
             githubUrl = githubUrl,
             owner = owner,
-            repo = repo,
-            cacheKey = cacheKey
+            repo = repo
         )
 
         return repositoryId

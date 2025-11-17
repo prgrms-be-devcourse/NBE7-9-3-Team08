@@ -47,6 +47,7 @@ enum class ErrorCode(
     GITHUB_RESPONSE_PARSE_ERROR("G005", HttpStatus.INTERNAL_SERVER_ERROR, "GitHub 응답 데이터를 처리하는 중 오류가 발생했습니다."),
     GITHUB_API_FAILED("G006", HttpStatus.BAD_REQUEST, "GitHub API 응답에 실패했습니다."),
     GITHUB_REPO_TOO_LARGE("G007", HttpStatus.BAD_REQUEST, "저장소가 너무 커서 분석할 수 없습니다. (제한: 500MB)"),
+    REPOSITORY_INVALID_STATE("G008", HttpStatus.INTERNAL_SERVER_ERROR, "Repository 엔티티 상태가 유효하지 않습니다."),
 
     // ========== comment 도메인 에러 ==========
     COMMENT_NOT_FOUND("R001", HttpStatus.BAD_REQUEST, "존재하지 않는 댓글입니다."),
