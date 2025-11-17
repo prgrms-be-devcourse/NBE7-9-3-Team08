@@ -18,7 +18,7 @@ public class RepositoryDataFixture {
         // Kotlin data class는 기본값이 있으므로 파라미터 없이 생성 가능
         RepositoryData data = new RepositoryData(
                 "test-repo",  // repositoryName
-                "https://github.com/owner/test-repo",  // repositoryUrl
+                "https://github.com/owner/repo",  // repositoryUrl
                 "Test repository",  // description
                 "Java",  // primaryLanguage
                 LocalDateTime.now().minusMonths(6),  // repositoryCreatedAt

@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation"
 import { Progress } from "@/components/ui/progress"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, HelpCircle } from "lucide-react"
 import LoadingHeader from "@/components/analysis/LoadingHeader"
 import LoadingStepList from "@/components/analysis/LoadingStepList"
 import LoadingInfoBox from "@/components/analysis/LoadingInfoBox"
@@ -10,18 +10,15 @@ import { useAnalysisProgress } from "@/hooks/analysis/useLoadingProgress"
 
 export default function LoadingContent() {
   const searchParams = useSearchParams()
-  const repoUrl = searchParams.get("repoUrl") // ✅ 'repo' → 'repoUrl'로 수정
+  const repoUrl = searchParams.get("repoUrl")
 
-  // ✅ repoUrl을 훅에 전달해야 실제 API 요청이 실행됨
   const { progress, currentStep, steps, statusMessage, error } = useAnalysisProgress(repoUrl)
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="mx-auto max-w-2xl">
-          {/* 분석 중인 저장소 URL 헤더 */}
           <LoadingHeader repoUrl={repoUrl} />
-          {/* 에러 표시 */}
           {error && (
             <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
               <div className="flex items-start gap-3">
@@ -41,11 +38,9 @@ export default function LoadingContent() {
             </div>
           )}
 
-          {/* 에러가 없을 때만 진행률 표시 */}
           {!error && (
           <> 
             <div className="mb-12 space-y-3">
-              {/* 진행률 바 + 퍼센트 표시 */}
               <Progress value={progress} className="h-2" />
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
@@ -55,6 +50,12 @@ export default function LoadingContent() {
                   {currentStep + 1} / {steps.length} 단계
                 </span>
               </div>
+              <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2 text-xs sm:text-sm">
+                  <HelpCircle className="h-4 w-4 text-primary" />
+                  <div className="flex-1 text-muted-foreground">
+                    {steps.length - (currentStep + 1)} 단계 남았습니다. 평균 약 1~2분 소요됩니다.
+                  </div>
+                </div>
             </div>
 
             {/* 상태 메시지 출력 (선택) */}

@@ -44,7 +44,8 @@ class CommunityController(
                 .getAnalysisResultList(repoId)
                 .firstOrNull() ?: return@forEach
 
-            val score = analysisResult.score ?: Score(analysisResult, 0, 0, 0, 0)
+            val score = analysisResult.score
+                ?: Score.create(analysisResult, 0, 0, 0, 0)
 
             communityRepositories.add(
                 CommunityResponseDTO(repo, analysisResult, score)
@@ -65,7 +66,6 @@ class CommunityController(
 
         return ResponseEntity.ok(pageResponseDto)
     }
-
 
 
     @GetMapping("/{analysisResultId}/comments")
