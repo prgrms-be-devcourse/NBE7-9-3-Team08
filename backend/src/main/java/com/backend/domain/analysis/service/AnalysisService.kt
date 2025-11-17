@@ -120,7 +120,7 @@ class AnalysisService(
         validateAccess(analysisResult.repositories, requestUserId)
 
         val score = analysisResult.score
-            ?: throw IllegalStateException("AnalysisResult.score is null")
+            ?: throw BusinessException(ErrorCode.FORBIDDEN)
 
         return AnalysisResultResponseDto.from(analysisResult, score)
     }

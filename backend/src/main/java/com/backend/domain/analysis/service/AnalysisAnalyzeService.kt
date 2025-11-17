@@ -57,7 +57,7 @@ class AnalysisAnalyzeService (
                 ?: throw BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND)
 
             val repositoryId = savedRepository.id
-                ?: throw IllegalStateException("Repository id is null")
+                ?: throw BusinessException(ErrorCode.REPOSITORY_INVALID_STATE)
 
             // 3. OpenAI API 데이터 분석 및 저장
             try {
