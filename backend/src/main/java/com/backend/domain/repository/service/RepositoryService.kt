@@ -144,14 +144,20 @@ class RepositoryService(
 
         val languages = gitHubDataFetcher.fetchLanguages(owner, repo)
 
-        val existing = repositoryJpaRepository.findByHtmlUrlAndUserId(
-            repoInfo.htmlUrl ?: "unknown",
-            userId
-        )
+        val url = repoInfo.htmlUrl
+            ?: throw BusinessException(ErrorCode.INVALID_GITHUB_URL)
+
+        val existing = repositoryJpaRepository.findIncludingDeleted(url, userId)
 
         if (existing != null) {
+            if (existing.deleted) {
+                existing.deleted = false
+            }
             existing.updateFrom(repoInfo)
             existing.updateLanguagesFrom(languages)
+
+            repositoryJpaRepository.save(existing)
+            return
         } else {
             val newRepo = repositoriesMapper.toEntity(repoInfo, user)
             newRepo.updateLanguagesFrom(languages)
