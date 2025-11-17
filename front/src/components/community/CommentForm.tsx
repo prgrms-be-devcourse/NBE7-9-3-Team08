@@ -4,11 +4,11 @@ import { useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Textarea } from "@/components/ui/textarea"
 import { postComment } from "@/lib/api/community"
-import { useAuth } from "@/hooks/auth/useAuth" // ✅ 로그인 유저 정보 가져오기
+import { useAuth } from "@/hooks/auth/useAuth"
 
 interface CommentFormProps {
   analysisResultId: number
-  onCommentAdded?: () => void // 새 댓글 등록 후 목록 리프레시용 콜백
+  onCommentAdded?: () => void
 }
 
 export default function CommentForm({ analysisResultId, onCommentAdded }: CommentFormProps) {
@@ -31,10 +31,8 @@ export default function CommentForm({ analysisResultId, onCommentAdded }: Commen
       setLoading(true)
       setError(null)
 
-      // ✅ postComment 호출 (백엔드 DTO에 맞게)
       await postComment(analysisResultId, user.id, content)
 
-      // ✅ 입력값 초기화 및 콜백 실행
       setContent("")
       onCommentAdded?.()
     } catch (err) {
@@ -52,6 +50,12 @@ export default function CommentForm({ analysisResultId, onCommentAdded }: Commen
         onChange={(e) => setContent(e.target.value)}
         placeholder="댓글을 입력하세요..."
         className="min-h-[100px]"
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            // 🔥 Enter 입력 시 submit 방지 → 줄바꿈 정상 작동
+            e.stopPropagation()
+          }
+        }}
       />
 
       {error && <p className="text-sm text-red-500">{error}</p>}

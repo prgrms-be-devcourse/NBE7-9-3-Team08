@@ -30,15 +30,14 @@ class CommunityController(
     @GetMapping("/repositories")
     fun getPublicRepositories(
         @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "5") size: Int
+        @RequestParam(defaultValue = "5") size: Int,
+        @RequestParam(defaultValue = "latest") sort: String
     ): ResponseEntity<Page<CommunityResponseDTO>> {
 
         val publicRepository = communityService.getPagedRepositoriesPublicTrue(page, size)
         val communityRepositories = mutableListOf<CommunityResponseDTO>()
 
         publicRepository.forEach { repo ->
-
-            // 프로퍼티 사용
             val repoId = repo.id ?: return@forEach
 
             val analysisResult = analysisService
@@ -53,7 +52,11 @@ class CommunityController(
             )
         }
 
-        communityRepositories.sortByDescending { it.createDate }
+        // 정렬 분기
+        when (sort) {
+            "score" -> communityRepositories.sortByDescending { it.totalScore }
+            else -> communityRepositories.sortByDescending { it.createDate }   // latest
+        }
 
         val pageResponseDto = PageImpl(
             communityRepositories,
@@ -79,10 +82,9 @@ class CommunityController(
 
             // 프로퍼티 사용
             val user = userService.getUserNameByUserId(comment.memberId)
-            val name = user.name
 
             commentList.add(
-                CommentResponseDTO(comment, name)
+                CommentResponseDTO(comment, user)
             )
         }
 

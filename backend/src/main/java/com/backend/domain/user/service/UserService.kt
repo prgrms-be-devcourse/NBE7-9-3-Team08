@@ -120,7 +120,7 @@ class UserService (
         return user
     }
 
-    fun getUserNameByUserId(userId: Long): User {
+    fun getUserNameByUserId(userId: Long?): User {
         return userRepository.findNameById(userId)
             ?: throw BusinessException(ErrorCode.VALIDATION_FAILED)
     }

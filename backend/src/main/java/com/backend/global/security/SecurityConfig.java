@@ -69,7 +69,7 @@ public class SecurityConfig {
                                 "/api/analysis/repositories/{repositoriesId}",
                                 "/api/analysis/repositories/{repositoryId}/results/{analysisId}",
                                 "/api/community/repositories",
-                                "/api/community/*/comments"
+                                "/api/community/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

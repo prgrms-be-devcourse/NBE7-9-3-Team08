@@ -188,7 +188,7 @@ class AnalysisService(
         val targetRepository = repositoryJpaRepository.findById(repositoriesId)
             .orElseThrow { BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND) }
 
-        if (targetRepository.user.id != userId) {
+        if (targetRepository.user?.id != userId) {
             throw BusinessException(ErrorCode.FORBIDDEN)
         }
 
@@ -216,7 +216,7 @@ class AnalysisService(
             throw BusinessException(ErrorCode.INVALID_INPUT_VALUE)
         }
 
-        if (analysisResult.repositories.user.id != memberId) {
+        if (analysisResult.repositories.user?.id != memberId) {
             throw BusinessException(ErrorCode.FORBIDDEN)
         }
 
@@ -235,7 +235,7 @@ class AnalysisService(
         val repository = repositoryJpaRepository.findById(repositoryId)
             .orElseThrow { BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND) }
 
-        if (repository.user.id != memberId) {
+        if (repository.user?.id != memberId) {
             throw BusinessException(ErrorCode.FORBIDDEN)
         }
 
@@ -274,7 +274,7 @@ class AnalysisService(
         }
 
         // 3. 비공개 리포지토리는 소유자만 접근 가능
-        val ownerId = repository.user.id
+        val ownerId = repository.user?.id
         if (requestUserId != ownerId) {
             log.warn(
                 "권한 없는 사용자의 비공개 리포지토리 접근: requestUserId={}, ownerId={}, repoId={}",

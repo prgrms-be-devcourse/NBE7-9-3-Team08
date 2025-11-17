@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 data class CommentWriteResponseDTO(
     val commentId: Long?,
-    val memberId: Long,
+    val memberId: Long?,
     val comment: String,
     val createDate: LocalDateTime?
 ) {

@@ -1,6 +1,6 @@
 // community/types.ts
 
-// ✅ Repository 항목
+// ✅ Repository 항목 - CommunityResponseDTO
 export interface RepositoryItem {
   userName: string
   userImage: string | null
@@ -15,17 +15,18 @@ export interface RepositoryItem {
   htmlUrl: string
 }
 
-// ✅ 댓글 타입
+// ✅ 댓글 타입 - commentResponseDTO
 export interface Comment {
   commentId: number
   memberId: number
   name: string
   comment: string
   createDate: string
-  deleted?: boolean
+  deleted: boolean
+  userImage: string | null
 }
 
-// ✅ 페이지네이션 응답
+// ✅ 페이지네이션 응답 - PageResponseDTO
 export interface PageResponse<T> {
   content: T[]
   pageable: {

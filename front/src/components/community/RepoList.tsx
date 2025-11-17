@@ -1,8 +1,9 @@
 'use client'
 
-import { useRepositories } from '@/hooks/community/useCommunity'
+import { useEffect, useRef } from 'react'
+import { useCommunity } from '@/hooks/community/useCommunity'
 import RepositoryCard from './RepoCard'
-import { Button } from '@/components/ui/Button' // ✅ 소문자 b로 경로 통일 (shadcn 규칙)
+import { Button } from '@/components/ui/Button'
 import { Loader2 } from 'lucide-react'
 
 export default function RepositoryList() {
@@ -15,9 +16,21 @@ export default function RepositoryList() {
     page,
     setPage,
     totalPages,
-  } = useRepositories()
+    performanceStartRef, // ← useCommunity에서 받아옴
+  } = useCommunity()
 
-  // ✅ 로딩 상태
+  // 🔥 렌더링 완료 측정
+  useEffect(() => {
+    if (repositories.length > 0) {
+      const now = performance.now()
+      console.log(
+        `%c⏱️ 리포지토리 화면 표시까지 총 시간: ${(now - performanceStartRef.current).toFixed(2)} ms`,
+        "color: #4CAF50; font-weight: bold;"
+      )
+    }
+  }, [repositories])
+
+  // 로딩 UI
   if (loading)
     return (
       <div className="flex justify-center items-center py-20 text-muted-foreground">
@@ -26,13 +39,13 @@ export default function RepositoryList() {
       </div>
     )
 
-  // ✅ 에러 상태
+  // 에러 처리
   if (error)
     return <p className="text-red-500 text-center py-8">에러 발생: {error}</p>
 
   return (
     <section className="flex flex-col gap-6 mt-6">
-      {/* 헤더 + 정렬 버튼 한 줄 정렬 */}
+      {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">커뮤니티</h1>
@@ -41,7 +54,7 @@ export default function RepositoryList() {
           </p>
         </div>
 
-        {/* 정렬 버튼 그룹 */}
+        {/* 정렬 */}
         <div className="flex gap-2">
           <Button
             variant={sortType === 'latest' ? 'default' : 'outline'}
@@ -73,7 +86,7 @@ export default function RepositoryList() {
         </div>
       )}
 
-      {/* ✅ 페이지네이션 */}
+      {/* 페이지네이션 */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 mt-8">
           <Button

@@ -24,7 +24,7 @@ import org.hibernate.annotations.Where
 class Repositories protected constructor(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    var user: User,
+    var user: User?,
 
     @Column(nullable = false)
     var name: String,
@@ -119,7 +119,7 @@ class Repositories protected constructor(
     companion object {
         @JvmStatic
         fun create(
-            user: User,
+            user: User?,
             name: String,
             description: String?,
             htmlUrl: String,

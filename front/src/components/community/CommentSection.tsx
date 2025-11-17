@@ -1,6 +1,6 @@
 ﻿"use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/Button"
@@ -11,25 +11,65 @@ import { useAuth } from "@/hooks/auth/useAuth"
 import { formatDistanceToNow } from "date-fns"
 import { ko } from "date-fns/locale"
 
+// ----------------------------------------------------
+// ⏱ 성능 측정용 훅
+// ----------------------------------------------------
+const usePerformanceLog = () => {
+  const fetchStartRef = useRef(0)
+
+  const start = () => {
+    fetchStartRef.current = performance.now()
+    console.log("%c📡 댓글 API 요청 시작", "color: #03A9F4")
+  }
+
+  const end = () => {
+    const endTime = performance.now()
+    console.log(
+      `%c📥 댓글 API 응답 시간: ${(endTime - fetchStartRef.current).toFixed(2)} ms`,
+      "color: #FF9800; font-weight: bold;"
+    )
+  }
+
+  const renderComplete = () => {
+    const now = performance.now()
+    console.log(
+      `%c⏱️ 댓글 화면 표시까지 총 시간: ${(now - fetchStartRef.current).toFixed(2)} ms`,
+      "color: #4CAF50; font-weight: bold;"
+    )
+  }
+
+  return { start, end, renderComplete }
+}
+
 export default function CommentSection({ analysisResultId }: { analysisResultId: number }) {
   const { user } = useAuth()
+  const performanceLog = usePerformanceLog()
+
   const [content, setContent] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [comments, setComments] = useState<Comment[]>([])
   const [page, setPage] = useState(0)
-  const [size] = useState(5)
   const [totalPages, setTotalPages] = useState(0)
   const [refreshKey, setRefreshKey] = useState(0)
 
-  // ✅ 댓글 목록 로드
+  // ----------------------------------------------------
+  // 🔥 댓글 목록 로드 (size 제거됨)
+  // ----------------------------------------------------
   useEffect(() => {
     let isMounted = true
+
     const loadComments = async () => {
+      performanceLog.start()
+
       setLoading(true)
       try {
-        const res: PageResponse<Comment> = await fetchComments(analysisResultId, page, size)
+        // ✅ size 제거됨
+        const res: PageResponse<Comment> = await fetchComments(analysisResultId, page)
+
+        performanceLog.end()
+
         if (isMounted) {
           setComments(res.content ?? [])
           setTotalPages(res.totalPages ?? 0)
@@ -46,20 +86,25 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
     return () => {
       isMounted = false
     }
-  }, [analysisResultId, page, size, refreshKey])
+  }, [analysisResultId, page, refreshKey]) // ✅ size 제거됨
 
-  // ✅ 댓글 작성
+  // ----------------------------------------------------
+  // 🔥 DOM 렌더링 완료 시간 측정
+  // ----------------------------------------------------
+  useEffect(() => {
+    if (comments.length > 0) {
+      performanceLog.renderComplete()
+    }
+  }, [comments])
+
+  // 댓글 작성
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) {
-      setError("로그인이 필요합니다.")
-      return
-    }
+    if (!user) return setError("로그인이 필요합니다.")
     if (!content.trim()) return
 
+    setLoading(true)
     try {
-      setLoading(true)
-      setError(null)
       await postComment(analysisResultId, user.id, content)
       setContent("")
       setRefreshKey((prev) => prev + 1)
@@ -78,7 +123,7 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
 
   return (
     <div className="flex flex-col gap-6 mt-6">
-      {/* ✏️ 댓글 작성 영역 */}
+      {/* ✏️ 댓글 작성 */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <Textarea
           value={content}
@@ -115,7 +160,7 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
                 <div className="flex justify-between">
                   <div className="flex gap-3 items-center">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src="/userInit.png" alt={`User #${c.memberId}`} />
+                      <AvatarImage src={c.userImage ?? "/userInit.png"} alt={c.name} />
                       <AvatarFallback>
                         <img src="/userInit.png" alt="기본 이미지" />
                       </AvatarFallback>
@@ -127,47 +172,36 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
                   <span className="text-sm text-muted-foreground">{timeAgo}</span>
                 </div>
 
-                <p className="text-[15px] text-gray-800 leading-relaxed">{c.comment}</p>
+                <p className="text-[15px] text-gray-800 leading-relaxed whitespace-pre-wrap">
+                  {c.comment}
+                </p>
 
-                {/* ✅ 내 댓글일 경우 버튼 노출 */}
                 {isMyComment && (
                   <div className="flex justify-end gap-2 mt-2">
-                    {/* ✏️ 수정 버튼 */}
                     <Button
                       size="sm"
                       variant="ghost"
                       className="text-gray-400 hover:text-black hover:bg-transparent transition-colors"
                       onClick={async () => {
                         const newContent = prompt("수정할 내용을 입력하세요", c.comment)
-                        if (!newContent || newContent.trim() === "") return
-                        try {
-                          await updateComment(c.commentId, newContent)
-                          alert("댓글이 수정되었습니다.")
-                          setRefreshKey((prev) => prev + 1)
-                        } catch (err) {
-                          console.error("댓글 수정 실패:", err)
-                          alert("댓글 수정 중 오류가 발생했습니다.")
-                        }
+                        if (!newContent || !newContent.trim()) return
+                        await updateComment(c.commentId, newContent)
+                        alert("댓글이 수정되었습니다.")
+                        setRefreshKey((prev) => prev + 1)
                       }}
                     >
                       수정
                     </Button>
 
-                    {/* 🗑️ 삭제 버튼 */}
                     <Button
                       size="sm"
                       variant="ghost"
                       className="text-gray-400 hover:text-red-500 hover:bg-transparent transition-colors"
                       onClick={async () => {
-                        if (!confirm("정말 이 댓글을 삭제하시겠습니까?")) return
-                        try {
-                          await deleteComment(c.commentId)
-                          alert("댓글이 삭제되었습니다.")
-                          setRefreshKey((prev) => prev + 1)
-                        } catch (err) {
-                          console.error("댓글 삭제 실패:", err)
-                          alert("댓글 삭제 중 오류가 발생했습니다.")
-                        }
+                        if (!confirm("삭제하시겠습니까?")) return
+                        await deleteComment(c.commentId)
+                        alert("댓글이 삭제되었습니다.")
+                        setRefreshKey((prev) => prev + 1)
                       }}
                     >
                       삭제
@@ -193,7 +227,6 @@ export default function CommentSection({ analysisResultId }: { analysisResultId:
   )
 }
 
-/** 페이지네이션 컴포넌트 */
 function Pager({
   page,
   totalPages,

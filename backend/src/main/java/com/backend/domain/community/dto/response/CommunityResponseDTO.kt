@@ -4,7 +4,7 @@ import com.backend.domain.repository.entity.Repositories
 import java.time.LocalDateTime
 
 data class CommunityResponseDTO(
-    val userName: String,
+    val userName: String?,
     val userImage: String?,
     val repositoryName: String,
     val repositoryId: Long,
@@ -19,8 +19,8 @@ data class CommunityResponseDTO(
     constructor(repositories: Repositories, analysis: AnalysisResult, score: Score) : this(
 
         // 프로퍼티 접근으로 수정
-        userName = repositories.user.name,
-        userImage = repositories.user.imageUrl,
+        userName = repositories.user?.name,
+        userImage = repositories.user?.imageUrl,
 
         repositoryName = repositories.name,
         repositoryId = repositories.id!!,

@@ -34,7 +34,7 @@ data class RepositoryResponse(
                 mainBranch = entity.mainBranch,
                 languages = languages,
                 createDate = entity.createDate!!,
-                ownerId = entity.user.id!!
+                ownerId = entity.user?.id!!
             )
         }
     }

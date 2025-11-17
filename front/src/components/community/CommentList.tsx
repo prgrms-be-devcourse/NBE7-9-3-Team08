@@ -16,24 +16,23 @@ export default function CommentList({ analysisResultId }: { analysisResultId: nu
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // ✅ 페이징 관련 상태
+  // 페이징 관련 상태
   const [page, setPage] = useState(0)
-  const [size] = useState(5)
   const [totalPages, setTotalPages] = useState(0)
 
-  // ✅ 수정 상태
+  // 수정 상태
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editContent, setEditContent] = useState("")
 
   useEffect(() => {
     loadData()
-  }, [analysisResultId, page, size])
+  }, [analysisResultId, page])
 
   const loadData = async () => {
     setLoading(true)
     setError(null)
     try {
-      const res: PageResponse<Comment> = await fetchComments(analysisResultId, page, size)
+      const res: PageResponse<Comment> = await fetchComments(analysisResultId, page)
       setComments(res.content ?? [])
       setTotalPages(res.totalPages ?? 0)
     } catch (err) {
@@ -44,7 +43,6 @@ export default function CommentList({ analysisResultId }: { analysisResultId: nu
     }
   }
 
-  // ✅ 삭제 핸들러
   const handleDelete = async (commentId: number) => {
     if (!confirm("정말 이 댓글을 삭제하시겠습니까?")) return
     try {
@@ -57,7 +55,6 @@ export default function CommentList({ analysisResultId }: { analysisResultId: nu
     }
   }
 
-  // ✅ 수정 핸들러
   const handleEdit = async (commentId: number) => {
     if (!editContent.trim()) return alert("내용을 입력해주세요.")
     try {
@@ -109,7 +106,6 @@ export default function CommentList({ analysisResultId }: { analysisResultId: nu
               <span className="text-sm text-muted-foreground">{timeAgo}</span>
             </div>
 
-            {/* ✏️ 댓글 내용 or 수정 입력창 */}
             {editingId === c.commentId ? (
               <div className="flex flex-col gap-2">
                 <textarea
@@ -130,7 +126,6 @@ export default function CommentList({ analysisResultId }: { analysisResultId: nu
               <p className="text-[15px] text-gray-800 leading-relaxed">{c.comment}</p>
             )}
 
-            {/* 🔒 본인 댓글일 경우에만 버튼 노출 */}
             {isMyComment && editingId !== c.commentId && (
               <div className="flex justify-end gap-2">
                 <Button

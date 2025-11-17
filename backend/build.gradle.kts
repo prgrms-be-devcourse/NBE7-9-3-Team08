@@ -66,6 +66,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     implementation(kotlin("stdlib-jdk8"))
 
+    testImplementation("io.mockk:mockk:1.13.12")
+    testImplementation("io.mockk:mockk-jvm:1.13.12")
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
+
 }
 
 tasks.withType<Test> {

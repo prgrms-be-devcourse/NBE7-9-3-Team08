@@ -9,24 +9,22 @@ const withCommunityBase = (path: string) =>
   `${BACKEND_BASE}${path.startsWith("/") ? path : `/${path}`}`
 
 // ✅ 공개 리포지토리 조회 (페이징)
-export async function fetchRepositories(page = 0, size = 5): Promise<PageResponse<RepositoryItem>> {
+export async function fetchRepositories(page = 0, sort = "latest") {
   const res = await fetch(
-    withCommunityBase(`/repositories?page=${page}&size=${size}`),
-    { cache: "no-store", credentials: "include" }
+    `http://localhost:8080/api/community/repositories?page=${page}&sort=${sort}`,
+    { cache: "no-store" }
   )
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.json()
 }
 
-// ✅ 댓글 조회 (페이징)
+
+// ✅ 댓글 조회 (페이징) — size 제거
 export async function fetchComments(
   analysisResultId: number,
   page = 0,
-  size = 5
 ): Promise<PageResponse<Comment>> {
   const res = await fetch(
-    withCommunityBase(`/${analysisResultId}/comments?page=${page}&size=${size}`),
-    { credentials: "include" }
+    `http://localhost:8080/api/community/${analysisResultId}/comments?page=${page}`
   )
   if (!res.ok) throw new Error("댓글 조회 실패")
   return res.json()
