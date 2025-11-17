@@ -50,7 +50,7 @@ class SecurityConfig {
                         "/api/repositories/**",
                         "/api/ai/complete/**",
                         "/api/community/repositories",
-                        "/api/community/*/comments"
+                        "/api/community/**"
                     ).permitAll()
                     .anyRequest().authenticated()
             }
