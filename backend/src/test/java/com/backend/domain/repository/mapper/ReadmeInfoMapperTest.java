@@ -16,7 +16,7 @@ class ReadmeInfoMapperTest {
     void mapNullReadme_shouldSetDefaultValues() {
         RepositoryData data = new RepositoryData();
         mapper.mapReadmeInfo(data, null);
-        assertThat(data.isHasReadme()).isFalse();
+        assertThat(data.getHasReadme()).isFalse();
         assertThat(data.getReadmeContent()).isEmpty();
         assertThat(data.getReadmeSectionCount()).isZero();
     }
@@ -26,7 +26,7 @@ class ReadmeInfoMapperTest {
     void mapWhitespaceOnlyReadme_shouldBeHandled() {
         RepositoryData data = new RepositoryData();
         mapper.mapReadmeInfo(data, "   \n  \n");
-        assertThat(data.isHasReadme()).isFalse();
+        assertThat(data.getHasReadme()).isFalse();
         assertThat(data.getReadmeLength()).isZero();
     }
 
@@ -45,7 +45,7 @@ class ReadmeInfoMapperTest {
                 ## Section 2
                 """;
         mapper.mapReadmeInfo(data, readme);
-        assertThat(data.isHasReadme()).isTrue();
+        assertThat(data.getHasReadme()).isTrue();
         assertThat(data.getReadmeSectionTitles()).containsExactly("Main Title", "Section 2");
         assertThat(data.getReadmeSectionCount()).isEqualTo(2);
     }

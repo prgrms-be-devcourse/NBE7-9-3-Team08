@@ -75,10 +75,10 @@ class RepositoryServiceTest {
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
+        log.info("📦 수집된 RepositoryData {}:", data);
 
         // then
         assertThat(data).isNotNull();
-        log.info("📦 수집된 RepositoryData {}:", data);
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
@@ -95,10 +95,10 @@ class RepositoryServiceTest {
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
+        log.info("📦 수집된 RepositoryData {}:", data);
 
         // then
         assertThat(data).isNotNull();
-        log.info("📦 수집된 RepositoryData {}:", data);
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
@@ -115,10 +115,10 @@ class RepositoryServiceTest {
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
+        log.info("📦 수집된 RepositoryData {}:", data);
 
         // then
         assertThat(data).isNotNull();
-        log.info("📦 수집된 RepositoryData {}:", data);
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
@@ -135,10 +135,10 @@ class RepositoryServiceTest {
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
+        log.info("📦 수집된 RepositoryData {}:", data);
 
         // then
         assertThat(data).isNotNull();
-        log.info("📦 수집된 RepositoryData {}:", data);
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
@@ -155,10 +155,10 @@ class RepositoryServiceTest {
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
+        log.info("📦 수집된 RepositoryData {}:", data);
 
         // then
         assertThat(data).isNotNull();
-        log.info("📦 수집된 RepositoryData {}:", data);
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
@@ -175,10 +175,10 @@ class RepositoryServiceTest {
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
+        log.info("📦 수집된 RepositoryData {}:", data);
 
         // then
         assertThat(data).isNotNull();
-        log.info("📦 수집된 RepositoryData {}:", data);
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
@@ -195,10 +195,10 @@ class RepositoryServiceTest {
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
+        log.info("📦 수집된 RepositoryData {}:", data);
 
         // then
         assertThat(data).isNotNull();
-        log.info("📦 수집된 RepositoryData {}:", data);
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
@@ -215,10 +215,10 @@ class RepositoryServiceTest {
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
+        log.info("📦 수집된 RepositoryData {}:", data);
 
         // then
         assertThat(data).isNotNull();
-        log.info("📦 수집된 RepositoryData {}:", data);
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
@@ -235,10 +235,10 @@ class RepositoryServiceTest {
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
+        log.info("📦 수집된 RepositoryData {}:", data);
 
         // then
         assertThat(data).isNotNull();
-        log.info("📦 수집된 RepositoryData {}:", data);
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
@@ -255,10 +255,10 @@ class RepositoryServiceTest {
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
+        log.info("📦 수집된 RepositoryData {}:", data);
 
         // then
         assertThat(data).isNotNull();
-        log.info("📦 수집된 RepositoryData {}:", data);
 
         // Repositories 저장 확인
         var repoEntity = repositoryJpaRepository.findByHtmlUrlAndUserId(data.getRepositoryUrl(), userId);
@@ -275,13 +275,14 @@ class RepositoryServiceTest {
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
+        log.info("📦 수집된 RepositoryData {}:", data);
 
         // then
         assertThat(data).isNotNull();
-        assertThat(data.isHasReadme()).isTrue();
+        assertThat(data.getHasReadme()).isTrue();
         assertThat(data.getReadmeLength()).isGreaterThan(1000);
-        assertThat(data.isHasTestDirectory()).isTrue();
-        assertThat(data.isHasCICD()).isTrue();
+        assertThat(data.getHasTestDirectory()).isTrue();
+        assertThat(data.getHasCICD()).isTrue();
         assertThat(data.getTestCoverageRatio()).isGreaterThan(0.0);
     }
 
@@ -312,6 +313,7 @@ class RepositoryServiceTest {
 
         // when
         RepositoryData data = repositoryService.fetchAndSaveRepository(owner, repo, userId);
+        log.info("📦 수집된 RepositoryData {}:", data);
 
         // then
         assertThat(data).isNotNull();
