@@ -150,19 +150,22 @@ class RepositoryService(
         val existing = repositoryJpaRepository.findIncludingDeleted(url, userId)
 
         if (existing != null) {
+
             if (existing.deleted) {
                 existing.deleted = false
+                repositoryJpaRepository.save(existing)
             }
+
             existing.updateFrom(repoInfo)
             existing.updateLanguagesFrom(languages)
 
-            repositoryJpaRepository.save(existing)
             return
-        } else {
-            val newRepo = repositoriesMapper.toEntity(repoInfo, user)
-            newRepo.updateLanguagesFrom(languages)
-            repositoryJpaRepository.save(newRepo)
         }
+
+        val newRepo = repositoriesMapper.toEntity(repoInfo, user)
+        newRepo.updateLanguagesFrom(languages)
+
+        repositoryJpaRepository.save(newRepo)
     }
 
     fun findRepositoryByUser(userId: Long): List<Repositories> =

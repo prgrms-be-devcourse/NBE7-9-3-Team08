@@ -34,43 +34,88 @@ kotlin {
 }
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
-    //openai api랑 전용 .env reader 추가
-    implementation("com.openai:openai-java:4.3.0")
-    implementation("io.github.cdimascio:dotenv-java:3.2.0")
 
-	compileOnly("org.projectlombok:lombok")
-	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	runtimeOnly("com.h2database:h2")
-	runtimeOnly("com.mysql:mysql-connector-j")
-	annotationProcessor("org.projectlombok:lombok")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("org.mockito:mockito-junit-jupiter")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    // -----------------------------------------------------------------------------------------
+    // Spring Boot Core & Web
+    // -----------------------------------------------------------------------------------------
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-starter-webflux") // WebClient 용
+
+    // -----------------------------------------------------------------------------------------
+    // Database / Persistence
+    // -----------------------------------------------------------------------------------------
+    runtimeOnly("com.h2database:h2")                  // H2 (local test)
+    runtimeOnly("com.mysql:mysql-connector-j")        // MySQL driver
+
+    // -----------------------------------------------------------------------------------------
+    // Infra: Mail / Redis / Retry
+    // -----------------------------------------------------------------------------------------
     implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.retry:spring-retry")
+
+    // -----------------------------------------------------------------------------------------
+    // JWT (io.jsonwebtoken)
+    // -----------------------------------------------------------------------------------------
     implementation("io.jsonwebtoken:jjwt-api:0.13.0")
     implementation("io.jsonwebtoken:jjwt-impl:0.13.0")
     implementation("io.jsonwebtoken:jjwt-jackson:0.13.0")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.retry:spring-retry")
-    implementation("org.springframework.boot:spring-boot-starter-aop")
-    testCompileOnly("org.projectlombok:lombok:1.18.32")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
-    testImplementation("org.assertj:assertj-core:3.26.3")
-    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+
+    // -----------------------------------------------------------------------------------------
+    // OpenAPI / Swagger
+    // -----------------------------------------------------------------------------------------
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+
+    // -----------------------------------------------------------------------------------------
+    // OpenAI API + 환경변수(.env) Loader
+    // -----------------------------------------------------------------------------------------
+    implementation("com.openai:openai-java:4.3.0")
+    implementation("io.github.cdimascio:dotenv-java:3.2.0")
+
+    // -----------------------------------------------------------------------------------------
+    // Kotlin Standard Library
+    // -----------------------------------------------------------------------------------------
     implementation(kotlin("stdlib-jdk8"))
 
+    // -----------------------------------------------------------------------------------------
+    // 개발 편의 — DevTools
+    // -----------------------------------------------------------------------------------------
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    // -----------------------------------------------------------------------------------------
+    // Lombok (컴파일 전용)
+    // -----------------------------------------------------------------------------------------
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+    testCompileOnly("org.projectlombok:lombok:1.18.32")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
+
+    // -----------------------------------------------------------------------------------------
+    // Test
+    // -----------------------------------------------------------------------------------------
+    // Spring Boot 기본 테스트
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+
+    // Assertion
+    testImplementation("org.assertj:assertj-core:3.26.3")
+
+    // Kotlin Test 환경 (MockK + SpringMockK)
     testImplementation("io.mockk:mockk:1.13.12")
     testImplementation("io.mockk:mockk-jvm:1.13.12")
+    testImplementation("io.mockk:mockk-agent-jvm:1.13.12")
     testImplementation("com.ninja-squad:springmockk:4.0.2")
+    testImplementation("org.jetbrains.kotlin:kotlin-reflect")
 
+    // JUnit 런처
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
+
 
 tasks.withType<Test> {
     useJUnitPlatform {
