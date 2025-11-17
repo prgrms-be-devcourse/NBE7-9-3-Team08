@@ -24,8 +24,6 @@ interface RepositoryJpaRepository : JpaRepository<Repositories, Long> {
         pageable: Pageable
     ): Page<Repositories>
 
-
-
     @Query(
         value = """
             SELECT *
