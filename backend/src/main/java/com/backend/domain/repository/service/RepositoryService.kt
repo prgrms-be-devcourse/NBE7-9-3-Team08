@@ -161,6 +161,11 @@ class RepositoryService(
 
             return
         }
+
+        val newRepo = repositoriesMapper.toEntity(repoInfo, user)
+        newRepo.updateLanguagesFrom(languages)
+
+        repositoryJpaRepository.save(newRepo)
     }
 
     fun findRepositoryByUser(userId: Long): List<Repositories> =
