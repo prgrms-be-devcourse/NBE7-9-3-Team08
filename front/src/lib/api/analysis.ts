@@ -98,21 +98,17 @@ export const analysisApi = {
       signal: controller.signal,
       onopen: async (response) => {
         if (!response.ok) {
-          console.error("[SSE][error] 연결 실패", response.status)
           if ([401, 403].includes(response.status))
             window.dispatchEvent(new CustomEvent("SSE_AUTH_ERROR"))
           throw new Error(`SSE 연결 실패: ${response.status}`)
         }
-        console.log("[SSE][connected] 연결 성공")
       },
       onmessage(event) {
-        console.log("[SSE][message]", event.event, event.data)
         window.dispatchEvent(
           new CustomEvent(`SSE_${event.event.toUpperCase()}`, { detail: event.data })
         )
       },
       onerror(err) {
-        console.error("[SSE][error]", err)
         window.dispatchEvent(new CustomEvent("SSE_ERROR", { detail: err }))
         return 1000 // 1초 후 재연결 시도
       },

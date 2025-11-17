@@ -53,6 +53,7 @@ export interface ApiResponse<T> {
     INVALID_TYPE_VALUE: 'CMN004',
     MISSING_REQUEST_PARAMETER: 'CMN005',
     UNAUTHORIZED: 'CMN006',
+    RESOURCE_NOT_FOUND: 'CMN007',
     
     // user 도메인
     LOGIN_FAILED: 'U001',
@@ -62,6 +63,7 @@ export interface ApiResponse<T> {
     PASSWORD_NOT_EQUAL: 'U005',
     EMAIL_NOT_FOUND: 'U006',
     ALREADY_REGISTERED_EMAIL: 'U007',
+    EXPIRATION_ERROR: 'U008',
 
     // Analysis 도메인
     INVALID_GITHUB_URL: 'A001',
@@ -80,6 +82,7 @@ export interface ApiResponse<T> {
     GITHUB_RESPONSE_PARSE_ERROR: 'G005',
     GITHUB_API_FAILED: 'G006',
     GITHUB_REPO_TOO_LARGE: 'G007',
+    REPOSITORY_INVALID_STATE: 'G008',
 
     // comment 도메인
     COMMENT_NOT_FOUND: 'R001',
@@ -87,7 +90,11 @@ export interface ApiResponse<T> {
     // 프론트엔드 전용 에러
     NETWORK_ERROR: 'FE001',
     TIMEOUT_ERROR: 'FE002',
-    INVALID_RESPONSE: 'FE003'
+    INVALID_RESPONSE: 'FE003',
+    NOT_LOGIN_USER: 'R002',
+    EMPTY_COMMENT: 'R003',
+    NOT_WRITER: 'R004',
+    NO_SEARCH_CONTENT: 'R005',
   } as const;
   
   export type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES];
