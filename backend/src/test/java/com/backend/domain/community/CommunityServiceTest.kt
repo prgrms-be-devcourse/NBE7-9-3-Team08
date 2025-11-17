@@ -315,4 +315,67 @@ class CommunityServiceTest {
         Mockito.verify(commentRepository, Mockito.never())
             .delete(Mockito.any(Comment::class.java))
     }
+
+    // -------------------------------------------------------
+    // 레포지토리 검색 테스트 추가
+    // -------------------------------------------------------
+    @Test
+    @DisplayName("검색 - 레포지토리 이름 기준 검색 성공 (페이징 O)")
+    fun searchPagedByRepoName_success() {
+
+        // given
+        val pageable = PageRequest.of(0, 5, Sort.by("createDate").descending())
+
+        val repo1 = Repositories.create(null, "Spring Boot App", "desc", "url1", true, "main")
+        val repo2 = Repositories.create(null, "Spring Boot Advanced", "desc2", "url2", true, "main")
+
+        val mockPage = PageImpl(listOf(repo1, repo2), pageable, 2)
+
+        Mockito.`when`(
+            repositoryJpaRepository.findByNameContainingIgnoreCaseAndPublicRepositoryTrue(
+                "spring",
+                pageable
+            )
+        ).thenReturn(mockPage)
+
+        // when
+        val result = communityService.searchPagedByRepoName("spring", 0, 5)
+
+        // then
+        assertEquals(2, result.content.size)
+        assertEquals("Spring Boot App", result.content[0].name)
+        Mockito.verify(repositoryJpaRepository, Mockito.times(1))
+            .findByNameContainingIgnoreCaseAndPublicRepositoryTrue("spring", pageable)
+    }
+
+    @Test
+    @DisplayName("검색 - 작성자 이름 기준 검색 성공 (페이징 O)")
+    fun searchPagedByUserName_success() {
+
+        // given
+        val pageable = PageRequest.of(0, 5, Sort.by("createDate").descending())
+
+        val user = User("alice@test.com", "pw", "Alice")
+
+        val repo1 = Repositories.create(user, "Repo1", "desc", "url1", true, "main")
+        val repo2 = Repositories.create(user, "Repo2", "desc2", "url2", true, "main")
+
+        val mockPage = PageImpl(listOf(repo1, repo2), pageable, 2)
+
+        Mockito.`when`(
+            repositoryJpaRepository.findByUser_NameContainingIgnoreCaseAndPublicRepositoryTrue(
+                "Alice",
+                pageable
+            )
+        ).thenReturn(mockPage)
+
+        // when
+        val result = communityService.searchPagedByUserName("Alice", 0, 5)
+
+        // then
+        assertEquals(2, result.content.size)
+        assertEquals("Repo1", result.content[0].name)
+        Mockito.verify(repositoryJpaRepository, Mockito.times(1))
+            .findByUser_NameContainingIgnoreCaseAndPublicRepositoryTrue("Alice", pageable)
+    }
 }

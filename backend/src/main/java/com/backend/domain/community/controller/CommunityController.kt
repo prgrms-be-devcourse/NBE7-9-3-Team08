@@ -73,6 +73,7 @@ class CommunityController(
         return ResponseEntity.ok(pageResponseDto)
     }
 
+    // 검색 조회
     @GetMapping("/search")
     fun searchRepository(
         @RequestParam content: String,
