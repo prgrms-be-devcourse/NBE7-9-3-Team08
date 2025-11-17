@@ -43,7 +43,7 @@ class IssueInfoMapperTest {
                 .filter(IssueResponse::isPureIssue)
                 .toList();
         assertThat(filtered).hasSize(1);
-        assertThat(filtered.get(0).title()).isEqualTo("Real issue");
+        assertThat(filtered.get(0).getTitle()).isEqualTo("Real issue");
     }
 
     @Test
