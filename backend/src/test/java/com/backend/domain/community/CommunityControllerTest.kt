@@ -85,24 +85,12 @@ class CommunityControllerTest(
 
         // Analysis 생성
         analysis = analysisResultRepository.save(
-            AnalysisResult.builder()
-                .repositories(repo)
-                .summary("요약")
-                .strengths("강점")
-                .improvements("개선")
-                .createDate(LocalDateTime.now())
-                .build()
+            AnalysisResult.create(repo, "요약", "강점", "개선", LocalDateTime.now())
         )
 
         // Score 생성
         scoreRepository.save(
-            Score.builder()
-                .analysisResult(analysis)
-                .readmeScore(10)
-                .commitScore(20)
-                .testScore(30)
-                .cicdScore(40)
-                .build()
+            Score.create(analysis, 10, 20, 30, 40)
         )
     }
 

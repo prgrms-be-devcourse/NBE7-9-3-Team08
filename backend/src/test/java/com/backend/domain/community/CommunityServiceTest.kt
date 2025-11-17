@@ -54,10 +54,15 @@ class CommunityServiceTest {
     }
 
     private fun createAnalysisResult(id: Long?): AnalysisResult {
-        val ar = AnalysisResult(
-            Mockito.mock(Repositories::class.java),
-            "sum", "str", "imp",
-            LocalDateTime.now()
+
+        val mockRepo = Mockito.mock(Repositories::class.java)
+
+        val ar = AnalysisResult.create(
+            repositories = mockRepo,
+            summary = "sum",
+            strengths = "str",
+            improvements = "imp",
+            createDate = LocalDateTime.now()
         )
         setId(ar, id)
         return ar

@@ -1,7 +1,6 @@
 package com.backend.domain.community
 
 import com.backend.domain.analysis.entity.AnalysisResult
-import com.backend.domain.analysis.entity.AnalysisResult.Companion.builder
 import com.backend.domain.community.entity.Comment
 import com.backend.domain.community.entity.Comment.Companion.create
 import com.backend.domain.community.repository.CommentRepository
@@ -39,13 +38,7 @@ class CommentRepositoryTest {
         val repo = Repositories.create(user, "test-repo", "테스트용 레포지토리입니다.", "https://github.com/test/test-repo", true, "main")
         em.persist(repo)
 
-        val analysisResult = builder()
-            .repositories(repo)
-            .summary("요약")
-            .strengths("강점")
-            .improvements("개선점")
-            .createDate(LocalDateTime.now())
-            .build()
+        val analysisResult = AnalysisResult.create(repo, "요약" , "강점", "개선점", LocalDateTime.now())
 
         em.persist(analysisResult)
         em.flush()
