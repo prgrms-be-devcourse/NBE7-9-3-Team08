@@ -116,7 +116,7 @@ class Repositories protected constructor(
             name: String,
             description: String?,
             htmlUrl: String,
-            publicRepository: Boolean,
+            publicRepository: Boolean = false,
             mainBranch: String,
             languages: List<RepositoryLanguage> = emptyList()
         ): Repositories {

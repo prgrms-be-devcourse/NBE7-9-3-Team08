@@ -2,6 +2,7 @@ package com.backend.global.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -9,6 +10,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -36,6 +39,17 @@ public class SecurityConfig {
                 // H2 콘솔은 CSRF 예외로 설정
                 .csrf(csrf -> csrf.disable())
 
+                // cors 설정 추가
+                .cors(cors -> cors.configurationSource(request -> {
+                    var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
+                    corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000"));
+                    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                    corsConfiguration.setAllowedHeaders(List.of("*"));
+                    corsConfiguration.setAllowCredentials(true);
+                    corsConfiguration.setExposedHeaders(List.of("Authorization"));
+                    return corsConfiguration;
+                }))
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/login", //로그인
@@ -49,11 +63,11 @@ public class SecurityConfig {
                                 "/h2-console/**" // H2 콘솔 허용
                         ).permitAll()
                         .requestMatchers(
+                                // GET만 허용 - 조회는 인증 불필요
+                                HttpMethod.GET,
                                 "/api/analysis/stream/**",
                                 "/api/analysis/repositories/{repositoriesId}",
                                 "/api/analysis/repositories/{repositoryId}/results/{analysisId}",
-                                "/api/repositories/**",
-                                "/api/ai/complete/**",
                                 "/api/community/repositories",
                                 "/api/community/*/comments"
                         ).permitAll()
