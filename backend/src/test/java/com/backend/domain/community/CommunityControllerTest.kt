@@ -15,16 +15,15 @@ import com.backend.domain.user.entity.User
 import com.backend.domain.user.repository.UserRepository
 import com.backend.domain.user.service.UserService
 import com.backend.domain.user.util.JwtUtil
-import jakarta.servlet.http.HttpServletRequest
+import com.ninjasquad.springmockk.MockkBean
+import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
@@ -44,11 +43,14 @@ class CommunityControllerTest(
     @Autowired val scoreRepository: ScoreRepository,
     @Autowired val repositoryLanguageRepository: RepositoryLanguageRepository,
     @Autowired val communityService: CommunityService,
-    @Autowired val analysisService: AnalysisService,
+    @Autowired val analysisService: AnalysisService
 ) {
 
-    @MockitoBean lateinit var jwtUtil: JwtUtil
-    @MockitoBean lateinit var userService: UserService
+    @MockkBean
+    lateinit var jwtUtil: JwtUtil
+
+    @MockkBean
+    lateinit var userService: UserService
 
     lateinit var user: User
     lateinit var repo: Repositories
@@ -56,7 +58,7 @@ class CommunityControllerTest(
 
     @BeforeEach
     fun setup() {
-        // 초기화
+        // DB 초기화
         commentRepository.deleteAllInBatch()
         scoreRepository.deleteAllInBatch()
         repositoryLanguageRepository.deleteAllInBatch()
@@ -64,74 +66,49 @@ class CommunityControllerTest(
         repositoryJpaRepository.deleteAllInBatch()
         userRepository.deleteAllInBatch()
 
-        // testUser 생성
+        // 사용자 생성
         val tempUser = User("tester@test.com", "1234", "테스터")
-
-        // ⚠ imageUrl 강제 세팅 (reflection)
         val imageField = User::class.java.getDeclaredField("imageUrl")
         imageField.isAccessible = true
-        imageField.set(tempUser, "test-image.png")
-
+        imageField.set(tempUser, "test.png")
         user = userRepository.save(tempUser)
 
-        // Mock UserService
-        `when`(jwtUtil.getUserId(any(HttpServletRequest::class.java))).thenReturn(user.id)
-        `when`(userService.getUserNameByUserId(anyLong()))
-            .thenReturn(User("mock@test.com", "1234", "mock-user"))
+        // 🔥 JWT Mocking — 로그인된 사용자처럼 설정
+        every { jwtUtil.getUserId(any()) } returns user.id
+        every { userService.getUserNameByUserId(any()) } returns
+                User("mock@test.com", "1234", "mock-user")
 
-        // Repo 생성
+        // Repository 생성
         repo = repositoryJpaRepository.save(
-            Repositories.builder()
-                .user(user)
-                .name("test-repo")
-                .description("설명")
-                .htmlUrl("https://github.com/test")
-                .publicRepository(true)
-                .mainBranch("main")
-                .build()
+            Repositories.create(user, "test-repo", "github.com", "설명", true, "main")
         )
 
         // Analysis 생성
         analysis = analysisResultRepository.save(
-            AnalysisResult.builder()
-                .repositories(repo)
-                .summary("요약")
-                .strengths("강점")
-                .improvements("개선점")
-                .createDate(LocalDateTime.now())
-                .build()
+            AnalysisResult.create(repo, "요약", "강점", "개선", LocalDateTime.now())
         )
 
         // Score 생성
-        val score = Score.builder()
-            .analysisResult(analysis)
-            .readmeScore(10)
-            .testScore(20)
-            .commitScore(30)
-            .cicdScore(40)
-            .build()
-
-        scoreRepository.save(score)
+        scoreRepository.save(
+            Score.create(analysis, 10, 20, 30, 40)
+        )
     }
 
-    // ------------------------------------------------------
-    // 공개 리포지토리 조회
-    // ------------------------------------------------------
+    // -------------------------------
+    // 1. 공개 리포지토리 조회
+    // -------------------------------
     @Test
     @DisplayName("공개 리포지토리 조회 성공")
     fun getPublicRepositories_success() {
-        mockMvc.perform(
-            get("/api/community/repositories")
-        )
-
+        mockMvc.perform(get("/api/community/repositories"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content[0].repositoryName").value("test-repo"))
             .andExpect(jsonPath("$.content[0].publicStatus").value(true))
     }
 
-    // ------------------------------------------------------
-    // 댓글 작성
-    // ------------------------------------------------------
+    // -------------------------------
+    // 2. 댓글 작성
+    // -------------------------------
     @Test
     @DisplayName("댓글 작성 성공")
     fun writeComment_success() {
@@ -152,27 +129,25 @@ class CommunityControllerTest(
             .andExpect(jsonPath("$.comment").value("첫 댓글"))
     }
 
-    // ------------------------------------------------------
-    // 댓글 조회 (SoftDelete 적용)
-    // ------------------------------------------------------
+    // -------------------------------
+    // 3. 댓글 조회
+    // -------------------------------
     @Test
-    @DisplayName("댓글 조회 성공 (삭제되지 않은 것만)")
+    @DisplayName("댓글 조회 성공")
     fun getComments_success() {
 
         commentRepository.save(Comment.create(analysis, user.id, "보이는 댓글", false))
         commentRepository.save(Comment.create(analysis, user.id, "삭제된 댓글", true))
 
-        mockMvc.perform(
-            get("/api/community/${analysis.id}/comments")
-        )
+        mockMvc.perform(get("/api/community/${analysis.id}/comments"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content.length()").value(1))
             .andExpect(jsonPath("$.content[0].comment").value("보이는 댓글"))
     }
 
-    // ------------------------------------------------------
-    // 댓글 페이징
-    // ------------------------------------------------------
+    // -------------------------------
+    // 4. 댓글 페이징 조회
+    // -------------------------------
     @Test
     @DisplayName("댓글 페이징 조회 성공")
     fun getComments_paging_success() {
@@ -191,15 +166,14 @@ class CommunityControllerTest(
             .andExpect(jsonPath("$.totalElements").value(7))
     }
 
-    // ------------------------------------------------------
-    // 댓글 수정
-    // ------------------------------------------------------
+    // -------------------------------
+    // 5. 댓글 수정
+    // -------------------------------
     @Test
     @DisplayName("댓글 수정 성공")
     fun modifyComment_success() {
 
-        val comment =
-            commentRepository.save(Comment.create(analysis, user.id, "기존", false))
+        val comment = commentRepository.save(Comment.create(analysis, user.id, "기존", false))
 
         val body = """{"newComment":"수정됨"}"""
 
@@ -212,23 +186,20 @@ class CommunityControllerTest(
             .andExpect(content().string("댓글 수정 완료"))
     }
 
-    // ------------------------------------------------------
-    // 댓글 삭제 (Soft Delete)
-    // ------------------------------------------------------
+    // -------------------------------
+    // 6. 댓글 삭제
+    // -------------------------------
     @Test
-    @DisplayName("댓글 삭제 성공 (SoftDelete=true)")
+    @DisplayName("댓글 삭제 성공")
     fun deleteComment_success() {
 
-        val comment =
-            commentRepository.save(Comment.create(analysis, user.id, "삭제 대상", false))
+        val comment = commentRepository.save(Comment.create(analysis, user.id, "삭제 대상", false))
 
-        mockMvc.perform(
-            delete("/api/community/delete/${comment.id}")
-        )
+        mockMvc.perform(delete("/api/community/delete/${comment.id}"))
             .andExpect(status().isOk)
             .andExpect(content().string("댓글 삭제 완료"))
 
-        val deleted = commentRepository.findByIdAndDeleted(comment.id!!, true).orElseThrow()
+        val deleted = commentRepository.findByIdAndDeleted(comment.id, true).orElseThrow()
 
         assert(deleted.deleted)
     }

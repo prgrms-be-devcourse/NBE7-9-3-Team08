@@ -18,9 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.backend.domain.repository.dto.RepositoryDataFixture.createMinimal;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
+import java.util.Collections;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -48,14 +46,7 @@ class EvaluationServiceIntegrationTest {
 
         // 2) Repositories 시드 (evaluation이 repo를 찾을 때 htmlUrl로 매칭)
         repoUrl = "https://github.com/test-owner/test-repo";
-        Repositories repo = Repositories.builder()
-                .user(user)
-                .name("test-repo")
-                .description("just for evaluation test")
-                .htmlUrl(repoUrl)
-                .publicRepository(true)
-                .mainBranch("main")
-                .build();
+        Repositories repo = Repositories.create(user, "test-repo", "just for evaluation test", repoUrl, true, "main", Collections.emptyList());
         repositoryJpaRepository.save(repo);
     }
 

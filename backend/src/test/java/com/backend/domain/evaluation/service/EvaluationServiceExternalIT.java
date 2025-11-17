@@ -17,6 +17,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
 
@@ -56,14 +58,7 @@ class EvaluationServiceExternalIT {
         User user = userRepository.save(new User("ext-test@example.com", "pw", "ext"));
         repoUrl = "https://github.com/test-owner/test-repo";
         repositoryJpaRepository.save(
-                Repositories.builder()
-                        .user(user)
-                        .name("test-repo")
-                        .description("external openai test")
-                        .htmlUrl(repoUrl)
-                        .publicRepository(true)
-                        .mainBranch("main")
-                        .build()
+                Repositories.create(user, "test-repo", "external openai test", repoUrl, true, "main", Collections.emptyList())
         );
     }
 
