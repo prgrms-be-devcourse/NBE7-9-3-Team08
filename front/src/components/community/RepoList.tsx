@@ -56,36 +56,17 @@ export default function RepositoryList() {
 
   return (
     <section className="flex flex-col gap-6 mt-6">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">커뮤니티</h1>
-          <p className="text-muted-foreground text-sm">
-            다른 사용자의 분석 결과를 둘러보세요.
-          </p>
-        </div>
 
-        {/* 정렬 */}
-        <div className="flex gap-2">
-          <Button
-            variant={sortType === 'latest' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSortType('latest')}
-          >
-            최신순
-          </Button>
-          <Button
-            variant={sortType === "score" ? "default" : "outline"}
-            onClick={() => setSortType("score")}
-          >
-            점수순
-          </Button>
-        </div>
+      {/* 헤더 */}
+      <div>
+        <h1 className="text-3xl font-bold">커뮤니티</h1>
+        <p className="text-muted-foreground text-sm">
+          다른 사용자의 분석 결과를 둘러보세요.
+        </p>
       </div>
 
       {/* 🔍 검색 영역 */}
       <div className="flex gap-2 items-center">
-
         {/* 검색 타입 선택 */}
         <Select value={searchType} onValueChange={(value) => setSearchType(value as "repoName" | "user")}>
           <SelectTrigger className="w-40">
@@ -117,7 +98,24 @@ export default function RepositoryList() {
         </Button>
       </div>
 
-      {/* 리포지토리 목록 */}
+      {/* 🔥 정렬 버튼 (검색 아래 + 오른쪽 정렬) */}
+      <div className="flex justify-end mt-3 gap-2">
+        <Button
+          variant={sortType === "latest" ? "default" : "outline"}
+          onClick={() => setSortType("latest")}
+        >
+          최신순
+        </Button>
+
+        <Button
+          variant={sortType === "score" ? "default" : "outline"}
+          onClick={() => setSortType("score")}
+        >
+          점수순
+        </Button>
+      </div>
+
+      {/* 리스트 */}
       {repositories.length === 0 ? (
         <p className="text-center text-muted-foreground py-8">
           아직 공개된 분석이 없습니다.
@@ -130,7 +128,7 @@ export default function RepositoryList() {
         </div>
       )}
 
-      {/* 페이지네이션 */}
+      {/* 페이징 */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 mt-8">
           <Button
@@ -156,6 +154,7 @@ export default function RepositoryList() {
           </Button>
         </div>
       )}
+
     </section>
   )
 }
