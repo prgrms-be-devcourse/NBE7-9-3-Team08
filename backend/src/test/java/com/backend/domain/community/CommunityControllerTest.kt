@@ -80,14 +80,7 @@ class CommunityControllerTest(
 
         // Repository 생성
         repo = repositoryJpaRepository.save(
-            Repositories.builder()
-                .user(user)
-                .name("test-repo")
-                .htmlUrl("github.com")
-                .description("설명")
-                .mainBranch("main")
-                .publicRepository(true)
-                .build()
+            Repositories.create(user, "test-repo", "github.com", "설명", true, "main")
         )
 
         // Analysis 생성

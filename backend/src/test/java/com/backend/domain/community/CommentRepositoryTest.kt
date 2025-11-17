@@ -36,14 +36,7 @@ class CommentRepositoryTest {
         val user = User("tester@example.com", "1234", "테스터")
         em.persist(user)
 
-        val repo = Repositories.builder()
-            .user(user)
-            .name("test-repo")
-            .description("테스트용 레포지토리입니다.")
-            .htmlUrl("https://github.com/test/test-repo")
-            .publicRepository(true)
-            .mainBranch("main")
-            .build()
+        val repo = Repositories.create(user, "test-repo", "테스트용 레포지토리입니다.", "https://github.com/test/test-repo", true, "main")
         em.persist(repo)
 
         val analysisResult = builder()

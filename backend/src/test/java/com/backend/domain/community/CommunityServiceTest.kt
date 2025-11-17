@@ -8,6 +8,7 @@ import com.backend.domain.community.repository.CommentRepository
 import com.backend.domain.community.service.CommunityService
 import com.backend.domain.repository.entity.Repositories
 import com.backend.domain.repository.repository.RepositoryJpaRepository
+import com.backend.domain.user.entity.User
 import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
 import org.assertj.core.util.Lists.emptyList
@@ -68,19 +69,11 @@ class CommunityServiceTest {
     @Test
     @DisplayName("커뮤니티 분석결과 조회 성공 - 공개된 리포지토리 목록 반환")
     fun getCommunityRepositoryList_success() {
-        val repo1 = Repositories.builder()
-            .name("Repo1")
-            .htmlUrl("url1")
-            .publicRepository(true)
-            .user(null)
-            .build()
+        val tempUser = User("tester@test.com", "1234", "테스터")
 
-        val repo2 = Repositories.builder()
-            .name("Repo2")
-            .htmlUrl("url2")
-            .publicRepository(true)
-            .user(null)
-            .build()
+        val repo1 = Repositories.create(null, "Repo1", "", "url1", true, "main")
+
+        val repo2 = Repositories.create(null, "Repo2", "", "url2", true, "main")
 
         Mockito.`when`(repositoryJpaRepository.findByPublicRepository(true))
             .thenReturn(listOf(repo1, repo2))
