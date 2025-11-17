@@ -102,8 +102,11 @@ class RepositoryServiceUnitTest {
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(gitHubDataFetcher.fetchRepositoryInfo(anyString(), anyString())).thenReturn(repo);
-        when(repositoryJpaRepository.findByHtmlUrlAndUserId(anyString(), anyLong()))
+
+        // 기존: findByHtmlUrlAndUserId -> 변경: findIncludingDeleted
+        when(repositoryJpaRepository.findIncludingDeleted(anyString(), anyLong()))
                 .thenReturn(null);
+
         when(gitHubDataFetcher.fetchLanguages(anyString(), anyString()))
                 .thenReturn(Map.of("Java", 12345));
 
@@ -150,8 +153,11 @@ class RepositoryServiceUnitTest {
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(gitHubDataFetcher.fetchRepositoryInfo(anyString(), anyString())).thenReturn(repo);
-        when(repositoryJpaRepository.findByHtmlUrlAndUserId(anyString(), anyLong()))
+
+        // 기존: findByHtmlUrlAndUserId -> 변경: findIncludingDeleted
+        when(repositoryJpaRepository.findIncludingDeleted(anyString(), anyLong()))
                 .thenReturn(existing);
+
         when(gitHubDataFetcher.fetchLanguages(anyString(), anyString()))
                 .thenReturn(Map.of("Java", 999));
 
@@ -159,7 +165,43 @@ class RepositoryServiceUnitTest {
 
         repositoryService.fetchAndSaveRepository("a", "b", 1L);
 
+        // 기존 엔티티 업데이트만 수행, save()는 호출되지 않아야 함
         verify(repositoryJpaRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("삭제된 저장소가 다시 분석되면 deleted=false로 복구된다")
+    void restoreDeletedRepository() {
+        RepoResponse repo = dummyRepo(100);
+
+        // soft delete 상태의 기존 엔티티
+        Repositories existing = Repositories.Companion.create(
+                testUser,
+                "soft-deleted-repo",
+                "Deleted Description",
+                "https://github.com/test/deleted-repo",
+                true,
+                "main",
+                List.of()
+        );
+        // Kotlin 엔티티의 var deleted 에 대한 setter
+        existing.setDeleted(true);
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
+        when(gitHubDataFetcher.fetchRepositoryInfo(anyString(), anyString())).thenReturn(repo);
+
+        when(repositoryJpaRepository.findIncludingDeleted(anyString(), anyLong()))
+                .thenReturn(existing);
+
+        when(gitHubDataFetcher.fetchLanguages(anyString(), anyString()))
+                .thenReturn(Map.of("Java", 1000));
+
+        setupBasicGitHubMocks();
+
+        repositoryService.fetchAndSaveRepository("a", "b", 1L);
+
+        // soft delete 복구 확인
+        assertThat(existing.getDeleted()).isFalse();
     }
 
     @Test
@@ -169,8 +211,11 @@ class RepositoryServiceUnitTest {
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(gitHubDataFetcher.fetchRepositoryInfo(anyString(), anyString())).thenReturn(repo);
-        when(repositoryJpaRepository.findByHtmlUrlAndUserId(anyString(), anyLong()))
+
+        // 기존: findByHtmlUrlAndUserId -> 변경: findIncludingDeleted
+        when(repositoryJpaRepository.findIncludingDeleted(anyString(), anyLong()))
                 .thenReturn(null);
+
         when(gitHubDataFetcher.fetchLanguages(anyString(), anyString()))
                 .thenReturn(Map.of());
 
@@ -201,8 +246,10 @@ class RepositoryServiceUnitTest {
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(gitHubDataFetcher.fetchRepositoryInfo(anyString(), anyString())).thenReturn(repo);
-        when(repositoryJpaRepository.findByHtmlUrlAndUserId(anyString(), anyLong()))
+
+        when(repositoryJpaRepository.findIncludingDeleted(anyString(), anyLong()))
                 .thenReturn(null);
+
         when(gitHubDataFetcher.fetchLanguages(anyString(), anyString()))
                 .thenReturn(Map.of());
 
@@ -247,8 +294,10 @@ class RepositoryServiceUnitTest {
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(gitHubDataFetcher.fetchRepositoryInfo(anyString(), anyString())).thenReturn(repo);
-        when(repositoryJpaRepository.findByHtmlUrlAndUserId(anyString(), anyLong()))
+
+        when(repositoryJpaRepository.findIncludingDeleted(anyString(), anyLong()))
                 .thenReturn(null);
+
         when(gitHubDataFetcher.fetchLanguages(anyString(), anyString()))
                 .thenReturn(Map.of());
 
@@ -340,7 +389,7 @@ class RepositoryServiceUnitTest {
         verify(repositoryJpaRepository, times(1)).findByUserId(1L);
     }
 
-    // Reflection 헬퍼 메서드 추가 (테스트 클래스 하단에)
+    // Reflection 헬퍼 메서드 (테스트 클래스 하단)
     private void setField(Object target, String fieldName, Object value) throws Exception {
         Class<?> clazz = target.getClass();
 
