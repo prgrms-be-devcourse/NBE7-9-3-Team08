@@ -14,11 +14,9 @@ import com.backend.domain.user.repository.UserRepository
 import com.backend.domain.user.util.JwtUtil
 import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
-import io.mockk.mockk
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -61,6 +59,20 @@ class RepositoryServiceUnitTest {
             name = "Test User"
         )
     }
+
+    @BeforeEach
+    fun initMappers() {
+        every { repositoryInfoMapper.mapBasicInfo(any(), any()) } just runs
+        every { commitInfoMapper.mapCommitInfo(any(), any()) } just runs
+        every { readmeInfoMapper.mapReadmeInfo(any(), any()) } just runs
+        every { securityInfoMapper.mapSecurityInfo(any(), any()) } just runs
+        every { testInfoMapper.mapTestInfo(any(), any()) } just runs
+        every { cicdInfoMapper.mapCicdInfo(any(), any()) } just runs
+        every { issueInfoMapper.mapIssueInfo(any(), any()) } just runs
+        every { pullRequestInfoMapper.mapPullRequestInfo(any(), any()) } just runs
+        every { sseProgressNotifier.notify(any(), any(), any()) } just runs
+    }
+
 
     private fun dummyRepo(size: Int?): RepoResponse =
         RepoResponse(
@@ -160,12 +172,16 @@ class RepositoryServiceUnitTest {
         every { gitHubDataFetcher.fetchRepositoryInfo(any(), any()) } returns repo
         every { repositoryJpaRepository.findIncludingDeleted(any(), any()) } returns existing
         every { gitHubDataFetcher.fetchLanguages(any(), any()) } returns mapOf("Java" to 1000)
+
+        every { repositoryJpaRepository.save(any()) } answers { firstArg() }
+
         setupBasicGitHubMocks()
 
         repositoryService.fetchAndSaveRepository("a", "b", 1L)
 
         assertThat(existing.deleted).isFalse()
     }
+
 
     @Test
     @DisplayName("저장소 크기 null → 검증 통과")
