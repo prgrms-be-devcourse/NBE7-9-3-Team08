@@ -140,7 +140,7 @@ class Repositories protected constructor(
 
         @JvmStatic
         fun createMinimal(
-            user: User,
+            user: User?,
             htmlUrl: String,
             name: String
         ): Repositories {

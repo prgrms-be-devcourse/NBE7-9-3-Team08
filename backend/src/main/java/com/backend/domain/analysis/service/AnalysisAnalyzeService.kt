@@ -21,7 +21,7 @@ class AnalysisAnalyzeService (
 
     private val log = LoggerFactory.getLogger(AnalysisAnalyzeService::class.java)
 
-    @Async
+    @Async("analysisExecutor")
     fun runAnalysisAsync(
         userId: Long,
         githubUrl: String,
@@ -33,22 +33,36 @@ class AnalysisAnalyzeService (
             safeSendSse(userId, "status", "분석 시작")
 
             // 1. Repository 데이터 수집
-            val repoData = repositoryService.fetchAndSaveRepository(owner, repo, userId)
-            safeSendSse(userId, "status", "GitHub 데이터 수집 완료")
-            lockManager.refreshLock(cacheKey)
-            log.info("RepositoryData 수집 완료: {}", repoData)
+            val repositoryData = try {
+                val data = repositoryService.fetchAndSaveRepository(owner, repo, userId)
+                lockManager.refreshLock(cacheKey)
+                safeSendSse(userId, "status", "GitHub 데이터 수집 완료")
+                log.info("Repository Data 수집 완료: {}", data)
+                data
+            } catch (e: BusinessException) {
+                log.error("Repository 데이터 수집 실패: {}/{}", owner, repo, e)
+                safeSendSse(userId, "error", "Repository 데이터 수집 실패")
+                throw e
+            }
 
             // 2. 저장된 Repository 조회
-            val saved = repositoryJpaRepository.findByHtmlUrlAndUserId(githubUrl, userId)
+            val savedRepository = repositoryJpaRepository
+                .findByHtmlUrlAndUserId(repositoryData.repositoryUrl, userId)
                 ?: throw BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND)
 
-            val repositoryId = saved.id
-                ?: throw IllegalStateException("Repository id null")
+            val repositoryId = savedRepository.id
+                ?: throw IllegalStateException("Repository id is null")
 
             // 3. OpenAI API 데이터 분석 및 저장
-            evaluationService.evaluateAndSave(repoData, userId)
-            safeSendSse(userId, "status", "AI 평가 완료")
-            lockManager.refreshLock(cacheKey)
+            try {
+                evaluationService.evaluateAndSave(repositoryData, userId)
+                lockManager.refreshLock(cacheKey)
+                safeSendSse(userId, "status", "AI 평가 완료")
+            } catch (e: BusinessException) {
+                log.error("AI 평가 실패: userId={}, url={}", userId, githubUrl, e)
+                safeSendSse(userId, "error", "AI 평가 실패: ${e.message}")
+                throw BusinessException(ErrorCode.ANALYSIS_FAIL)
+            }
 
             // 4. 완료 전송
             safeSendSse(userId, "complete", "최종 리포트 작성")
@@ -56,8 +70,12 @@ class AnalysisAnalyzeService (
             log.error("비동기 분석 중 오류: userId={}, url={} / {}", userId, githubUrl, e.message)
             safeSendSse(userId, "error", "분석 처리 중 오류 발생")
         } finally {
-            lockManager.releaseLock(cacheKey)
-            log.info("분석 락 해제: {}", cacheKey)
+            try {
+                lockManager.releaseLock(cacheKey)
+                log.info("분석 락 해제: cacheKey={}", cacheKey)
+            } catch (e: Exception) {
+                log.warn("⚠️ 락 해제 중 예외 발생 (무시됨): {}", e.message)
+            }
         }
     }
 

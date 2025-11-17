@@ -9,8 +9,6 @@ import com.backend.domain.analysis.service.AnalysisService
 import com.backend.domain.repository.dto.response.RepositoryComparisonResponse
 import com.backend.domain.repository.dto.response.RepositoryResponse
 import com.backend.domain.repository.service.RepositoryService
-import com.backend.global.exception.BusinessException
-import com.backend.global.exception.ErrorCode
 import com.backend.global.response.ApiResponse
 import com.backend.global.response.ApiResponse.Companion.success
 import jakarta.servlet.http.HttpServletRequest
@@ -34,7 +32,6 @@ class AnalysisController(
     ): ResponseEntity<ApiResponse<AnalysisStartResponse>> {
 
         val repositoryId = analysisService.analyze(request.githubUrl, httpRequest)
-            ?: throw BusinessException(ErrorCode.ANALYSIS_FAIL)
 
         val response = AnalysisStartResponse(repositoryId)
         return ResponseEntity.ok(success(response))

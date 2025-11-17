@@ -6,13 +6,10 @@ import com.backend.domain.analysis.dto.response.HistoryResponseDto.AnalysisVersi
 import com.backend.domain.analysis.entity.AnalysisResult
 import com.backend.domain.analysis.lock.RedisLockManager
 import com.backend.domain.analysis.repository.AnalysisResultRepository
-import com.backend.domain.evaluation.service.EvaluationService
 import com.backend.domain.repository.dto.response.RepositoryComparisonResponse
-import com.backend.domain.repository.dto.response.RepositoryData
 import com.backend.domain.repository.dto.response.RepositoryResponse
 import com.backend.domain.repository.entity.Repositories
 import com.backend.domain.repository.repository.RepositoryJpaRepository
-import com.backend.domain.repository.service.RepositoryService
 import com.backend.domain.user.repository.UserRepository
 import com.backend.domain.user.util.JwtUtil
 import com.backend.global.exception.BusinessException
@@ -37,11 +34,10 @@ class AnalysisService(
     }
 
     /**
-     * Analysis 분석 프로세스 오케스트레이션 담당
-     * 1. GitHub URL 파싱 및 검증
-     * 2. Repository 도메인을 통한 데이터 수집
-     * 3. Evaluation 도메인을 통한 AI 평가
-     * 4. 분석 결과 저장
+     * 1) 요청 검증 + 락 획득
+     * 2) 필요 시 Repository 엔티티 최소 생성/조회 → repositoryId 확보
+     * 3) 비동기 분석 실행 위임
+     * 4) repositoryId 반환 (프론트는 이 값으로 상세 페이지 이동)
      */
     @Transactional
     fun analyze(githubUrl: String, request: HttpServletRequest): Long {
@@ -57,14 +53,28 @@ class AnalysisService(
         val user = userRepository.findById(userId)
             .orElseThrow { BusinessException(ErrorCode.USER_NOT_FOUND) }
 
-        val existing = repositoryJpaRepository.findByHtmlUrlAndUserId(githubUrl, userId)
-
-        val repositoryId = existing?.id ?: run {
-            val minimal = Repositories.createMinimal(user, githubUrl, repo)
-            repositoryJpaRepository.save(minimal).id!!
+        // 1) 이미 존재하는 리포지토리인지 먼저 체크
+        val existingRepo = repositoryJpaRepository.findByHtmlUrlAndUserId(githubUrl, userId)
+        val repositoryId: Long = existingRepo?.id ?: run {
+            // 새 저장소라면 최소 메타 정보만 먼저 저장해서 ID 확보 (선택 사항)
+            // 여기서는 간단히 이름 정도만 넣고, 나머지는 비동기에서 다시 fetch & update하는 방식도 가능
+            val placeholder = Repositories.createMinimal(
+                user,
+                githubUrl,
+                repo,
+            )
+            repositoryJpaRepository.save(placeholder).id
+                ?: throw IllegalStateException("Repository id is null after save")
         }
 
-        analysisAnalyzeService.runAnalysisAsync(userId, githubUrl, owner, repo, cacheKey)
+        // 2) GitHub API + OpenAI API 호출은 비동기로 위임
+        analysisAnalyzeService.runAnalysisAsync(
+            userId = userId,
+            githubUrl = githubUrl,
+            owner = owner,
+            repo = repo,
+            cacheKey = cacheKey
+        )
 
         return repositoryId
     }
