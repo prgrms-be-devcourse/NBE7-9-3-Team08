@@ -14,6 +14,17 @@ interface RepositoryJpaRepository : JpaRepository<Repositories, Long> {
     fun findByUserId(userId: Long): List<Repositories>
     fun findByPublicRepository(publicRepository: Boolean): List<Repositories>
     fun findByPublicRepositoryTrue(pageable: Pageable): Page<Repositories>
+    fun findByNameContainingIgnoreCaseAndPublicRepositoryTrue(
+        name: String,
+        pageable: Pageable
+    ): Page<Repositories>
+
+    fun findByUser_NameContainingIgnoreCaseAndPublicRepositoryTrue(
+        userName: String,
+        pageable: Pageable
+    ): Page<Repositories>
+
+
 
     @Query(
         value = """

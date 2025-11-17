@@ -1,15 +1,18 @@
 package com.backend.domain.community.service
 
 import com.backend.domain.analysis.repository.AnalysisResultRepository
+import com.backend.domain.community.dto.response.SearchResultDTO
 import com.backend.domain.community.entity.Comment
 import com.backend.domain.community.entity.Comment.Companion.create
 import com.backend.domain.community.repository.CommentRepository
 import com.backend.domain.repository.entity.Repositories
 import com.backend.domain.repository.repository.RepositoryJpaRepository
+import com.backend.global.dto.PageResponseDTO
 import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,7 +25,7 @@ class CommunityService (
 ){
     val repositoriesPublicTrue: List<Repositories?>
         // 커뮤니티 - 리포지토리 조회
-        get() = repositoryJpaRepository.findByPublicRepository(true)
+       get() = repositoryJpaRepository.findByPublicRepository(true)
 
     // 공개 여부 true인 Repo 페이징 조회
     fun getPagedRepositoriesPublicTrue(page: Int, size: Int): Page<Repositories> {
@@ -86,5 +89,44 @@ class CommunityService (
         }
 
         targetComment.updateComment(newContent) // ✅ 엔티티 변경 감지
+    }
+
+    // 댓글 검색
+    fun searchByRepoName(keyword: String, pageable: Pageable): PageResponseDTO<SearchResultDTO> {
+        val pageResult = repositoryJpaRepository
+            .findByNameContainingIgnoreCaseAndPublicRepositoryTrue(keyword, pageable)
+
+        val dtoList = pageResult.map { repo ->
+            SearchResultDTO(
+                id = repo.id,
+                name = repo.name,
+                description = repo.description,
+                htmlUrl = repo.htmlUrl,
+                userName = repo.user?.name,
+                languages = repo.getLanguages().map { it.language.name },
+                createDate = repo.createDate
+            )
+        }
+
+        return PageResponseDTO(dtoList)
+    }
+
+    fun searchByUserName(keyword: String, pageable: Pageable): PageResponseDTO<SearchResultDTO> {
+        val pageResult = repositoryJpaRepository
+            .findByUser_NameContainingIgnoreCaseAndPublicRepositoryTrue(keyword, pageable)
+
+        val dtoList = pageResult.map { repo ->
+            SearchResultDTO(
+                id = repo.id,
+                name = repo.name,
+                description = repo.description,
+                htmlUrl = repo.htmlUrl,
+                userName = repo.user?.name,
+                languages = repo.getLanguages().map { it.language.name },
+                createDate = repo.createDate
+            )
+        }
+
+        return PageResponseDTO(dtoList)
     }
 }

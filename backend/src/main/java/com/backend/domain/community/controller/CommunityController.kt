@@ -7,14 +7,17 @@ import com.backend.domain.community.dto.request.CommentRequestDTO
 import com.backend.domain.community.dto.request.CommentUpdateRequestDTO
 import com.backend.domain.community.dto.response.CommentResponseDTO
 import com.backend.domain.community.dto.response.CommentWriteResponseDTO
+import com.backend.domain.community.dto.response.SearchResultDTO
 import com.backend.domain.community.service.CommunityService
 import com.backend.domain.user.service.UserService
 import com.backend.domain.user.util.JwtUtil
+import com.backend.global.dto.PageResponseDTO
 import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -27,6 +30,12 @@ class CommunityController(
     val jwtUtil: JwtUtil
 ) {
 
+
+    /*
+    * 커뮤니티 - 레포지토리 관련 컨트롤러
+    */
+
+    // 레포지토리 조회
     @GetMapping("/repositories")
     fun getPublicRepositories(
         @RequestParam(defaultValue = "0") page: Int,
@@ -67,7 +76,31 @@ class CommunityController(
         return ResponseEntity.ok(pageResponseDto)
     }
 
+    @GetMapping("/search")
+    fun searchRepository(
+        @RequestParam content: String,
+        @RequestParam(defaultValue = "repoName") searchSort: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "5") size: Int,
+    ): ResponseEntity<PageResponseDTO<SearchResultDTO>> {
 
+        val pageable = PageRequest.of(page, size)
+
+        val results = when (searchSort) {
+            "user" -> communityService.searchByUserName(content, pageable)
+            "repoName" -> communityService.searchByRepoName(content, pageable)
+            else -> throw IllegalArgumentException("Invalid searchSort")
+        }
+
+        return ResponseEntity.ok(results)
+    }
+
+
+
+
+    /*
+    * 댓글 관련 컨트롤러
+    */
     @GetMapping("/{analysisResultId}/comments")
     fun getCommentsByAnalysisResult(
         @PathVariable analysisResultId: Long,
@@ -100,6 +133,7 @@ class CommunityController(
     }
 
 
+    // 댓글 작성
     @PostMapping("/{analysisResultId}/write")
     fun addComment(
         @PathVariable analysisResultId: Long,
@@ -119,7 +153,7 @@ class CommunityController(
         return ResponseEntity.ok(CommentWriteResponseDTO(saved))
     }
 
-
+    // 댓글 삭제
     @DeleteMapping("/delete/{commentId}")
     fun deleteComment(
         @PathVariable commentId: Long,
@@ -135,6 +169,7 @@ class CommunityController(
     }
 
 
+    // 댓글 수정
     @PatchMapping("/modify/{commentId}/comment")
     fun modifyComment(
         @PathVariable commentId: Long,
