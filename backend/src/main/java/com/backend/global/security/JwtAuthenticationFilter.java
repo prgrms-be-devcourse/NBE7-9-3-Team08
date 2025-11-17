@@ -84,16 +84,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        //
-
-
         String token = extractTokenFromCookie(request);
-
-/*        //"Bearer " 제거
-        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
-            token = authorizationHeader.substring(7);
-        }
-        */
 
         //token이 null이거나 비어있다면 JWT가 입력되지 않은것으로 판단
         if(token==null||token.isEmpty()){
