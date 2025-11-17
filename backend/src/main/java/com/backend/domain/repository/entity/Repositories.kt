@@ -6,6 +6,8 @@ import com.backend.domain.repository.util.LanguageUtils
 import com.backend.domain.user.entity.User
 import com.backend.global.entity.BaseEntity
 import jakarta.persistence.*
+import org.hibernate.annotations.SQLDelete
+import org.hibernate.annotations.Where
 
 @Entity
 @Table(
@@ -17,6 +19,8 @@ import jakarta.persistence.*
         )
     ]
 )
+@SQLDelete(sql = "UPDATE repositories SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 class Repositories protected constructor(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -36,6 +40,9 @@ class Repositories protected constructor(
 
     @Column(name = "main_branch")
     var mainBranch: String,
+
+    @Column(nullable = false)
+    var deleted: Boolean = false,
 
     initLanguages: List<RepositoryLanguage> = emptyList()
 ) : BaseEntity() {

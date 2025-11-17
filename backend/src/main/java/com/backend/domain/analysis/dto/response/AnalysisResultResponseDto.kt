@@ -19,16 +19,20 @@ data class AnalysisResultResponseDto(
     val improvements: String,
     val createDate: LocalDateTime,
 ) {
-
-    constructor(analysisResult: AnalysisResult, score: Score) : this(
-        totalScore = score.totalScore,         // getTotalScore()
-        readmeScore = score.readmeScore,
-        testScore = score.testScore,
-        commitScore = score.commitScore,
-        cicdScore = score.cicdScore,
-        summary = analysisResult.summary,
-        strengths = analysisResult.strengths,
-        improvements = analysisResult.improvements,
-        createDate = analysisResult.createDate,
-    )
+    companion object {
+        @JvmStatic
+        fun from(analysisResult: AnalysisResult, score: Score): AnalysisResultResponseDto {
+            return AnalysisResultResponseDto(
+                totalScore = score.totalScore,
+                readmeScore = score.readmeScore,
+                testScore = score.testScore,
+                commitScore = score.commitScore,
+                cicdScore = score.cicdScore,
+                summary = analysisResult.summary,
+                strengths = analysisResult.strengths,
+                improvements = analysisResult.improvements,
+                createDate = analysisResult.createDate,
+            )
+        }
+    }
 }

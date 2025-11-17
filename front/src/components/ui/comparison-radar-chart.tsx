@@ -20,18 +20,32 @@ interface ComparisonRadarChartProps {
   repositories: RepoChart[]
 }
 
+const MAX_SCORES = {
+  README: 30,
+  TEST: 30,
+  COMMIT: 25,
+  "CI/CD": 15,
+} as const
+type CategoryKey = keyof typeof MAX_SCORES
+
+
 export function ComparisonRadarChart({ repositories }: ComparisonRadarChartProps) {
   if (!repositories || repositories.length === 0)
     return <p className="text-center text-sm text-muted-foreground">비교할 리포지토리를 선택해주세요.</p>
 
   // 데이터 통합 (Recharts는 같은 key를 가진 객체 배열이 필요함)
-  const chartData = repositories[0].data.map((d, idx) => {
-    const merged: any = { category: d.category }
+  const chartData = Object.keys(MAX_SCORES).map((category) => {
+    const maxScore = MAX_SCORES[category as CategoryKey]
+    const merged: Record<string, string | number> = { category }
+  
     repositories.forEach((repo) => {
-      merged[repo.name] = repo.data[idx].score
+      const scoreEntry = repo.data.find((item) => item.category === category)
+      const rawScore = scoreEntry?.score ?? 0
+      merged[repo.name] = Math.min((rawScore / maxScore) * 100, 100)
     })
+  
     return merged
-  })
+  })  
 
   return (
     <div className="w-full h-[400px]">

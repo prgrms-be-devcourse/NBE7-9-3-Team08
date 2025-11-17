@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import { Github, ExternalLink, Calendar, X } from "lucide-react"
 import { RepositoryComparisonResponse } from "@/types/analysis"
 import { formatRelativeTimeKST } from "@/lib/utils/formatDate"
@@ -28,27 +29,36 @@ export function HistoryCompare({
   error,
   onExit,
 }: HistoryCompareProps) {
+  const repositoryMap = useMemo(() => {
+    const map = new Map<number, RepositoryComparisonResponse>()
+    repositories.forEach((repo) => map.set(repo.repositoryId, repo))
+    return map
+  }, [repositories])
+
   const comparisonChartData = useMemo(() => {
     const palette = ["hsl(var(--primary))", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"]
-    return selectedRepoIds.map((repoId, index) => {
-      const repo = repositories.find((item) => item.repositoryId === repoId)!
-      return {
-        name: repo.name.split("/").pop() ?? repo.name,
-        color: palette[index % palette.length],
-        data: [
-          { category: "README", score: repo.latestAnalysis.scores.readme },
-          { category: "TEST", score: repo.latestAnalysis.scores.test },
-          { category: "COMMIT", score: repo.latestAnalysis.scores.commit },
-          { category: "CI/CD", score: repo.latestAnalysis.scores.cicd },
-        ],
-      }
-    })
-  }, [repositories, selectedRepoIds])
+    return selectedRepoIds
+      .map((repoId, index) => {
+        const repo = repositoryMap.get(repoId)
+        if (!repo) return null
+        return {
+          name: repo.name.split("/").pop() ?? repo.name,
+          color: palette[index % palette.length],
+          data: [
+            { category: "README", score: repo.latestAnalysis.scores.readme },
+            { category: "TEST", score: repo.latestAnalysis.scores.test },
+            { category: "COMMIT", score: repo.latestAnalysis.scores.commit },
+            { category: "CI/CD", score: repo.latestAnalysis.scores.cicd },
+          ],
+        }
+      })
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+  }, [repositoryMap, selectedRepoIds])
 
   if (loading)
     return (
       <Card className="p-10 text-center">
-        <p className="text-muted-foreground">비교 데이터를 불러오는 중입니다…</p>
+        <p className="text-muted-foreground">비교 데이터를 불러오는 중입니다...</p>
       </Card>
     )
 
@@ -57,7 +67,7 @@ export function HistoryCompare({
       <Card className="p-10 text-center space-y-4">
         <p className="text-red-500">{error}</p>
         <Button variant="outline" onClick={onExit}>
-          비교 모드 나가기
+          비교 모드 종료
         </Button>
       </Card>
     )
@@ -65,7 +75,7 @@ export function HistoryCompare({
   if (repositories.length === 0)
     return (
       <Card className="p-10 text-center space-y-4">
-        <p className="text-muted-foreground">비교 가능한 분석이 아직 없습니다.</p>
+        <p className="text-muted-foreground">비교 가능한 분석 기록이 아직 없습니다.</p>
         <Button variant="outline" onClick={onExit}>
           돌아가기
         </Button>
@@ -76,28 +86,42 @@ export function HistoryCompare({
     <div className="space-y-6">
       {selectedRepoIds.length > 0 && (
         <Card className="p-4">
-          <div className="mb-2 text-sm font-medium">선택된 리포지토리 ({selectedRepoIds.length}/5)</div>
+          <div className="mb-2 text-sm font-medium">
+            선택된 리포지토리 ({selectedRepoIds.length}/5)
+          </div>
           <div className="flex flex-wrap gap-2">
-            {selectedRepoIds.map((repoId) => {
-              const repo = repositories.find((item) => item.repositoryId === repoId)!
-              return (
-                <Badge key={repoId} variant="secondary" className="gap-1">
-                  {repo.name.split("/").pop() ?? repo.name}
-                  <button
-                    type="button"
-                    onClick={() => onSelectRepo(repoId)}
-                    className="ml-1 rounded-full hover:bg-muted"
+            <AnimatePresence initial={false}>
+              {selectedRepoIds.map((repoId) => {
+                const repo = repositoryMap.get(repoId)
+                if (!repo) return null
+                return (
+                  <motion.div
+                    key={repoId}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
                   >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )
-            })}
+                    <Badge variant="secondary" className="gap-1">
+                      {repo.name.split("/").pop() ?? repo.name}
+                      <button
+                        type="button"
+                        onClick={() => onSelectRepo(repoId)}
+                        className="ml-1 rounded-full hover:bg-muted"
+                        aria-label={`${repo.name} 제거`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
           </div>
         </Card>
       )}
 
-      {selectedRepoIds.length >= 2 && (
+      {comparisonChartData.length >= 2 && (
         <>
           <ComparisonRadarChart repositories={comparisonChartData} />
           <Card className="mt-4 p-6">
@@ -130,10 +154,10 @@ export function HistoryCompare({
                   <tr className="border-t-2 font-semibold">
                     <td className="py-3">총점</td>
                     {selectedRepoIds.map((repoId) => {
-                      const repo = repositories.find((item) => item.repositoryId === repoId)!
+                      const repo = repositoryMap.get(repoId)
                       return (
                         <td key={repoId} className="py-3 text-center">
-                          {repo.latestAnalysis.scores.total}
+                          {repo?.latestAnalysis.scores.total ?? "-"}
                         </td>
                       )
                     })}
@@ -151,19 +175,28 @@ export function HistoryCompare({
           return (
             <Card
               key={repo.repositoryId}
+              role="button"
+              aria-pressed={isSelected}
+              tabIndex={0}
               className={`p-6 transition-all cursor-pointer hover:border-primary/50 ${
                 isSelected ? "border-primary ring-2 ring-primary/20" : ""
               }`}
               onClick={() => onSelectRepo(repo.repositoryId)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  onSelectRepo(repo.repositoryId)
+                }
+              }}
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center">
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={() => onSelectRepo(repo.repositoryId)}
-                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => e.stopPropagation()}
-                  />
-                </div>
+                <Checkbox
+                  checked={isSelected}
+                  onClick={(e) => e.stopPropagation()} 
+                  onKeyDown={(e) => e.stopPropagation()}
+                  onCheckedChange={() => onSelectRepo(repo.repositoryId)}
+                  aria-label={`${repo.name} 선택`}
+                />
 
                 <div className="flex-1">
                   <div className="mb-2 flex items-center gap-2">

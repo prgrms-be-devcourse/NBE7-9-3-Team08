@@ -41,27 +41,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         //  JWT 검증이 필요 없는 URL (회원가입, 로그인, 이메일 인증코드 발송,이메일 인증코드 검증)
         List<ExcludedRequest> excludedRequests = List.of(
-                // 개발 도구 (모든 메서드 허용)
+                // ===== 개발 도구 (개발 환경에서만 허용) =====
                 new ExcludedRequest("/h2-console/**", null),
                 new ExcludedRequest("/swagger-ui/**", null),
                 new ExcludedRequest("/v3/api-docs/**", null),
                 new ExcludedRequest("/swagger-resources/**", null),
                 new ExcludedRequest("/webjars/**", null),
 
-                // 인증 관련 API
+                // ===== 인증 관련 API (누구나 접근 가능) =====
                 new ExcludedRequest("/api/login", "POST"),
                 new ExcludedRequest("/api/auth", "POST"),
                 new ExcludedRequest("/api/verify", "POST"),
                 new ExcludedRequest("/api/user", "POST"),
 
-                // 커뮤니티 관련 API
-                new ExcludedRequest("/api/community/**", null),
+                // ===== 커뮤니티 조회 API (읽기 전용, 인증 불필요) =====
+                new ExcludedRequest("/api/community/repositories", "GET"),
+                new ExcludedRequest("/api/community/*/comments", "GET"),
 
+                // ===== 분석 결과 조회 API (읽기 전용, 인증 불필요) =====
                 new ExcludedRequest("/api/analysis/repositories/{repositoriesId}", "GET"),
                 new ExcludedRequest("/api/analysis/repositories/{repositoryId}/results/{analysisId}", "GET"),
-                new ExcludedRequest("/api/analysis/stream/**", "GET"),
-                new ExcludedRequest("/api/repositories/**", null),
-                new ExcludedRequest("/api/ai/complete/**", null)
+                new ExcludedRequest("/api/analysis/stream/**", "GET")
         );
 
         // 요청 경로 + 메서드가 일치하는 경우 필터 스킵
