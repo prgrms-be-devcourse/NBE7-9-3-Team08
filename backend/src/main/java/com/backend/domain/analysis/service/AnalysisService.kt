@@ -13,6 +13,7 @@ import com.backend.domain.repository.dto.response.RepositoryResponse
 import com.backend.domain.repository.entity.Repositories
 import com.backend.domain.repository.repository.RepositoryJpaRepository
 import com.backend.domain.repository.service.RepositoryService
+import com.backend.domain.user.repository.UserRepository
 import com.backend.domain.user.util.JwtUtil
 import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
@@ -23,13 +24,12 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class AnalysisService(
-    private val repositoryService: RepositoryService,
     private val analysisResultRepository: AnalysisResultRepository,
-    private val evaluationService: EvaluationService,
     private val repositoryJpaRepository: RepositoryJpaRepository,
-    private val sseProgressNotifier: SseProgressNotifier,
     private val lockManager: RedisLockManager,
     private val jwtUtil: JwtUtil,
+    private val analysisAnalyzeService: AnalysisAnalyzeService,
+    private val userRepository: UserRepository
 ) {
 
     companion object {
@@ -54,62 +54,19 @@ class AnalysisService(
             throw BusinessException(ErrorCode.ANALYSIS_IN_PROGRESS)
         }
 
-        try {
-            safeSendSse(userId, "status", "분석 시작")
+        val user = userRepository.findById(userId)
+            .orElseThrow { BusinessException(ErrorCode.USER_NOT_FOUND) }
 
-            // 1. Repository 데이터 수집
-            val repositoryData: RepositoryData = try {
-                val data = repositoryService.fetchAndSaveRepository(owner, repo, userId)
-                lockManager.refreshLock(cacheKey)
-                safeSendSse(userId, "status", "GitHub 데이터 수집 완료")
-                log.info("Repository Data 수집 완료: {}", data)
-                data
-            } catch (e: BusinessException) {
-                log.error("Repository 데이터 수집 실패: {}/{}", owner, repo, e)
-                safeSendSse(userId, "error", "Repository 데이터 수집 실패")
-                throw e
-            }
+        val existing = repositoryJpaRepository.findByHtmlUrlAndUserId(githubUrl, userId)
 
-            // 2. 저장된 Repository 조회
-            val savedRepository = repositoryJpaRepository
-                .findByHtmlUrlAndUserId(repositoryData.repositoryUrl, userId)
-                ?: throw BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND)
-
-            val repositoryId = savedRepository.id
-                ?: throw IllegalStateException("Repository id is null")
-
-            // 3. OpenAI API 데이터 분석 및 저장
-            try {
-                evaluationService.evaluateAndSave(repositoryData, userId)
-                lockManager.refreshLock(cacheKey)
-                safeSendSse(userId, "status", "AI 평가 완료")
-            } catch (e: BusinessException) {
-                safeSendSse(userId, "error", "AI 평가 실패: ${e.message}")
-                throw BusinessException(ErrorCode.ANALYSIS_FAIL)
-            }
-
-            safeSendSse(userId, "complete", "최종 리포트 생성")
-            return repositoryId
-        } finally {
-            try {
-                lockManager.releaseLock(cacheKey)
-                log.info("분석 락 해제: cacheKey={}", cacheKey)
-            } catch (e: Exception) {
-                log.warn("⚠️ 락 해제 중 예외 발생 (무시됨): {}", e.message)
-            }
+        val repositoryId = existing?.id ?: run {
+            val minimal = Repositories.createMinimal(user, githubUrl, repo)
+            repositoryJpaRepository.save(minimal).id!!
         }
-    }
 
-    // SSE 전송 헬퍼 메서드
-    private fun safeSendSse(userId: Long, event: String, message: String) {
-        try {
-            sseProgressNotifier.notify(userId, event, message)
-        } catch (e: Exception) {
-            log.warn(
-                "SSE 전송 실패 (분석은 계속): userId={}, event={}, error={}",
-                userId, event, e.message
-            )
-        }
+        analysisAnalyzeService.runAnalysisAsync(userId, githubUrl, owner, repo, cacheKey)
+
+        return repositoryId
     }
 
     // 특정 Repository의 모든 분석 결과 조회 (최신순)
