@@ -1,7 +1,7 @@
 package com.backend.domain.community.service
 
+import CommunityResponseDTO
 import com.backend.domain.analysis.repository.AnalysisResultRepository
-import com.backend.domain.community.dto.response.SearchResultDTO
 import com.backend.domain.community.entity.Comment
 import com.backend.domain.community.entity.Comment.Companion.create
 import com.backend.domain.community.repository.CommentRepository
@@ -91,42 +91,41 @@ class CommunityService (
         targetComment.updateComment(newContent) // ✅ 엔티티 변경 감지
     }
 
-    // 댓글 검색
-    fun searchByRepoName(keyword: String, pageable: Pageable): PageResponseDTO<SearchResultDTO> {
+    // 커뮤니티 - 레포지토리  검색
+    fun searchByRepoName(keyword: String, pageable: Pageable): PageResponseDTO<CommunityResponseDTO> {
         val pageResult = repositoryJpaRepository
             .findByNameContainingIgnoreCaseAndPublicRepositoryTrue(keyword, pageable)
 
         val dtoList = pageResult.map { repo ->
-            SearchResultDTO(
-                id = repo.id,
-                name = repo.name,
-                description = repo.description,
-                htmlUrl = repo.htmlUrl,
-                userName = repo.user?.name,
-                languages = repo.getLanguages().map { it.language.name },
-                createDate = repo.createDate
-            )
+            val latestAnalysis = analysisResultRepository
+                .findTopByRepositoriesOrderByCreateDateDesc(repo)
+                ?: throw BusinessException(ErrorCode.ANALYSIS_NOT_FOUND)
+
+            val score = latestAnalysis.score
+            CommunityResponseDTO(repo, latestAnalysis, score)
         }
 
         return PageResponseDTO(dtoList)
     }
 
-    fun searchByUserName(keyword: String, pageable: Pageable): PageResponseDTO<SearchResultDTO> {
+
+    // 🔍 작성자 이름 기준 검색
+    fun searchByUserName(keyword: String, pageable: Pageable): PageResponseDTO<CommunityResponseDTO> {
         val pageResult = repositoryJpaRepository
             .findByUser_NameContainingIgnoreCaseAndPublicRepositoryTrue(keyword, pageable)
 
         val dtoList = pageResult.map { repo ->
-            SearchResultDTO(
-                id = repo.id,
-                name = repo.name,
-                description = repo.description,
-                htmlUrl = repo.htmlUrl,
-                userName = repo.user?.name,
-                languages = repo.getLanguages().map { it.language.name },
-                createDate = repo.createDate
-            )
+
+            val latestAnalysis = analysisResultRepository
+                .findTopByRepositoriesOrderByCreateDateDesc(repo)
+                ?: throw BusinessException(ErrorCode.ANALYSIS_NOT_FOUND)
+
+            val score = latestAnalysis.score
+
+            CommunityResponseDTO(repo, latestAnalysis, score)
         }
 
         return PageResponseDTO(dtoList)
     }
+
 }

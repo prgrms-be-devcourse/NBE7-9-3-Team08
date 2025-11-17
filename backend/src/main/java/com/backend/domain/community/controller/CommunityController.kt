@@ -7,7 +7,6 @@ import com.backend.domain.community.dto.request.CommentRequestDTO
 import com.backend.domain.community.dto.request.CommentUpdateRequestDTO
 import com.backend.domain.community.dto.response.CommentResponseDTO
 import com.backend.domain.community.dto.response.CommentWriteResponseDTO
-import com.backend.domain.community.dto.response.SearchResultDTO
 import com.backend.domain.community.service.CommunityService
 import com.backend.domain.user.service.UserService
 import com.backend.domain.user.util.JwtUtil
@@ -82,7 +81,7 @@ class CommunityController(
         @RequestParam(defaultValue = "repoName") searchSort: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "5") size: Int,
-    ): ResponseEntity<PageResponseDTO<SearchResultDTO>> {
+    ): ResponseEntity<PageResponseDTO<CommunityResponseDTO>> {
 
         val pageable = PageRequest.of(page, size)
 
