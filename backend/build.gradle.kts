@@ -106,11 +106,11 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.26.3")
 
     // Kotlin Test 환경 (MockK + SpringMockK)
-    testImplementation("io.mockk:mockk:1.13.12")                // MockK 핵심
-    testImplementation("io.mockk:mockk-jvm:1.13.12")            // JUnit5 연동
-    testImplementation("io.mockk:mockk-agent-jvm:1.13.12")      // ★ 필수: instrumentation
-    testImplementation("com.ninja-squad:springmockk:4.0.2")     // Spring @MockBean 대체
-    testImplementation("org.jetbrains.kotlin:kotlin-reflect")    // Kotlin reflection (필수)
+    testImplementation("io.mockk:mockk:1.13.12")
+    testImplementation("io.mockk:mockk-jvm:1.13.12")
+    testImplementation("io.mockk:mockk-agent-jvm:1.13.12")
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
+    testImplementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // JUnit 런처
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
