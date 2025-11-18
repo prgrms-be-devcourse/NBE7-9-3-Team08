@@ -137,5 +137,22 @@ class Repositories protected constructor(
                 initLanguages = languages
             )
         }
+
+        @JvmStatic
+        fun createMinimal(
+            user: User?,
+            htmlUrl: String,
+            name: String
+        ): Repositories {
+            return Repositories(
+                user = user,
+                name = name,
+                description = null,
+                htmlUrl = htmlUrl,
+                publicRepository = false,
+                mainBranch = "main",
+                initLanguages = emptyList()
+            )
+        }
     }
 }

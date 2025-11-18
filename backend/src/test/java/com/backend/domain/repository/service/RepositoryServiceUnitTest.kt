@@ -356,4 +356,62 @@ class RepositoryServiceUnitTest {
         }
         error("Field $field not found")
     }
+
+    @Test
+    @DisplayName("ensureRepository → 기존 Repository 있으면 save 호출 없이 ID만 반환")
+    fun testEnsureRepositoryExisting() {
+        val existing = mockk<Repositories>()
+        every { existing.id } returns 5L
+
+        every { repositoryJpaRepository.findByHtmlUrlAndUserId(any(), any()) } returns existing
+
+        val result = repositoryService.ensureRepository(
+            userId = 1L,
+            githubUrl = "https://github.com/test/repo",
+            repoName = "repo"
+        )
+
+        assertThat(result).isEqualTo(5L)
+        verify(exactly = 0) { repositoryJpaRepository.save(any()) }
+    }
+
+    @Test
+    @DisplayName("ensureRepository → 기존 Repository 없으면 placeholder 저장 후 ID 반환")
+    fun testEnsureRepositoryNew() {
+        every { repositoryJpaRepository.findByHtmlUrlAndUserId(any(), any()) } returns null
+        every { userRepository.findById(any()) } returns java.util.Optional.of(testUser)
+
+        val placeholder = Repositories.createMinimal(
+            user = testUser,
+            htmlUrl = "https://github.com/test/repo",
+            name = "repo"
+        ).apply { setFieldValue("id", 11L) }
+
+        every { repositoryJpaRepository.save(any()) } returns placeholder
+
+        val id = repositoryService.ensureRepository(1L, "https://github.com/test/repo", "repo")
+
+        assertThat(id).isEqualTo(11L)
+    }
+
+    @Test
+    @DisplayName("ensureRepository → save 결과 ID null이면 REPOSITORY_INVALID_STATE 예외")
+    fun testEnsureRepositoryInvalidState() {
+        every { repositoryJpaRepository.findByHtmlUrlAndUserId(any(), any()) } returns null
+        every { userRepository.findById(any()) } returns java.util.Optional.of(testUser)
+
+        val placeholder = Repositories.createMinimal(
+            user = testUser,
+            htmlUrl = "https://github.com/test/repo",
+            name = "repo"
+        ).apply { setFieldValue("id", null) }
+
+        every { repositoryJpaRepository.save(any()) } returns placeholder
+
+        assertThatThrownBy {
+            repositoryService.ensureRepository(1L, "https://github.com/test/repo", "repo")
+        }
+            .isInstanceOf(BusinessException::class.java)
+            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REPOSITORY_INVALID_STATE)
+    }
 }

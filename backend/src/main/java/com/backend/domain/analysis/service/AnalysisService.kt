@@ -4,11 +4,8 @@ import com.backend.domain.analysis.dto.response.AnalysisResultResponseDto
 import com.backend.domain.analysis.dto.response.HistoryResponseDto
 import com.backend.domain.analysis.dto.response.HistoryResponseDto.AnalysisVersionDto
 import com.backend.domain.analysis.entity.AnalysisResult
-import com.backend.domain.analysis.lock.RedisLockManager
 import com.backend.domain.analysis.repository.AnalysisResultRepository
-import com.backend.domain.evaluation.service.EvaluationService
 import com.backend.domain.repository.dto.response.RepositoryComparisonResponse
-import com.backend.domain.repository.dto.response.RepositoryData
 import com.backend.domain.repository.dto.response.RepositoryResponse
 import com.backend.domain.repository.entity.Repositories
 import com.backend.domain.repository.repository.RepositoryJpaRepository
@@ -23,13 +20,11 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class AnalysisService(
-    private val repositoryService: RepositoryService,
     private val analysisResultRepository: AnalysisResultRepository,
-    private val evaluationService: EvaluationService,
     private val repositoryJpaRepository: RepositoryJpaRepository,
-    private val sseProgressNotifier: SseProgressNotifier,
-    private val lockManager: RedisLockManager,
     private val jwtUtil: JwtUtil,
+    private val analysisAnalyzeService: AnalysisAnalyzeService,
+    private val repositoryService: RepositoryService
 ) {
 
     companion object {
@@ -37,79 +32,33 @@ class AnalysisService(
     }
 
     /**
-     * Analysis 분석 프로세스 오케스트레이션 담당
-     * 1. GitHub URL 파싱 및 검증
-     * 2. Repository 도메인을 통한 데이터 수집
-     * 3. Evaluation 도메인을 통한 AI 평가
-     * 4. 분석 결과 저장
+     * 1) 요청 검증 + 락 획득
+     * 2) 필요 시 Repository 엔티티 최소 생성/조회 → repositoryId 확보
+     * 3) 비동기 분석 실행 위임
+     * 4) repositoryId 반환 (프론트는 이 값으로 상세 페이지 이동)
      */
     @Transactional
     fun analyze(githubUrl: String, request: HttpServletRequest): Long {
         val userId = jwtUtil.getUserId(request) ?: throw BusinessException(ErrorCode.UNAUTHORIZED)
 
         val (owner, repo) = parseGitHubUrl(githubUrl)
-        val cacheKey = "$userId:$githubUrl"
 
-        if (!lockManager.tryLock(cacheKey)) {
-            throw BusinessException(ErrorCode.ANALYSIS_IN_PROGRESS)
-        }
+        // 1) 이미 존재하는 Repository인지 검증 후 저장
+        val repositoryId = repositoryService.ensureRepository(
+            userId = userId,
+            githubUrl = githubUrl,
+            repoName = repo
+        )
 
-        try {
-            safeSendSse(userId, "status", "분석 시작")
+        // 2) GitHub API + OpenAI API 호출은 비동기로 위임
+        analysisAnalyzeService.runAnalysisAsync(
+            userId = userId,
+            githubUrl = githubUrl,
+            owner = owner,
+            repo = repo
+        )
 
-            // 1. Repository 데이터 수집
-            val repositoryData: RepositoryData = try {
-                val data = repositoryService.fetchAndSaveRepository(owner, repo, userId)
-                lockManager.refreshLock(cacheKey)
-                safeSendSse(userId, "status", "GitHub 데이터 수집 완료")
-                log.info("Repository Data 수집 완료: {}", data)
-                data
-            } catch (e: BusinessException) {
-                log.error("Repository 데이터 수집 실패: {}/{}", owner, repo, e)
-                safeSendSse(userId, "error", "Repository 데이터 수집 실패")
-                throw e
-            }
-
-            // 2. 저장된 Repository 조회
-            val savedRepository = repositoryJpaRepository
-                .findByHtmlUrlAndUserId(repositoryData.repositoryUrl, userId)
-                ?: throw BusinessException(ErrorCode.GITHUB_REPO_NOT_FOUND)
-
-            val repositoryId = savedRepository.id
-                ?: throw IllegalStateException("Repository id is null")
-
-            // 3. OpenAI API 데이터 분석 및 저장
-            try {
-                evaluationService.evaluateAndSave(repositoryData, userId)
-                lockManager.refreshLock(cacheKey)
-                safeSendSse(userId, "status", "AI 평가 완료")
-            } catch (e: BusinessException) {
-                safeSendSse(userId, "error", "AI 평가 실패: ${e.message}")
-                throw BusinessException(ErrorCode.ANALYSIS_FAIL)
-            }
-
-            safeSendSse(userId, "complete", "최종 리포트 생성")
-            return repositoryId
-        } finally {
-            try {
-                lockManager.releaseLock(cacheKey)
-                log.info("분석 락 해제: cacheKey={}", cacheKey)
-            } catch (e: Exception) {
-                log.warn("⚠️ 락 해제 중 예외 발생 (무시됨): {}", e.message)
-            }
-        }
-    }
-
-    // SSE 전송 헬퍼 메서드
-    private fun safeSendSse(userId: Long, event: String, message: String) {
-        try {
-            sseProgressNotifier.notify(userId, event, message)
-        } catch (e: Exception) {
-            log.warn(
-                "SSE 전송 실패 (분석은 계속): userId={}, event={}, error={}",
-                userId, event, e.message
-            )
-        }
+        return repositoryId
     }
 
     // 특정 Repository의 모든 분석 결과 조회 (최신순)
@@ -171,7 +120,7 @@ class AnalysisService(
         validateAccess(analysisResult.repositories, requestUserId)
 
         val score = analysisResult.score
-            ?: throw IllegalStateException("AnalysisResult.score is null")
+            ?: throw BusinessException(ErrorCode.FORBIDDEN)
 
         return AnalysisResultResponseDto.from(analysisResult, score)
     }
