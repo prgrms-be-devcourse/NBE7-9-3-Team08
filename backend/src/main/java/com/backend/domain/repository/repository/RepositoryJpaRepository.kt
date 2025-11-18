@@ -47,6 +47,16 @@ interface RepositoryJpaRepository : JpaRepository<Repositories, Long> {
         pageable: Pageable
     ): Page<Repositories>
 
+    /* 히스토리 검색 레포지토리 조회 */
+
+    // 레포지토리 이름으로 검색
+    fun findByUser_IdAndNameContainingIgnoreCase(
+        userId: Long,
+        content: String,
+        pageable: Pageable
+    ): Page<Repositories>
+
+
     @Query(
         value = """
             SELECT *
