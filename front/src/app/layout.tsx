@@ -25,16 +25,24 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body className={`font-sans ${inter.variable} antialiased`}>
-        {/* ✅ ToastProvider로 앱 전체 감싸기 */}
+      {/* ⭐ Footer 고정을 위한 핵심 부분 추가됨 ⭐ */}
+      <body className={`font-sans ${inter.variable} antialiased flex flex-col min-h-screen`}>
+
         <ToastProvider>
-          <Header /> {/* Header는 클라이언트 컴포넌트 */}
-          <main>
+          
+          {/* 상단 Header */}
+          <Header />
+
+          {/* ⭐ 남은 공간을 모두 채우게 만들어 footer를 아래로 밀어냄 */}
+          <main className="flex-1">
             <Suspense fallback={<div>로딩 중...</div>}>
               {children}
             </Suspense>
           </main>
+
+          {/* 하단 Footer - 항상 아래 고정 */}
           <Footer />
+
         </ToastProvider>
       </body>
     </html>
