@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/Button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ScoreBadge } from "@/components/history/ScoreBadge"
-import { Input } from "@/components/ui/input"  // 🔥 검색창 추가된 부분
+import { Input } from "@/components/ui/input"
 import { formatRelativeTimeKST } from "@/lib/utils/formatDate"
 import { Github, ExternalLink, Trash2, Calendar, GitCompare, X } from "lucide-react"
 import { RepositoryComparisonResponse } from "@/types/analysis"
@@ -32,6 +32,8 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
     setSortType,
     keyword,
     setKeyword,
+    searchQuery,
+    applySearch,
   } = useHistory(memberId)
 
   const router = useRouter()
@@ -132,7 +134,7 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
             <p className="text-sm text-muted-foreground">
               {compareMode
                 ? "비교할 리포지토리를 선택해 주세요 (최대 5개)"
-                : `${name}님의 최근 분석 기록을 정렬하거나 검색할 수 있습니다.`}
+                : `${name}님의 최근 분석 기록을 검색하거나 정렬할 수 있습니다.`}
             </p>
           </div>
 
@@ -156,23 +158,37 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
           </Button>
         </div>
 
-        {/* 🔥 검색 입력창 추가 */}
+        {/* 🔍 검색 입력 + 검색 버튼 */}
         {!compareMode && (
-          <Input
-            placeholder="리포지토리 이름 검색..."
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            className="max-w-xs mt-2"
-          />
+          <div className="flex items-center gap-2 mt-2">
+            <Input
+              placeholder="리포지토리 이름 검색..."
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") applySearch()
+              }}
+              className="max-w-xs"
+            />
+
+            <Button onClick={applySearch} variant="default">
+              검색
+            </Button>
+          </div>
         )}
 
-        {/* 🔥 정렬 버튼 */}
+        {/* 검색 결과 안내 문구 */}
+        {!compareMode && searchQuery && (
+          <span className="text-xs text-muted-foreground mt-1">
+            '{searchQuery}' 검색 결과
+          </span>
+        )}
+
+        {/* 정렬 UI */}
         {!compareMode && (
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mt-2">
             <span className="text-sm text-muted-foreground">
-              {isEmpty
-                ? "분석 기록이 없어서 정렬 옵션이 비활성화되어 있습니다."
-                : "정렬 기준을 선택해 히스토리를 확인하세요."}
+              {isEmpty ? "분석 기록이 없습니다." : "정렬 기준을 선택하세요."}
             </span>
 
             <div className="flex gap-2">
@@ -198,7 +214,7 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
       </header>
 
       {/* --------------------------------------------------- */}
-      {/* 리스트 & 비교 모드                                 */}
+      {/* 리스트 or 비교 모드                                 */}
       {/* --------------------------------------------------- */}
       <AnimatePresence mode="wait">
         {compareMode ? (

@@ -10,22 +10,21 @@ export function useHistory(memberId: number) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // 🔥 기존 정렬 기준 유지
+  // 🔥 정렬 기준
   const [sortType, setSortType] = useState<"latest" | "score">("latest")
 
-  // 🔥 새로 추가: 검색어(content)
+  // 🔥 검색: 입력값 / 실제 검색 값 분리
   const [keyword, setKeyword] = useState("")
+  const [searchQuery, setSearchQuery] = useState("") // 버튼 클릭 시만 갱신
 
-  useEffect(() => {
-    console.log("🧾 repositories:", repositories.map(r => ({
-      id: r.id,
-      createDate: r.createDate,
-      latestScore: r.latestScore
-    })))
-  }, [repositories])
+  /** 검색 버튼 누르면 실행됨 */
+  function applySearch() {
+    setSearchQuery(keyword)
+  }
 
-  
-  // 전체 리스트 로드
+  // ============================================================
+  //   전체 리스트 로딩
+  // ============================================================
   async function load() {
     try {
       setLoading(true)
@@ -36,7 +35,7 @@ export function useHistory(memberId: number) {
         baseRepos.map(async (repo): Promise<RepoBaseResponse> => {
           try {
             const historyData: HistoryResponseDto = await analysisApi.getRepositoryHistory(repo.id)
-            
+
             const versions = [...historyData.analysisVersions].sort(
               (a, b) => new Date(b.analysisDate).getTime() - new Date(a.analysisDate).getTime()
             )
@@ -67,29 +66,34 @@ export function useHistory(memberId: number) {
   }, [])
 
 
-  // 날짜 파싱 함수
+  // 🔥 날짜 파싱
   const parseDate = (date?: string | null) => {
     if (!date) return 0
     return Date.parse(date.split(".")[0] + "Z")
   }
 
-
-  // 🔥 1) 검색 필터 적용
+  // ============================================================
+  //   🔥 검색 적용 (입력값 X → searchQuery 기준)
+  // ============================================================
   const filteredRepositories = useMemo(() => {
-    if (!keyword.trim()) return repositories
+    if (!searchQuery.trim()) return repositories
 
-    const lower = keyword.toLowerCase()
-    return repositories.filter(repo =>
-      repo.name.toLowerCase().includes(lower) ||
-      repo.description?.toLowerCase().includes(lower)
+    const q = searchQuery.toLowerCase()
+
+    return repositories.filter((repo) =>
+      repo.name.toLowerCase().includes(q) ||
+      repo.description?.toLowerCase().includes(q)
     )
-  }, [repositories, keyword])
+  }, [repositories, searchQuery])
 
-
-  // 🔥 2) 정렬 적용 (기존 로직 유지)
+  // ============================================================
+  //   🔥 정렬 적용
+  // ============================================================
   const sortedRepositories = useMemo(() => {
     if (sortType === "score") {
-      return [...filteredRepositories].sort((a, b) => (b.latestScore ?? 0) - (a.latestScore ?? 0))
+      return [...filteredRepositories].sort(
+        (a, b) => (b.latestScore ?? 0) - (a.latestScore ?? 0)
+      )
     }
 
     return [...filteredRepositories].sort(
@@ -99,27 +103,31 @@ export function useHistory(memberId: number) {
     )
   }, [filteredRepositories, sortType])
 
-
-
-  // 삭제 기능 그대로 유지
+  // ============================================================
+  //   삭제 기능
+  // ============================================================
   async function handleDelete(repoId: number) {
     try {
       await analysisApi.deleteRepository(memberId, repoId)
       setRepositories((prev) => prev.filter((repo) => repo.id !== repoId))
     } catch (err) {
-      console.error("삭제 실패:", err)
       alert("삭제 중 오류가 발생했습니다.")
+      console.error("삭제 실패:", err)
     }
   }
 
-  return { 
+  return {
     repositories: sortedRepositories,
     loading,
     error,
     handleDelete,
     sortType,
     setSortType,
+
+    /** 검색 */
     keyword,
     setKeyword,
+    searchQuery,
+    applySearch, // 🔥 버튼 눌렀을 때 검색 실행
   }
 }
