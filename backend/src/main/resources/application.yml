@@ -3,7 +3,7 @@ spring:
     import: optional:file:.env[.properties]
 
   profiles:
-    active: dev
+    default: dev
 
   output:
     ansi:
