@@ -1,6 +1,7 @@
 package com.backend.domain.analysis.service
 
 import com.backend.domain.repository.service.RepositoryService
+import com.backend.domain.user.service.EmailService
 import com.backend.domain.user.util.JwtUtil
 import com.backend.global.exception.BusinessException
 import com.ninjasquad.springmockk.MockkBean
@@ -29,6 +30,9 @@ class AnalysisServiceTest {
 
     @MockkBean
     lateinit var analysisAnalyzeService: AnalysisAnalyzeService
+
+    @MockkBean
+    lateinit var emailService: EmailService
 
     private fun request(userId: Long): MockHttpServletRequest {
         val req = MockHttpServletRequest()

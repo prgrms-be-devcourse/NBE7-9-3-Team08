@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsConfiguration
 
 @Configuration
 @EnableWebSecurity
@@ -19,7 +20,7 @@ class SecurityConfig {
     @Throws(Exception::class)
     fun filterChain(http: HttpSecurity, jwtAuthenticationFilter: JwtAuthenticationFilter): SecurityFilterChain {
         http // JWT 인증을 사용하므로 세션을 사용하지 않음 (Stateless)
-            .cors { }
+            .cors(Customizer.withDefaults())
             .sessionManagement(Customizer { session->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             })
@@ -47,7 +48,6 @@ class SecurityConfig {
                         "/h2-console/**" // H2 콘솔 허용
                     ).permitAll()
                     .requestMatchers(
-                        "/api/analysis/stream/**",
                         "/api/analysis/repositories/{repositoriesId}",
                         "/api/analysis/repositories/{repositoryId}/results/{analysisId}",
                         "/api/repositories/**",

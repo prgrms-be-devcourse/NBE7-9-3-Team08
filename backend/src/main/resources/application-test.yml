@@ -41,6 +41,7 @@ github:
 
 # JWT 설정 (더미 값)
 jwt:
+  cookie-secure: false
   secret: test-secret-key-for-jwt-minimum-256-bits-required-for-hs256-algorithm
   access-token-expiration-in-milliseconds: 3600000
 
@@ -53,6 +54,10 @@ logging:
   level:
     org.hibernate: INFO
     org.springframework: INFO
+
+sendgrid:
+  api-key: "TEST-KEY"
+  from-email: "TEST@email.com"
 
 cors:
   allowed-origins: http://localhost:3000

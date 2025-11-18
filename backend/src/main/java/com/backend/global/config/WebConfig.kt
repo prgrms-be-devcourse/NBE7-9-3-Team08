@@ -20,7 +20,7 @@ class WebConfig(
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                     .allowCredentials(true)
                     .allowedHeaders("*")
-                    .exposedHeaders("Authorization")
+                    .exposedHeaders("Set-Cookie", "Authorization")
             }
         }
     }

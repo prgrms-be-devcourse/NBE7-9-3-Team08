@@ -11,6 +11,7 @@ import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
 import com.backend.global.response.ApiResponse
 import com.backend.global.response.ResponseCode
+import io.lettuce.core.KillArgs.Builder.user
 import jakarta.mail.MessagingException
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
@@ -35,6 +36,14 @@ class AuthController(
     @Value("\${jwt.refresh-token-expiration-in-milliseconds}")
     private var refreshTokenValidityMilliSeconds: Long = 0
 
+    @Value("\${jwt.cookie-secure}")
+    private var cookieSecure: Boolean = false
+
+    // SameSite=None + Secure 옵션 적용
+    private fun sameSiteHeader(name: String, value: String?, maxAge: Int): String {
+        val secureFlag = if (cookieSecure) "Secure" else ""
+        return "$name=$value; Path=/; Max-Age=$maxAge; HttpOnly; $secureFlag; SameSite=None".trim()
+    }
 
     //입력받은 이메일에 인증코드를 보냅니다.
     data class SendRequest(
@@ -90,18 +99,7 @@ class AuthController(
             return ApiResponse.error(ResponseCode.UNAUTHORIZED)
         }
 
-        val accessCookie = Cookie("accessToken", accessToken)
-        accessCookie.isHttpOnly = true // JavaScript 접근 방지 (XSS 공격 방어)
-        accessCookie.secure = false //HTTPS 통신에서만 전송
-        accessCookie.path = "/"
-        accessCookie.maxAge = tokenValidityMilliSeconds / 1000 //쿠키는 초단위
-
-        response.addCookie(accessCookie) //응답에 쿠키 추가
-
-        val refreshCookie = Cookie("refreshToken", refreshToken)
-        refreshCookie.isHttpOnly = true // JavaScript 접근 방지 (XSS 공격 방어)
-        refreshCookie.secure = false //HTTPS 통신에서만 전송
-        refreshCookie.path = "/"
+        val accessTokenMaxAge = tokenValidityMilliSeconds / 1000
         var refreshTokenMaxAge = 0
         try {
             refreshTokenMaxAge = Math.toIntExact(refreshTokenValidityMilliSeconds / 1000)
@@ -109,13 +107,23 @@ class AuthController(
             throw BusinessException(ErrorCode.EXPIRATION_ERROR)
         }
 
+        val accessCookie = Cookie("accessToken", accessToken)
+        accessCookie.isHttpOnly = true
+        accessCookie.secure = cookieSecure
+        accessCookie.path = "/"
+        accessCookie.maxAge = accessTokenMaxAge
+
+        val refreshCookie = Cookie("refreshToken", refreshToken)
+        refreshCookie.isHttpOnly = true
+        refreshCookie.secure = cookieSecure
+        refreshCookie.path = "/"
         refreshCookie.maxAge = refreshTokenMaxAge
 
-        response.addCookie(refreshCookie)
+        // SameSite 보완 헤더 추가
+        response.addHeader("Set-Cookie", sameSiteHeader("accessToken", accessToken, accessTokenMaxAge))
+        response.addHeader("Set-Cookie", sameSiteHeader("refreshToken", refreshToken, refreshTokenMaxAge))
 
         val user = userService.findByEmail(loginRequest.email)
-
-
         return ApiResponse.success(LoginResponse(UserDto(user)))
     }
 
@@ -127,15 +135,22 @@ class AuthController(
         request: HttpServletRequest,
         response: HttpServletResponse
     ): ApiResponse<String> {
+        val expired = 0
         //쿠키 만료 명령
         val accessCookie = Cookie("accessToken", null)
-        accessCookie.isHttpOnly = false
-        accessCookie.secure = true
+        accessCookie.isHttpOnly = true
+        accessCookie.secure = cookieSecure
         accessCookie.path = "/"
+        accessCookie.maxAge = expired
 
-        accessCookie.maxAge = 0
+        val refreshCookie = Cookie("refreshToken", null)
+        refreshCookie.isHttpOnly = true
+        refreshCookie.secure = cookieSecure
+        refreshCookie.path = "/"
+        refreshCookie.maxAge = expired
 
-        response.addCookie(accessCookie)
+        response.addHeader("Set-Cookie", sameSiteHeader("accessToken", "", expired))
+        response.addHeader("Set-Cookie", sameSiteHeader("refreshToken", "", expired))
 
         //redis에 블랙리스트로 등록
         val jwtToken = getJwtToken(request)
@@ -191,18 +206,18 @@ class AuthController(
                 return ApiResponse.error(ResponseCode.UNAUTHORIZED)
             }
 
+            val accessTokenMaxAge = tokenValidityMilliSeconds / 1000
+
             //쿠키 업데이트 및 응답
             val accessCookie = Cookie("accessToken", newAccessToken)
             accessCookie.isHttpOnly = true // JavaScript 접근 방지 (XSS 공격 방어)
-            accessCookie.secure = false //HTTPS 통신에서만 전송
+            accessCookie.secure = cookieSecure //HTTPS 통신에서만 전송
             accessCookie.path = "/"
-            accessCookie.maxAge = tokenValidityMilliSeconds / 1000 //쿠키는 초단위
-
-            response.addCookie(accessCookie) //응답에 쿠키 추가
+            accessCookie.maxAge = accessTokenMaxAge //쿠키는 초단위
 
             val refreshCookie = Cookie("refreshToken", newRefreshToken)
             refreshCookie.isHttpOnly = true // JavaScript 접근 방지 (XSS 공격 방어)
-            refreshCookie.secure = false //HTTPS 통신에서만 전송
+            refreshCookie.secure = cookieSecure //HTTPS 통신에서만 전송
             refreshCookie.path = "/"
             var refreshTokenMaxAge = 0
             try {
@@ -213,7 +228,9 @@ class AuthController(
 
             refreshCookie.maxAge = refreshTokenMaxAge
 
-            response.addCookie(refreshCookie)
+            response.addHeader("Set-Cookie", sameSiteHeader("accessToken", newAccessToken, accessTokenMaxAge))
+            response.addHeader("Set-Cookie", sameSiteHeader("refreshToken", newRefreshToken, refreshTokenMaxAge))
+
         }else{
             throw BusinessException(ErrorCode.REFRESH_TOKEN_ERROR)
         }

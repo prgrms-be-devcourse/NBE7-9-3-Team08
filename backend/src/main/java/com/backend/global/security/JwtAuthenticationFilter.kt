@@ -54,7 +54,6 @@ class JwtAuthenticationFilter(
         // 분석 및 리포지토리 관련 API
         ExcludedRequest("/api/analysis/repositories/{repositoriesId}", "GET"),
         ExcludedRequest("/api/analysis/repositories/{repositoryId}/results/{analysisId}", "GET"),
-        ExcludedRequest("/api/analysis/stream/**", "GET"),
         ExcludedRequest("/api/repositories/**", null),
         ExcludedRequest("/api/ai/complete/**", null)
     )
