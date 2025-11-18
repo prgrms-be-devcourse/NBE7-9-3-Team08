@@ -31,7 +31,14 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }
+
+    sourceSets {
+        val test by getting {
+            kotlin.srcDirs("src/test/java", "src/test/kotlin")
+        }
+    }
 }
+
 
 dependencies {
 
@@ -80,6 +87,8 @@ dependencies {
     // Kotlin Standard Library
     // -----------------------------------------------------------------------------------------
     implementation(kotlin("stdlib-jdk8"))
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
 
     // -----------------------------------------------------------------------------------------
     // 개발 편의 — DevTools
