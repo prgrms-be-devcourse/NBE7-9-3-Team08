@@ -15,6 +15,9 @@ import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -276,5 +279,23 @@ class AnalysisService(
                     RepositoryComparisonResponse.from(repo, analysis)
                 }
             }
+    }
+
+    // 사용자의 히스토리(분석 내역) 검색
+    // 레포지토리 이름으로 검색
+    fun getSearchByRepoName(
+        request: HttpServletRequest,
+        content: String,
+        page: Int,
+        size: Int,
+        sort: String
+    ): Page<Repositories> {
+        val userId = jwtUtil.getUserId(request) ?: throw BusinessException(ErrorCode.UNAUTHORIZED)
+        val pageable = when(sort) {
+            "score" -> PageRequest.of(page, size, Sort.by("analysisResults.score.totalScore").descending())
+            else -> PageRequest.of(page, size, Sort.by("createDate").descending())
+        }
+
+         return repositoryJpaRepository.findByUser_IdAndNameContainingIgnoreCase(userId, content, pageable)
     }
 }

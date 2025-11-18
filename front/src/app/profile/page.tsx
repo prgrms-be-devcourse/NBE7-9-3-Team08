@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { userApi } from "@/lib/api/user"
 import { Button } from "@/components/ui/Button"
@@ -9,6 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { useToast } from "@/components/ui/Toast"
 import { User, Mail, Lock, Save } from "lucide-react"
+
+const AdsenseBanner = dynamic(() => import("@/components/AdsenseBanner"), {
+  ssr: false,
+})
 
 export default function ProfilePage() {
   const { user, fetchUserInfo, updateUserInfo } = useAuth()
@@ -124,10 +129,19 @@ export default function ProfilePage() {
     )
   }
 
+  const sidebarSlot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_PROFILE_SIDE || "profile-side-slot"
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="mx-auto max-w-2xl">
+        <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)_220px]">
+          <aside className="hidden lg:block">
+            <AdsenseBanner
+              adSlot={`${sidebarSlot}-left`}
+              style={{ width: "100%", minHeight: 320, borderRadius: 12 }}
+            />
+          </aside>
+        <div className="mx-auto max-w-2xl w-full">
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold mb-2">마이페이지</h1>
             <p className="text-muted-foreground">개인정보를 수정할 수 있습니다.</p>
@@ -262,6 +276,13 @@ export default function ProfilePage() {
               )}
             </Card>
           </div>
+        </div>
+          <aside className="hidden lg:block">
+            <AdsenseBanner
+              adSlot={`${sidebarSlot}-right`}
+              style={{ width: "100%", minHeight: 320, borderRadius: 12 }}
+            />
+          </aside>
         </div>
       </div>
     </div>

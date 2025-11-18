@@ -1,12 +1,10 @@
 package com.backend.domain.user.util
 
-import lombok.RequiredArgsConstructor
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Component
 import java.time.Duration
 
 @Component
-@RequiredArgsConstructor
 class RedisUtil(
     private val redisTemplate: StringRedisTemplate
 ) {

@@ -12,4 +12,27 @@ export interface RepositoryResponse {
   latestAnalysisDate?: string | null
   ownerId: number
 }
-  
+
+// 
+export interface CommunityResponse {
+  userName: string | null;
+  userImage: string | null;
+  repositoryName: string;
+  repositoryId: number;
+  summary: string;
+  description: string | null;
+  language: string[];
+  totalScore: number;
+  createDate: string;
+  publicStatus: boolean;
+  htmlUrl: string;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalPages: number;
+  totalElements: number;
+  last: boolean;
+}
