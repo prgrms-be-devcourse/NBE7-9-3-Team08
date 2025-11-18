@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import kotlin.math.min
 
-@Profile("local", "dev")
+@Profile("local", "dev", "test")
 @Configuration
 class BaseInitData(
     private val userRepository: UserRepository,

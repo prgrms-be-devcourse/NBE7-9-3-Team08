@@ -53,3 +53,6 @@ logging:
   level:
     org.hibernate: INFO
     org.springframework: INFO
+
+cors:
+  allowed-origins: http://localhost:3000

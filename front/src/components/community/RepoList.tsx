@@ -123,7 +123,7 @@ export default function RepositoryList() {
       ) : (
         <div className="flex flex-col gap-6">
           {repositories.map((item) => (
-            <RepositoryCard key={item.repositoryId ?? item.id} item={item} />
+            <RepositoryCard key={item.repositoryId} item={item} />
           ))}
         </div>
       )}

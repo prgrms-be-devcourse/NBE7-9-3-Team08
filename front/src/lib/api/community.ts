@@ -2,8 +2,6 @@ import type {
   RepositoryItem,
   Comment,
   PageResponse,
-  SearchCommentParams,
-  SearchCommentResponse,
 } from "@/types/community";
 
 const BACKEND_BASE =
