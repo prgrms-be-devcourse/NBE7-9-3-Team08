@@ -31,7 +31,14 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }
+
+    sourceSets {
+        val test by getting {
+            kotlin.srcDirs("src/test/java", "src/test/kotlin")
+        }
+    }
 }
+
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -65,6 +72,8 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.26.3")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     implementation(kotlin("stdlib-jdk8"))
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
 
     testImplementation("io.mockk:mockk:1.13.12")
     testImplementation("io.mockk:mockk-jvm:1.13.12")
