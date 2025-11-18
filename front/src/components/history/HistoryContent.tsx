@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/Button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ScoreBadge } from "@/components/history/ScoreBadge"
+import { Input } from "@/components/ui/input"  // 🔥 검색창 추가된 부분
 import { formatRelativeTimeKST } from "@/lib/utils/formatDate"
 import { Github, ExternalLink, Trash2, Calendar, GitCompare, X } from "lucide-react"
 import { RepositoryComparisonResponse } from "@/types/analysis"
@@ -22,7 +23,17 @@ interface HistoryContentProps {
 }
 
 export default function HistoryContent({ memberId, name }: HistoryContentProps) {
-  const { repositories, loading, error, handleDelete, sortType, setSortType } = useHistory(memberId)
+  const {
+    repositories,
+    loading,
+    error,
+    handleDelete,
+    sortType,
+    setSortType,
+    keyword,
+    setKeyword,
+  } = useHistory(memberId)
+
   const router = useRouter()
 
   const [compareMode, setCompareMode] = useState(false)
@@ -34,6 +45,7 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
   const fetchComparisonRepos = useCallback(async () => {
     setComparisonLoading(true)
     setComparisonError(null)
+
     try {
       const data = await analysisApi.getRepositoriesForComparison()
       setComparisonRepos(data)
@@ -48,6 +60,7 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
     const next = !compareMode
     setCompareMode(next)
     setSelectedRepoIds([])
+
     if (next && comparisonRepos.length === 0) {
       fetchComparisonRepos()
     }
@@ -63,6 +76,9 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
 
   const isEmpty = useMemo(() => repositories.length === 0, [repositories])
 
+  /* --------------------------------------------------- */
+  /* 로딩 UI                                             */
+  /* --------------------------------------------------- */
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto p-6 space-y-4">
@@ -78,6 +94,9 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
     )
   }
 
+  /* --------------------------------------------------- */
+  /* 에러 UI                                             */
+  /* --------------------------------------------------- */
   if (error) {
     return (
       <div className="max-w-3xl mx-auto p-6">
@@ -101,6 +120,9 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
     )
   }
 
+  /* --------------------------------------------------- */
+  /* 실제 화면                                           */
+  /* --------------------------------------------------- */
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       <header className="flex flex-col gap-3">
@@ -110,9 +132,10 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
             <p className="text-sm text-muted-foreground">
               {compareMode
                 ? "비교할 리포지토리를 선택해 주세요 (최대 5개)"
-                : `${name}님의 최근 분석 기록을 정렬하거나 비교할 수 있습니다.`}
+                : `${name}님의 최근 분석 기록을 정렬하거나 검색할 수 있습니다.`}
             </p>
           </div>
+
           <Button
             variant={compareMode ? "default" : "outline"}
             className="gap-2"
@@ -133,6 +156,17 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
           </Button>
         </div>
 
+        {/* 🔥 검색 입력창 추가 */}
+        {!compareMode && (
+          <Input
+            placeholder="리포지토리 이름 검색..."
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            className="max-w-xs mt-2"
+          />
+        )}
+
+        {/* 🔥 정렬 버튼 */}
         {!compareMode && (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-sm text-muted-foreground">
@@ -140,6 +174,7 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
                 ? "분석 기록이 없어서 정렬 옵션이 비활성화되어 있습니다."
                 : "정렬 기준을 선택해 히스토리를 확인하세요."}
             </span>
+
             <div className="flex gap-2">
               <Button
                 variant={sortType === "latest" ? "default" : "outline"}
@@ -162,6 +197,9 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
         )}
       </header>
 
+      {/* --------------------------------------------------- */}
+      {/* 리스트 & 비교 모드                                 */}
+      {/* --------------------------------------------------- */}
       <AnimatePresence mode="wait">
         {compareMode ? (
           <motion.div
@@ -222,6 +260,7 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
                             {repo.name}
                             <ExternalLink className="h-3 w-3" />
                           </a>
+
                           {repo.publicRepository ? (
                             <Badge variant="default" className="gap-1 bg-green-600 text-white">
                               <span className="h-2 w-2 rounded-full bg-white" />
@@ -234,9 +273,11 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
                             </Badge>
                           )}
                         </div>
+
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                           {repo.description || "설명이 없습니다."}
                         </p>
+
                         <div className="mb-3 flex flex-wrap gap-2">
                           {repo.languages.map((lang) => (
                             <Badge key={lang} variant="secondary" className="text-xs">
@@ -244,6 +285,7 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
                             </Badge>
                           ))}
                         </div>
+
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="h-4 w-4" />
                           <span>
@@ -261,6 +303,7 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
                         ) : (
                           <div className="text-sm text-muted-foreground">점수 없음</div>
                         )}
+
                         <Button
                           variant="ghost"
                           size="sm"

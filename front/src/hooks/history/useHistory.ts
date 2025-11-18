@@ -9,7 +9,12 @@ export function useHistory(memberId: number) {
   const [repositories, setRepositories] = useState<RepoBaseResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // 🔥 기존 정렬 기준 유지
   const [sortType, setSortType] = useState<"latest" | "score">("latest")
+
+  // 🔥 새로 추가: 검색어(content)
+  const [keyword, setKeyword] = useState("")
 
   useEffect(() => {
     console.log("🧾 repositories:", repositories.map(r => ({
@@ -20,9 +25,11 @@ export function useHistory(memberId: number) {
   }, [repositories])
 
   
+  // 전체 리스트 로드
   async function load() {
     try {
       setLoading(true)
+
       const baseRepos = await analysisApi.getUserRepositories()
 
       const enrichedRepos: RepoBaseResponse[] = await Promise.all(
@@ -59,24 +66,42 @@ export function useHistory(memberId: number) {
     load()
   }, [])
 
+
+  // 날짜 파싱 함수
   const parseDate = (date?: string | null) => {
     if (!date) return 0
     return Date.parse(date.split(".")[0] + "Z")
   }
-  
+
+
+  // 🔥 1) 검색 필터 적용
+  const filteredRepositories = useMemo(() => {
+    if (!keyword.trim()) return repositories
+
+    const lower = keyword.toLowerCase()
+    return repositories.filter(repo =>
+      repo.name.toLowerCase().includes(lower) ||
+      repo.description?.toLowerCase().includes(lower)
+    )
+  }, [repositories, keyword])
+
+
+  // 🔥 2) 정렬 적용 (기존 로직 유지)
   const sortedRepositories = useMemo(() => {
     if (sortType === "score") {
-      return [...repositories].sort((a, b) => (b.latestScore ?? 0) - (a.latestScore ?? 0))
+      return [...filteredRepositories].sort((a, b) => (b.latestScore ?? 0) - (a.latestScore ?? 0))
     }
-  
-    return [...repositories].sort(
+
+    return [...filteredRepositories].sort(
       (a, b) =>
         parseDate(b.latestAnalysisDate ?? b.createDate) -
         parseDate(a.latestAnalysisDate ?? a.createDate)
     )
-  }, [repositories, sortType])
-  
+  }, [filteredRepositories, sortType])
 
+
+
+  // 삭제 기능 그대로 유지
   async function handleDelete(repoId: number) {
     try {
       await analysisApi.deleteRepository(memberId, repoId)
@@ -87,5 +112,14 @@ export function useHistory(memberId: number) {
     }
   }
 
-  return { repositories: sortedRepositories, loading, error, handleDelete, sortType, setSortType }
+  return { 
+    repositories: sortedRepositories,
+    loading,
+    error,
+    handleDelete,
+    sortType,
+    setSortType,
+    keyword,
+    setKeyword,
+  }
 }
