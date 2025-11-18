@@ -21,6 +21,9 @@ open class Score protected constructor(
 
     @Column(nullable = false)
     open var cicdScore: Int,
+
+    @Column(nullable = false)
+    open var totalScore: Int = 0,
 ) {
     protected constructor() : this(
         analysisResult = AnalysisResult.create(
@@ -46,9 +49,13 @@ open class Score protected constructor(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     open var id: Long? = null
 
-    @get:Transient
-    open val totalScore: Int
-        get() = readmeScore + testScore + commitScore + cicdScore
+//    @get:Transient
+//    open val totalScore: Int
+//        get() = readmeScore + testScore + commitScore + cicdScore
+
+    init{
+        totalScore = readmeScore + testScore + commitScore + cicdScore
+    }
 
     init {
         analysisResult.assignScore(this)

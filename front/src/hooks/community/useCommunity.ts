@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import {
   fetchRepositories,
   searchRepositories
@@ -53,9 +53,9 @@ export function useCommunity() {
 
   /** 🔍 검색 실행 */
   const fetchSearchResults = async (pageNum?: number) => {
-    const page = pageNum ?? 0
+    const p = pageNum ?? 0
 
-    // 검색어 없으면 전체 조회로 전환
+    // 검색어 없으면 전체 조회
     if (!searchKeyword.trim()) {
       loadRepositories(0)
       return
@@ -68,20 +68,35 @@ export function useCommunity() {
       const res: PageResponse<RepositoryItem> = await searchRepositories({
         content: searchKeyword,
         searchSort: searchType,
-        sort: sortType,    // ⭐ 반드시 포함
-        page: page,
+        sort: sortType,
+        page: p,
         size: 5
       })
 
       setRepositories(res.content ?? [])
       setTotalPages(res.totalPages ?? 0)
-      setPage(page)
+      setPage(p)
     } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
   }
+
+  /** 🔥 프론트에서 description 기반 2차 필터링 */
+  const filteredRepositories = useMemo(() => {
+    if (!isSearching) return repositories // 검색 모드 아닐 땐 그대로 반환
+
+    if (!searchKeyword.trim()) return repositories
+
+    const lower = searchKeyword.toLowerCase()
+
+    return repositories.filter(repo =>
+      repo.repositoryName?.toLowerCase().includes(lower) ||
+      repo.userName?.toLowerCase().includes(lower) ||
+      repo.description?.toLowerCase().includes(lower)   // 🔥 핵심
+    )
+  }, [repositories, searchKeyword, isSearching])
 
   /** 🔄 페이지 or 정렬 변경 시 재조회 */
   useEffect(() => {
@@ -93,7 +108,7 @@ export function useCommunity() {
   }, [page, sortType])
 
   return {
-    repositories,
+    repositories: filteredRepositories, // 🔥 필터링된 결과 반환
     loading,
     error,
 

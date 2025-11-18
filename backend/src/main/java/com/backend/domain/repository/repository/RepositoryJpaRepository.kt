@@ -13,16 +13,49 @@ interface RepositoryJpaRepository : JpaRepository<Repositories, Long> {
     fun findByHtmlUrlAndUserId(htmlUrl: String, userId: Long): Repositories?
     fun findByUserId(userId: Long): List<Repositories>
     fun findByPublicRepository(publicRepository: Boolean): List<Repositories>
-    fun findByPublicRepositoryTrue(pageable: Pageable): Page<Repositories>
+
+
+    /* === 레포지토리 조회 === */
+    // 전체 레포지토리 조회 - 최신순
+    @Query("""
+    SELECT r FROM Repositories r
+    JOIN r.analysisResults ar
+    WHERE r.publicRepository = true
+    ORDER BY ar.createDate DESC
+""")
+    fun findAllOrderByLatestAnalysis(): List<Repositories>
+
+    // 전체 레포지토리 조회 - 점수순
+    @Query("""
+    SELECT r FROM Repositories r
+    JOIN r.analysisResults ar
+    JOIN ar.score s
+    WHERE r.publicRepository = true
+    ORDER BY s.totalScore DESC
+""")
+    fun findAllOrderByScoreDesc(): List<Repositories>
+
+    // 검색 레포지토리 조회 - 레포지토리 이름으로 검색
     fun findByNameContainingIgnoreCaseAndPublicRepositoryTrue(
         content: String,
         pageable: Pageable
     ): Page<Repositories>
 
+    // 검색 레포지토리 조회 - 유저 이름으로 검색
     fun findByUser_NameContainingIgnoreCaseAndPublicRepositoryTrue(
         contnet: String,
         pageable: Pageable
     ): Page<Repositories>
+
+    /* 히스토리 검색 레포지토리 조회 */
+
+    // 레포지토리 이름으로 검색
+    fun findByUser_IdAndNameContainingIgnoreCase(
+        userId: Long,
+        content: String,
+        pageable: Pageable
+    ): Page<Repositories>
+
 
     @Query(
         value = """

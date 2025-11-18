@@ -1,5 +1,6 @@
 package com.backend.domain.analysis.controller
 
+import CommunityResponseDTO
 import com.backend.domain.analysis.dto.request.AnalysisRequest
 import com.backend.domain.analysis.dto.response.AnalysisResultResponseDto
 import com.backend.domain.analysis.dto.response.AnalysisStartResponse
@@ -9,6 +10,7 @@ import com.backend.domain.analysis.service.AnalysisService
 import com.backend.domain.repository.dto.response.RepositoryComparisonResponse
 import com.backend.domain.repository.dto.response.RepositoryResponse
 import com.backend.domain.repository.service.RepositoryService
+import com.backend.global.dto.PageResponseDTO
 import com.backend.global.response.ApiResponse
 import com.backend.global.response.ApiResponse.Companion.success
 import jakarta.servlet.http.HttpServletRequest
@@ -126,4 +128,42 @@ class AnalysisController(
         val repositories = analysisService.getRepositoriesForComparison(httpRequest)
         return ResponseEntity.ok(success(repositories))
     }
+
+    // GET : 본인 repository 검색
+    @GetMapping("/search/myRepo")
+    fun searchMyRepo(
+        request: HttpServletRequest,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "1") size: Int,
+        @RequestParam(defaultValue = "" ) content: String,
+        @RequestParam(defaultValue = "latest") sort: String
+    ): ResponseEntity<ApiResponse<PageResponseDTO<CommunityResponseDTO>>> {
+
+        // 1) 서비스 호출 → Page<Repositories> (정렬 포함)
+        val result = analysisService.getSearchByRepoName(request, content, page, size, sort)
+
+        // 2) Repository → communityResponseDTO 변환
+        val dtoList = result.content.mapNotNull { repo ->
+            val analysis = analysisService
+                .getAnalysisResultList(repo.id!!)
+                .firstOrNull() ?: return@mapNotNull null
+
+            val score = analysis.score
+            CommunityResponseDTO(repo, analysis, score)
+        }.toMutableList()
+
+        // 3) PageResponseDTO 생성 (서비스에서 이미 정렬된 상태)
+        val pageResponse = PageResponseDTO(
+            content = dtoList,
+            page = result.number,
+            size = result.size,
+            totalPages = result.totalPages,
+            totalElements = result.totalElements,
+            last = result.isLast
+        )
+
+        // 4) ApiResponse 로 감싸서 반환
+        return ResponseEntity.ok(success(pageResponse))
+    }
+
 }

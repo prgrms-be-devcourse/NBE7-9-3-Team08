@@ -37,7 +37,6 @@ export default function RepositoryCard({ item }: { item: RepositoryItem }) {
 
         <div>
           <p className="font-semibold text-sm">{safeUserName}</p>
-          <p className="text-gray-500 text-xs">@{userTag}</p>
         </div>
 
         <span className="ml-auto text-gray-400 text-xs">{relativeTime}</span>
