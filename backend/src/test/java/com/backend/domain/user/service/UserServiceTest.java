@@ -56,7 +56,7 @@ public class UserServiceTest {
         userRepository.save(user);
 
         //then
-        assertThat(userRepository.findById(user.id).get()).isEqualTo(user);
+        assertThat(userRepository.findById(user.getId()).get()).isEqualTo(user);
 
     }
 
