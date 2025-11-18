@@ -61,9 +61,7 @@ export default function RepositoryList() {
   return (
     <section className="flex flex-col gap-6 mt-6 max-w-3xl mx-auto">
 
-      {/* ----------------------------- */}
       {/* 헤더 */}
-      {/* ----------------------------- */}
       <div>
         <h1 className="text-3xl font-bold">커뮤니티</h1>
         <p className="text-muted-foreground text-sm">
@@ -71,9 +69,7 @@ export default function RepositoryList() {
         </p>
       </div>
 
-      {/* ----------------------------- */}
       {/* 검색 영역 */}
-      {/* ----------------------------- */}
       <div className="flex items-center gap-2">
 
         <Select
@@ -167,9 +163,7 @@ export default function RepositoryList() {
         </motion.div>
       </AnimatePresence>
 
-      {/* ----------------------------- */}
       {/* 페이징 */}
-      {/* ----------------------------- */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 mt-8">
           <Button

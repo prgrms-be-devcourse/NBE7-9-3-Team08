@@ -13,7 +13,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # 수정 예정
+      ddl-auto: update #TODO: 수정 필요
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
@@ -53,7 +53,7 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
 
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:https://your-frontend.vercel.app}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:https://your-frontend.vercel.app} #TODO: 수정 필요
 
 github:
   api:
