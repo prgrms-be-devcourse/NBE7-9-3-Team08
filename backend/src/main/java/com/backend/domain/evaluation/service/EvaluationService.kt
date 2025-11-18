@@ -92,10 +92,21 @@ class EvaluationService(
 
             val prompt = """
                 You are a senior software engineering reviewer.
-                Analyze the given GitHub repository data and return ONLY a valid JSON. No commentary.
-                Scoring: total 100 (README 0~30, TEST 0~30, COMMIT 0~25, CICD 0~15).
-                Consider test folders, CI configs (.github/workflows), commit frequency/messages, README depth, etc.
-                
+                Analyze the given GitHub repository data (JSON) and return ONLY a valid JSON.
+                No commentary, no code fences.
+            
+                Scoring: total up to 100 (README 0~30, TEST 0~30, COMMIT 0~25, CICD 0~15).
+            
+                HARD RULES (MUST FOLLOW):
+                - Use ONLY integers for all scores.
+                - The sum of scores (readme + test + commit + cicd) MUST NOT exceed 100.
+                - If "hasCICD" is false in the input JSON, then scores.cicd MUST be between 0 and 5 (usually 0).
+                - If "hasTestDirectory" is false, then scores.test MUST be 0.
+                - If "testCoverageRatio" < 0.3, then scores.test MUST be <= 15.
+                - If the "improvements" array has length >= 1, then the total score MUST be <= 95.
+                - NEVER return a total score of 100 unless the repository is essentially perfect
+                  (no major improvements to mention).
+            
                 JSON schema:
                 {
                   "summary": "one-paragraph summary in Korean",
@@ -109,6 +120,7 @@ class EvaluationService(
                   }
                 }
             """.trimIndent()
+
 
             val res: AiDto.CompleteResponse =
                 aiService.complete(AiDto.CompleteRequest(content, prompt))
