@@ -7,12 +7,10 @@ import com.backend.domain.user.util.RedisUtil
 import com.backend.domain.user.util.RefreshTokenUtil
 import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
-import lombok.RequiredArgsConstructor
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
-@RequiredArgsConstructor
 class JwtService(
     private val userRepository: UserRepository,
     private val jwtUtil: JwtUtil,
@@ -28,7 +26,7 @@ class JwtService(
         val user: User = userRepository.findByEmail(email)
                 ?:throw BusinessException(ErrorCode.EMAIL_NOT_FOUND)
 
-        var userId = user.id ?: throw BusinessException(ErrorCode.USER_NOT_FOUND)
+        val userId = user.id ?: throw BusinessException(ErrorCode.USER_NOT_FOUND)
         //비밀번호 체크
         if (checkPassword(email, password)) {
             //email에 대응하는 비밀번호가 맞다면 jwt, refreshToken 발급
@@ -64,5 +62,22 @@ class JwtService(
                 ?: throw BusinessException(ErrorCode.EMAIL_NOT_FOUND)
 
         return passwordEncoder.matches(password, user.password)
+    }
+
+    //토큰 재발급 + 기존 refreshToken은 redis에서 삭제
+    fun reissue(userId: Long, refreshToken: String): List<String> {
+        val user: User = userRepository.findNameById(userId)
+            ?:throw BusinessException(ErrorCode.EMAIL_NOT_FOUND)
+
+        val jti = refreshTokenUtil.getJti(refreshToken)
+        //기존 refreshToken 삭제
+        redisUtil.deleteData(jti)
+
+        //새토큰 발급
+        val newJwtToken = jwtUtil.createToken(user.email, user.name, userId)
+        //여기서 redis도 저장됨
+        val newRefreshToken = refreshTokenUtil.createToken(userId)
+
+        return listOf(newJwtToken, newRefreshToken)
     }
 }

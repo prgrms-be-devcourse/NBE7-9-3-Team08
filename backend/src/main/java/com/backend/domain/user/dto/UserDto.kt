@@ -2,7 +2,6 @@ package com.backend.domain.user.dto
 
 import com.backend.domain.user.entity.User
 
-@JvmRecord
 data class UserDto(
     val id: Long?,
     val email: String,
