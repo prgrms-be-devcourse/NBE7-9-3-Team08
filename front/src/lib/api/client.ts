@@ -7,13 +7,40 @@ import type {
 } from '@/types/api';
 import { ErrorHandler } from '@/lib/errors/error-handler';
 
-const BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
-const AUTH_HEADER = process.env.NEXT_PUBLIC_AUTH_HEADER || 'Authorization';
+const RAW_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/$/, '');
+const API_BASE =
+  RAW_BASE === ''
+    ? ''
+    : RAW_BASE.endsWith('/api')
+      ? RAW_BASE
+      : `${RAW_BASE}/api`;
+const USE_DEV_PROXY = process.env.NEXT_PUBLIC_DEV_PROXY === 'true';
 
-function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('accessToken');
+const PUBLIC_AUTH_PATTERNS = [
+  /^\/$/,                         // 랜딩
+  /^\/login$/,
+  /^\/signup$/,
+  /^\/email-verification$/,
+  /^\/community(?:\/.*)?$/,       // 커뮤니티 목록/상세
+  /^\/analysis\/\d+(?:\/.*)?$/,   // 공개 공유 링크 (예: /analysis/6)
+];
+
+const isPublicPath = (pathname: string) =>
+  PUBLIC_AUTH_PATTERNS.some((pattern) => pattern.test(pathname));
+
+function shouldRedirectToLogin() {
+  if (typeof window === 'undefined') return false;
+  return !isPublicPath(window.location.pathname);
 }
+
+const RAW_BACKEND = (process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:8080').replace(/\/$/, '');
+export const buildBackendUrl = (path: string) =>
+  `${RAW_BACKEND}${path.startsWith('/') ? path : `/${path}`}`;
+
+export const resolveApiUrl = (path: string): string => {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return USE_DEV_PROXY ? `/api${normalizedPath}` : `${API_BASE}${normalizedPath}`;
+};
 
 export async function api<T = unknown>(
   path: string,
@@ -23,16 +50,11 @@ export async function api<T = unknown>(
     method = "GET",
     body,
     headers = {},
-    auth = 'token',
     next,
   } = opts;
 
   const isAbsolute = path.startsWith('http');
-  const url = isAbsolute 
-    ? path 
-    : (process.env.NEXT_PUBLIC_DEV_PROXY === 'true' 
-        ? `/api${path.startsWith('/') ? path : `/${path}`}` 
-        : `${BASE}${path.startsWith('/') ? path : `/${path}`}`);
+  const url = isAbsolute ? path : resolveApiUrl(path);
 
   const h: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -53,14 +75,11 @@ export async function api<T = unknown>(
     const responseData = text ? JSON.parse(text) : null;
 
     if (res.status === 401) {
-      console.warn("🔐 토큰 만료 — 로그인 페이지로 이동합니다.");
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("user");
-        window.location.href = "/login";
+      console.warn('액세스 토큰 만료, 로그인 페이지로 이동합니다.');
+      if (shouldRedirectToLogin()) {
+        window.location.href = '/login';
       }
-      // 즉시 리턴해서 아래 로직 수행 안 함
-      throw new Error("Unauthorized");
+      throw new Error('Unauthorized');
     }
     
     if (!res.ok) {
@@ -77,7 +96,6 @@ export async function api<T = unknown>(
     // 백엔드 ApiResponse<T> 구조에서 data 추출
     const apiResponse = responseData as ApiResponse<T>;
     return apiResponse.data;
-
   } catch (error) {
     // 🔥 이미 ApiError인 경우 재처리하지 않음
     if (error instanceof ErrorHandler.constructor.prototype.constructor) {

@@ -1,16 +1,8 @@
 // repository 도메인 API
+import { http } from './client';
 import type { RepositoryResponse } from "@/types/history"
 
 export async function fetchHistory(memberId: number): Promise<RepositoryResponse[]> {
-  const res = await fetch(`http://localhost:8080/api/analysis/repositories`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-    cache: "no-store",
-    credentials: "include", 
-  })
-
-  if (!res.ok) throw new Error("히스토리 데이터를 불러오는 데 실패했습니다.")
-  const result = await res.json();
-  return result.data;
+  void memberId
+  return http.get<RepositoryResponse[]>('/analysis/repositories')
 }
-

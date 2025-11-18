@@ -76,24 +76,22 @@ export default function SignupPage() {
 
   const handleVerifyCode = async () => {
     if (!verificationCode) {
-      toast.push('인증번호를 입력해주세요.');
+      toast.push('인증번호를 입력해 주세요.');
       return;
     }
-    
+  
     try {
       setIsVerifying(true);
-      const res = await authApi.verifyEmailCode({ email, code: verificationCode });
-      if (res.code === '200') {
-        setIsEmailVerified(true);
-        setIsTimerActive(false);
-        toast.push('이메일 인증이 완료되었습니다!');
-      }
+      await authApi.verifyEmailCode({ email, code: verificationCode });
+      setIsEmailVerified(true);
+      setIsTimerActive(false);
+      toast.push('이메일 인증이 완료되었습니다.');
     } catch (e: any) {
       toast.push(`인증 실패: ${e.message}`);
     } finally {
       setIsVerifying(false);
     }
-  };
+  };  
 
   const handleEmailEdit = () => {
     const confirmed = window.confirm('이메일을 변경하시겠습니까? 다시 재 인증을 받아야 합니다.');

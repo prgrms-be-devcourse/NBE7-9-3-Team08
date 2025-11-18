@@ -3,18 +3,13 @@ import type {
   Comment,
   PageResponse,
 } from "@/types/community";
+import { resolveApiUrl } from "./client";
 
-const BACKEND_BASE =
-  process.env.NEXT_PUBLIC_DEV_PROXY === "true"
-    ? "/api/community"
-    : `${process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8080"}/api/community`;
+const withCommunityBase = (path: string) => {
+  const suffix = path.startsWith("/") ? path : `/${path}`;
+  return resolveApiUrl(`/community${suffix}`);
+};
 
-const withCommunityBase = (path: string) =>
-  `${BACKEND_BASE}${path.startsWith("/") ? path : `/${path}`}`;
-
-/* -------------------------------------------------------
-   ✅ 공개 리포지토리 조회 (페이징)
-------------------------------------------------------- */
 export async function fetchRepositories(page = 0, sort = "latest") {
   const res = await fetch(withCommunityBase(`/repositories?page=${page}&sort=${sort}`), {
     cache: "no-store",
@@ -23,9 +18,6 @@ export async function fetchRepositories(page = 0, sort = "latest") {
   return res.json();
 }
 
-/* -------------------------------------------------------
-   ✅ 댓글 조회 (페이징)
-------------------------------------------------------- */
 export async function fetchComments(
   analysisResultId: number,
   page = 0
@@ -35,9 +27,6 @@ export async function fetchComments(
   return res.json();
 }
 
-/* -------------------------------------------------------
-   ✅ 댓글 작성
-------------------------------------------------------- */
 export async function postComment(analysisResultId: number, memberId: number, comment: string) {
   const res = await fetch(withCommunityBase(`/${analysisResultId}/write`), {
     method: "POST",
@@ -49,9 +38,6 @@ export async function postComment(analysisResultId: number, memberId: number, co
   return res.json();
 }
 
-/* -------------------------------------------------------
-   ✅ 댓글 수정
-------------------------------------------------------- */
 export async function updateComment(commentId: number, newComment: string) {
   const res = await fetch(withCommunityBase(`/modify/${commentId}/comment`), {
     method: "PATCH",
@@ -63,9 +49,6 @@ export async function updateComment(commentId: number, newComment: string) {
   return res.text();
 }
 
-/* -------------------------------------------------------
-   ✅ 댓글 삭제
-------------------------------------------------------- */
 export async function deleteComment(commentId: number) {
   const res = await fetch(withCommunityBase(`/delete/${commentId}`), {
     method: "DELETE",
@@ -75,9 +58,6 @@ export async function deleteComment(commentId: number) {
   return res.text();
 }
 
-/* -------------------------------------------------------
-   ✅ 레포지토리 검색 (페이징)
-------------------------------------------------------- */
 export async function searchRepositories(params: {
   content: string
   searchSort?: "repoName" | "user"
@@ -88,9 +68,9 @@ export async function searchRepositories(params: {
   const {
     content,
     searchSort = "repoName",
-    page = 0,       // ⬅ 기본값 강제
-    size = 5,       // ⬅ 기본값 강제
-    sort = "latest" // - 기본값
+    page = 0,
+    size = 5,
+    sort = "latest"
   } = params
 
   const query = new URLSearchParams({
