@@ -46,6 +46,7 @@ public class UserServiceTest {
         }
     }
 
+<<<<<<< HEAD
 //    @Test
 //    @DisplayName("User 생성")
 //    void t1(){
@@ -59,6 +60,21 @@ public class UserServiceTest {
 //        assertThat(userRepository.findById(user.id).get()).isEqualTo(user);
 //
 //    }
+=======
+    @Test
+    @DisplayName("User 생성")
+    void t1(){
+        //given
+        User user = new User("test@naver.com", "test1234", "test");
+
+        //when
+        userRepository.save(user);
+
+        //then
+        assertThat(userRepository.findById(user.getId()).get()).isEqualTo(user);
+
+    }
+>>>>>>> 3268aefe269180383b0a42603f2581f8cacd081b
 
 
     //성공 케이스: 이메일 인증이 완료되었고, 이메일이 중복되지 않으며, 비밀번호가 일치할 때 회원가입이 성공

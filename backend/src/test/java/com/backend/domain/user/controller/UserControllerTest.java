@@ -43,6 +43,7 @@ class UserControllerTest {
     @Autowired
     private UserService userService;
 
+<<<<<<< HEAD
 //    @Test
 //    @DisplayName("회원가입")
 //    void t1() throws MessagingException {
@@ -57,4 +58,20 @@ class UserControllerTest {
 //        assertThat(user.email).isEqualTo(email);
 //        assertThat(user.name).isEqualTo(name);
 //    }
+=======
+    @Test
+    @DisplayName("회원가입")
+    void t1() throws MessagingException {
+        String email = "test+" + System.currentTimeMillis() + "@example.com";
+        String password = "123456";
+        String passwordCheck = "123456";
+        String name = "임병수";
+
+        User user = userService.join(email, password, passwordCheck, name);
+
+        assertThat(user).isNotNull();
+        assertThat(user.getEmail()).isEqualTo(email);
+        assertThat(user.getName()).isEqualTo(name);
+    }
+>>>>>>> 3268aefe269180383b0a42603f2581f8cacd081b
 }
