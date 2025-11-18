@@ -162,7 +162,7 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
         {!compareMode && (
           <div className="flex items-center gap-2 mt-2">
             <Input
-              placeholder="리포지토리 이름 검색..."
+              placeholder="리포지토리 검색..."
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               onKeyDown={(e) => {
