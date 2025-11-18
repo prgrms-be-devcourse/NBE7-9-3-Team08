@@ -24,11 +24,13 @@ class CommunityService (
         // 커뮤니티 - 리포지토리 조회
        get() = repositoryJpaRepository.findByPublicRepository(true)
 
-    // 공개 여부 true인 Repo 페이징 조회
-    fun getPagedRepositoriesPublicTrue(page: Int, size: Int): Page<Repositories> {
-        val pageable = PageRequest.of(page, size, Sort.by("createDate").descending())
-        return repositoryJpaRepository.findByPublicRepositoryTrue(pageable)
-    }
+    //
+    fun getReposByScore(): List<Repositories> =
+        repositoryJpaRepository.findAllOrderByScoreDesc()
+
+    fun getReposByLatest(): List<Repositories> =
+        repositoryJpaRepository.findAllOrderByLatestAnalysis()
+
 
     // 댓글 추가
     fun addComment(analysisResultId: Long, memberId: Long, content: String): Comment {
