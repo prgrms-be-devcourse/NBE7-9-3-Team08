@@ -104,14 +104,15 @@ export function useAuth() {
   async function logout() {
     try {
       await authApi.logout();
+    } catch (error) {
+      console.error('서버 로그아웃 실패:', error);
+      toast.push('로그아웃 중 오류가 발생했습니다.');
+    } finally {
       localStorage.removeItem('user');
       setToken(null);
       setUser(null);
       toast.push('로그아웃되었습니다.');
       window.location.href = '/';
-    } catch (error) {
-      console.error('❌ 로그아웃 실패:', error);
-      toast.push('로그아웃 중 오류가 발생했습니다.');
     }
   }
 
