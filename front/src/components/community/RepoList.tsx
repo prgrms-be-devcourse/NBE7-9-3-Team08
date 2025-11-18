@@ -1,10 +1,15 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, Fragment } from 'react'
+import dynamic from 'next/dynamic'
 import { useCommunity } from '@/hooks/community/useCommunity'
 import RepositoryCard from './RepoCard'
 import { Button } from '@/components/ui/Button'
 import { Loader2 } from 'lucide-react'
+
+const AdsenseBanner = dynamic(() => import('@/components/AdsenseBanner'), {
+  ssr: false,
+})
 
 export default function RepositoryList() {
   const {
@@ -43,6 +48,8 @@ export default function RepositoryList() {
   if (error)
     return <p className="text-red-500 text-center py-8">에러 발생: {error}</p>
 
+  const adSlot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_COMMUNITY || 'community-slot'
+
   return (
     <section className="flex flex-col gap-6 mt-6">
       {/* 헤더 */}
@@ -80,8 +87,18 @@ export default function RepositoryList() {
         </p>
       ) : (
         <div className="flex flex-col gap-6">
-          {repositories.map((item) => (
-            <RepositoryCard key={item.repositoryId} item={item} />
+          {repositories.map((item, index) => (
+            <Fragment key={item.repositoryId}>
+              <RepositoryCard item={item} />
+              {((index + 1) % 2 === 0 || index === repositories.length - 1) && (
+                <div className="flex justify-center">
+                  <AdsenseBanner
+                    adSlot={`${adSlot}-${Math.ceil((index + 1) / 2)}`}
+                    style={{ width: '100%', minHeight: 160, borderRadius: 12 }}
+                  />
+                </div>
+              )}
+            </Fragment>
           ))}
         </div>
       )}

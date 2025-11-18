@@ -1,9 +1,14 @@
 "use client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/Button"
 import { ArrowRight, Github, Sparkles, BarChart3, Users, Shield } from "lucide-react"
 import { useAuth } from "@/hooks/auth/useAuth"
+
+const AdsenseBanner = dynamic(() => import("@/components/AdsenseBanner"), {
+  ssr: false,
+})
 
 export default function LandingPage() {
   const router = useRouter()
@@ -20,6 +25,8 @@ export default function LandingPage() {
   const handleGoCommunity = () => {
     router.push(`/community`)
   }
+
+  const mainSlot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_MAIN || "main-slot"
 
   return (
     <div className="min-h-screen bg-background">
@@ -62,6 +69,16 @@ export default function LandingPage() {
               </Button>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 광고 섹션 */}
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="mx-auto max-w-4xl">
+          <AdsenseBanner
+            adSlot={mainSlot}
+            style={{ width: "100%", minHeight: 180, borderRadius: 12 }}
+          />
         </div>
       </section>
     </div>
