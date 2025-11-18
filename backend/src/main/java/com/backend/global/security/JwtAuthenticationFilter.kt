@@ -67,7 +67,6 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        println(">>> Request received: ${request.method} ${request.requestURI}")
         val requestURI = request.requestURI
         val method = request.method
 

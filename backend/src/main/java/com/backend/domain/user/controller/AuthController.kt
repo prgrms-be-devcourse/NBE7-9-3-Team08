@@ -69,7 +69,6 @@ class AuthController(
 
 
     //로그인
-    @JvmRecord
     data class LoginRequest(
         @field:NotBlank(message = "이메일은 필수 입력값 입니다.")
         @field:Email(message = "이메일 형식이 아닙니다.")
