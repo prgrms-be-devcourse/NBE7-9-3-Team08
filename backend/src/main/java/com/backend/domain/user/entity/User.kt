@@ -15,13 +15,10 @@ import java.time.LocalDateTime
 //@Where(clause = "isDeleted=false")
 @Table(name = "member")
 class User(
-    @JvmField
     @field:Column(unique = true, nullable = false)
     var email: String,
-    @JvmField
     @field:Column(nullable = false)
     var password: String,
-    @JvmField
     @field:Column(nullable = false)
     var name: String
 ) {
@@ -31,14 +28,12 @@ class User(
         name = ""
     )
 
-    @JvmField
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
     @Column
     var imageUrl: String? = null
-        private set
 
     val githubToken: String? = null
 
