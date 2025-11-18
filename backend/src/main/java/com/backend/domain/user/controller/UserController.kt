@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -22,14 +23,12 @@ class UserController(
     private val jwtUtil: JwtUtil
 ) {
     // id를 입력받아 회원이 존재하면 해당 회원을 반환하는 api
-    @JvmRecord
     data class GetRequest(
         @field:NotBlank(message = "이메일은 필수 입력값 입니다.")
         @field:Email(message = "이메일 형식이 아닙니다.")
         val email : String
     )
 
-    @JvmRecord
     data class GetResponse(
         val userDto: UserDto
     )
@@ -44,7 +43,6 @@ class UserController(
 
 
     //모든 회원을 조회하는 api
-    @JvmRecord
     data class GetUsersResponse(
         val userDtoList: List<UserDto>
     )
@@ -63,13 +61,14 @@ class UserController(
 
 
     //email, password, passwrodCheck, name을 입력받아 회원가입을 진행하는 api
-    @JvmRecord
     data class JoinRequest(
         @field:NotBlank(message = "이메일은 필수 입력값 입니다.")
         @field:Email(message = "이메일 형식이 아닙니다.")
         val email: String,
 
         @field:NotBlank(message = "비밀번호는 필수 입력값 입니다.")
+        @field:Pattern(regexp = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+=-]).{8,}$",
+            message = "비밀번호는 8자 이상이며, 영문, 숫자, 특수문자를 반드시 포함해야 합니다.")
         val password: String,
 
         @field:NotBlank(message = "비밀번호 확인은 필수 입력값 입니다.")
@@ -79,7 +78,6 @@ class UserController(
         val name: String
     )
 //여기부터
-    @JvmRecord
     data class JoinResponse(
         val userDto: UserDto
     )
@@ -100,14 +98,12 @@ class UserController(
     }
 
     //soft delete
-    @JvmRecord
     data class DeleteRequest(
         @field:NotBlank(message = "이메일은 필수 입력값 입니다.")
         @field:Email(message = "이메일 형식이 아닙니다.")
         val email: String
     )
 
-    @JvmRecord
     data class DeleteResponse(
         val userDto: UserDto
     )
@@ -122,13 +118,11 @@ class UserController(
 
 
     //이름 변경
-    @JvmRecord
     data class ModifyNameRequest(
         @field:NotBlank(message = "이름은 필수 입력값 입니다.")
         val name: String
     )
 
-    @JvmRecord
     data class ModifyNameResponse(
         val userDto: UserDto
     )
@@ -153,7 +147,6 @@ class UserController(
     }
 
     //비밀번호 변경
-    @JvmRecord
     data class ModifyPasswordRequest(
         @field:NotBlank(message = "비밀번호는 필수 입력값 입니다.")
         val password: String,
@@ -161,7 +154,6 @@ class UserController(
         val passwordCheck: String
     )
 
-    @JvmRecord
     data class ModifyPasswordResponse(
         val userDto: UserDto
     )
@@ -185,14 +177,12 @@ class UserController(
     }
 
     //삭제된 유저 복구
-    @JvmRecord
     data class RestoreRequest(
         @field:NotBlank(message = "이메일은 필수 입력값 입니다.")
         @field:Email(message = "이메일 형식이 아닙니다.")
         val email: String
     )
 
-    @JvmRecord
     data class RestoreResponse(
         val userDto: UserDto
     )  /*

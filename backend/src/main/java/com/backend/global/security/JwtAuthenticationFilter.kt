@@ -11,7 +11,6 @@ import jakarta.servlet.ServletException
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import lombok.RequiredArgsConstructor
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.AuthorityUtils
@@ -23,7 +22,6 @@ import java.io.IOException
 import java.time.LocalDateTime
 
 @Component
-@RequiredArgsConstructor
 class JwtAuthenticationFilter(
     private val jwtUtil: JwtUtil,
     private val jwtService: JwtService
@@ -48,6 +46,7 @@ class JwtAuthenticationFilter(
         ExcludedRequest("/api/auth", "POST"),
         ExcludedRequest("/api/verify", "POST"),
         ExcludedRequest("/api/user", "POST"),
+        ExcludedRequest("/api/reissue", null),
 
         // 커뮤니티 관련 API
         ExcludedRequest("/api/community/**", null),
@@ -77,7 +76,6 @@ class JwtAuthenticationFilter(
                 val methodMatches = ex.method == null || ex.method.equals(method, ignoreCase = true)
                 pathMatches && methodMatches
             }
-
         if (excluded) {
             filterChain.doFilter(request, response)
             return
