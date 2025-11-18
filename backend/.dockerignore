@@ -1,0 +1,17 @@
+build/
+.gradle/
+.idea/
+*.iml
+.vscode/
+.env
+.env.local
+.env.production
+.env.properties
+.git/
+.gitignore
+*.log
+.DS_Store
+Thumbs.db
+out/
+target/
+*.md

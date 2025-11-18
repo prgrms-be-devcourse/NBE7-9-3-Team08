@@ -1,0 +1,87 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: update # 수정 예정
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: false
+        highlight_sql: false
+        use_sql_comments: false
+    show-sql: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 3000ms
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_ID}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          timeout: 5000
+
+logging:
+  level:
+    root: INFO
+    com.backend: INFO
+    org.hibernate: WARN
+    org.springframework: INFO
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:https://your-frontend.vercel.app}
+
+github:
+  api:
+    base-url: https://api.github.com/
+    token: ${GITHUB_TOKEN}
+
+jwt:
+  secret: ${SECRET_KEY}
+  access-token-expiration-in-milliseconds: 7200000
+  refresh-token-expiration-in-milliseconds: 604800000
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+    include-exception: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
