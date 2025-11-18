@@ -137,7 +137,7 @@ export function useAnalysisProgress(repoUrl?: string | null) {
         const data = await analysisApi.requestAnalysis({ githubUrl: repoUrl })
         repositoryIdRef.current = data.repositoryId
       } catch (err: any) {
-        if (err.status === 409 || err.code === "ANALYSIS_IN_PROGRESS") {
+        if (err.code === "ECONNRESET" || err.message?.includes("socket hang up")) {
           const duplicatePayload = {
             type: "duplicate" as AnalysisErrorKind,
             message: "이미 분석이 진행 중이에요. 잠시 후 다시 확인해 주세요.",
@@ -191,7 +191,8 @@ export function useAnalysisProgress(repoUrl?: string | null) {
     }
 
     const handleComplete = (e: CustomEvent<string>) => {
-      setStatusMessage("분석 완료!")
+      setStatusMessage("최종 리포트 작성")
+      setCurrentStep(steps.length - 1)
       setProgress(100)
       setIsCompleted(true)
 

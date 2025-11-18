@@ -58,11 +58,6 @@ export default function LoadingContent() {
                 </div>
             </div>
 
-            {/* 상태 메시지 출력 (선택) */}
-            <p className="text-center text-sm text-muted-foreground mb-4">
-              {statusMessage}
-            </p>
-
             {/* 단계 리스트 및 추가 정보 */}
             <LoadingStepList steps={steps} currentStep={currentStep} />
             <LoadingInfoBox />
