@@ -37,7 +37,6 @@ class AuthController(
 
 
     //입력받은 이메일에 인증코드를 보냅니다.
-    @JvmRecord
     data class SendRequest(
         val email: String
     )
@@ -51,7 +50,6 @@ class AuthController(
 
 
     //인증코드 검증
-    @JvmRecord
     data class VerifyRequest(
         val email: String,
         val code: String

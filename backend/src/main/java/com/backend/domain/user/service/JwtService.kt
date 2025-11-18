@@ -7,12 +7,10 @@ import com.backend.domain.user.util.RedisUtil
 import com.backend.domain.user.util.RefreshTokenUtil
 import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
-import lombok.RequiredArgsConstructor
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
-@RequiredArgsConstructor
 class JwtService(
     private val userRepository: UserRepository,
     private val jwtUtil: JwtUtil,

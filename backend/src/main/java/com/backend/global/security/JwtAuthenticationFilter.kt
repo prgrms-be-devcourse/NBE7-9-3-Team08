@@ -11,7 +11,6 @@ import jakarta.servlet.ServletException
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import lombok.RequiredArgsConstructor
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.AuthorityUtils
@@ -23,7 +22,6 @@ import java.io.IOException
 import java.time.LocalDateTime
 
 @Component
-@RequiredArgsConstructor
 class JwtAuthenticationFilter(
     private val jwtUtil: JwtUtil,
     private val jwtService: JwtService

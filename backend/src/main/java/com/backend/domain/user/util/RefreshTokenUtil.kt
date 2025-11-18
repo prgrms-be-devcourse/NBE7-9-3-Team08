@@ -5,7 +5,6 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
-import lombok.RequiredArgsConstructor
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.nio.charset.StandardCharsets
@@ -13,7 +12,6 @@ import java.util.*
 import javax.crypto.SecretKey
 
 @Component
-@RequiredArgsConstructor
 class RefreshTokenUtil(
     private val redisUtil: RedisUtil
 ) {
