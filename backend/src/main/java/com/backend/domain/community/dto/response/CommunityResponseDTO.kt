@@ -16,7 +16,7 @@ data class CommunityResponseDTO(
     val publicStatus: Boolean,
     val htmlUrl: String
 ) {
-    constructor(repositories: Repositories, analysis: AnalysisResult, score: Score) : this(
+    constructor(repositories: Repositories, analysis: AnalysisResult, score: Score?) : this(
 
         // 프로퍼티 접근으로 수정
         userName = repositories.user?.name,
@@ -32,7 +32,7 @@ data class CommunityResponseDTO(
             .map { it.language.name }
             .toMutableList(),
 
-        totalScore = score.totalScore,
+        totalScore = score?.totalScore ?: 0,
         createDate = analysis.createDate,
 
         publicStatus = repositories.publicRepository,

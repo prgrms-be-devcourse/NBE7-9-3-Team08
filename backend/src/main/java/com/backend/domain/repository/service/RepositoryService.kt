@@ -51,7 +51,7 @@ class RepositoryService(
         } catch (e: BusinessException) {
             throw e
         } catch (e: Exception) {
-            log.error("❌ Repository 수집 중 오류 발생", e)
+            log.error("Repository 수집 중 오류 발생", e)
             throw BusinessException(ErrorCode.INTERNAL_ERROR)
         }
     }
@@ -117,10 +117,10 @@ class RepositoryService(
             return data
 
         } catch (e: BusinessException) {
-            safeSendSse(userId, "error", "❌ ${e.errorCode.message}")
+            safeSendSse(userId, "error", "${e.errorCode.message}")
             throw e
         } catch (e: Exception) {
-            safeSendSse(userId, "error", "❌ Repository 데이터 수집 실패: ${e.message}")
+            safeSendSse(userId, "error", "Repository 데이터 수집 실패: ${e.message}")
             throw e
         }
     }
@@ -150,19 +150,22 @@ class RepositoryService(
         val existing = repositoryJpaRepository.findIncludingDeleted(url, userId)
 
         if (existing != null) {
+
             if (existing.deleted) {
                 existing.deleted = false
+                repositoryJpaRepository.save(existing)
             }
+
             existing.updateFrom(repoInfo)
             existing.updateLanguagesFrom(languages)
 
-            repositoryJpaRepository.save(existing)
             return
-        } else {
-            val newRepo = repositoriesMapper.toEntity(repoInfo, user)
-            newRepo.updateLanguagesFrom(languages)
-            repositoryJpaRepository.save(newRepo)
         }
+
+        val newRepo = repositoriesMapper.toEntity(repoInfo, user)
+        newRepo.updateLanguagesFrom(languages)
+
+        repositoryJpaRepository.save(newRepo)
     }
 
     fun findRepositoryByUser(userId: Long): List<Repositories> =
@@ -190,5 +193,26 @@ class RepositoryService(
 
         return findRepositoryByUser(userId)
             .map { RepositoryResponse.from(it) }
+    }
+
+    @Transactional
+    fun ensureRepository(userId: Long, githubUrl: String, repoName: String): Long {
+        val existing = repositoryJpaRepository.findByHtmlUrlAndUserId(githubUrl, userId)
+        if (existing != null) {
+            return existing.id ?: throw BusinessException(ErrorCode.REPOSITORY_INVALID_STATE)
+        }
+
+        val user = userRepository.findById(userId)
+            .orElseThrow { BusinessException(ErrorCode.USER_NOT_FOUND) }
+
+        val placeholder = Repositories.createMinimal(
+            user = user,
+            htmlUrl = githubUrl,
+            name = repoName
+        )
+
+        return repositoryJpaRepository.save(placeholder).id
+            ?: throw BusinessException(ErrorCode.REPOSITORY_INVALID_STATE)
+
     }
 }

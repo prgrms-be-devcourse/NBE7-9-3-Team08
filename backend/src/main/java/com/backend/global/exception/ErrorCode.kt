@@ -25,6 +25,7 @@ enum class ErrorCode(
     EMAIL_NOT_FOUND("U006", HttpStatus.NOT_FOUND, "해당 이메일은 없는 계정입니다."),
     ALREADY_REGISTERED_EMAIL("U007", HttpStatus.BAD_REQUEST, "이미 회원가입된 이메일입니다."),
     EXPIRATION_ERROR("U008", HttpStatus.BAD_REQUEST, "refreshToken 유효 기간 설정 오류입니다."),
+    REFRESH_TOKEN_ERROR("U009", HttpStatus.UNAUTHORIZED, "잘못된 refreshToken이거나 만료된 refreshToken입니다."),
 
     // ========== analysis 도메인 에러 ==========
     INVALID_GITHUB_URL("A001", HttpStatus.BAD_REQUEST, "올바른 GitHub 저장소 URL이 아닙니다."),
@@ -37,7 +38,7 @@ enum class ErrorCode(
     USER_NOT_FOUND("A004", HttpStatus.FORBIDDEN, "사용자 정보를 찾을 수 없습니다."),
     FORBIDDEN("A005", HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
     ANALYSIS_IN_PROGRESS("A006", HttpStatus.CONFLICT, "이미 분석이 진행 중입니다. 잠시 후 다시 시도해주세요."),
-    ANALYSIS_FAIL("A007", HttpStatus.INTERNAL_SERVER_ERROR, "분석 중 오류가 발생했습니다."),  // ← 코드 수정됨
+    ANALYSIS_FAIL("A007", HttpStatus.INTERNAL_SERVER_ERROR, "분석 중 오류가 발생했습니다."),
 
     // ========== repository 도메인 에러 ==========
     GITHUB_REPO_NOT_FOUND("G001", HttpStatus.BAD_REQUEST, "GitHub 저장소를 찾을 수 없습니다."),
@@ -47,10 +48,12 @@ enum class ErrorCode(
     GITHUB_RESPONSE_PARSE_ERROR("G005", HttpStatus.INTERNAL_SERVER_ERROR, "GitHub 응답 데이터를 처리하는 중 오류가 발생했습니다."),
     GITHUB_API_FAILED("G006", HttpStatus.BAD_REQUEST, "GitHub API 응답에 실패했습니다."),
     GITHUB_REPO_TOO_LARGE("G007", HttpStatus.BAD_REQUEST, "저장소가 너무 커서 분석할 수 없습니다. (제한: 500MB)"),
+    REPOSITORY_INVALID_STATE("G008", HttpStatus.INTERNAL_SERVER_ERROR, "Repository 엔티티 상태가 유효하지 않습니다."),
 
     // ========== comment 도메인 에러 ==========
     COMMENT_NOT_FOUND("R001", HttpStatus.BAD_REQUEST, "존재하지 않는 댓글입니다."),
     NOT_LOGIN_USER("R002", HttpStatus.BAD_REQUEST, "댓글 작성을 위해 로그인이 필요합니다."),
     EMPTY_COMMENT("R003", HttpStatus.BAD_REQUEST, "댓글 내용을 작성해주세요."),
-    NOT_WRITER("R004", HttpStatus.BAD_REQUEST, "댓글 작성자가 아닙니다.");
+    NOT_WRITER("R004", HttpStatus.BAD_REQUEST, "댓글 작성자가 아닙니다."),
+    NO_SEARCH_CONTENT("R005", HttpStatus.BAD_REQUEST, "입력된 검색어가 없습니다.");
 }
