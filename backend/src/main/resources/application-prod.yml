@@ -30,17 +30,19 @@ spring:
       timeout: 3000ms
 
   mail:
-    host: smtp.gmail.com
+    host: smtp.sendgrid.net
     port: 587
-    username: ${MAIL_ID}
-    password: ${MAIL_PASSWORD}
+    username: apikey
+    password: ${SENDGRID_API_KEY}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+          connectiontimeout: 5000
           timeout: 5000
+          writetimeout: 5000
 
 logging:
   level:
