@@ -1,161 +1,142 @@
-package com.backend.domain.user.service;
+package com.backend.domain.user.service
 
-import com.backend.domain.user.entity.User;
-import com.backend.domain.user.repository.UserRepository;
-import com.backend.domain.user.util.RedisUtil;
-import com.backend.global.exception.BusinessException;
-import com.backend.global.exception.ErrorCode;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.backend.domain.user.entity.User
+import com.backend.domain.user.repository.UserRepository
+import com.backend.domain.user.util.RedisUtil
+import com.backend.global.exception.BusinessException
+import com.backend.global.exception.ErrorCode
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.*
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.redis.core.StringRedisTemplate
+import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
 @Tag("redis")
 @DisplayName("UserService 테스트")
-public class UserServiceTest {
+class UserServiceTest {
     @Autowired
-    private UserService userService;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private RedisUtil redisUtil;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private lateinit var userService: UserService
 
-    private static final long JOIN_TIME = 600L;
+    @Autowired
+    private lateinit var userRepository: UserRepository
+
+    @Autowired
+    private lateinit var redisUtil: RedisUtil
+
+    @Autowired
+    private lateinit var passwordEncoder: PasswordEncoder
+
+    @Autowired
+    private lateinit var redisTemplate: StringRedisTemplate
+
+    private companion object {
+        const val JOIN_TIME = 600L
+    }
 
     @BeforeEach
-    void setUp() {
+    fun setUp() {
         // 테스트 전 Redis 상태 초기화
-        if (redisTemplate.getConnectionFactory() != null) {
-            redisTemplate.getConnectionFactory().getConnection().flushDb();
+        redisTemplate.execute { connection ->
+            connection.commands().flushDb()
+            null
         }
+
     }
 
     @Test
     @DisplayName("User 생성")
-    void t1(){
+    fun t1() {
         //given
-        User user = new User("test@naver.com", "test1234", "test");
+        val email = "test@naver.com"
+        val password = "test1234"
+        val name = "test"
+        val user = User(email, password, name)
 
         //when
-        userRepository.save(user);
+        userRepository.save(user)
 
         //then
-        assertThat(userRepository.findById(user.getId()).get()).isEqualTo(user);
-
+        val result = userRepository.findById(user.id!!)
+        assertThat(result.isPresent).isTrue
+        assertThat(result.get()).isEqualTo(user)
     }
 
 
     //성공 케이스: 이메일 인증이 완료되었고, 이메일이 중복되지 않으며, 비밀번호가 일치할 때 회원가입이 성공
     @Test
     @DisplayName("회원가입 성공")
-    void t2(){
+    fun t2() {
         //given
         //이메일 인증을 받은 이메일이어야함.
+        val email = "dlaqudtn1107@naver.com"
+        val password = "1234"
+        val passwordCheck = "1234"
+        val name = "임병수"
 
-        String email = "dlaqudtn1107@naver.com";
-        String password = "1234";
-        String passwordCheck = "1234";
-        String name = "임병수";
         //임시 이메일 인증
-        redisUtil.setData("VERIFIED_EMAIL:"+email, "Y", JOIN_TIME);
+        redisUtil.setData("VERIFIED_EMAIL:${email}", "Y", JOIN_TIME)
 
         //when
-        User joinUser = userService.join(email, password, passwordCheck, name);
+        val joinUser = userService.join(email, password, passwordCheck, name)
 
         //then
         //회원가입 후 DB에서 회원 찾기
-        assertThat(joinUser).isEqualTo(userRepository.findByEmail(email));
+        val result = userRepository.findByEmail(email)
+        assertThat(joinUser).isEqualTo(result)
     }
 
     //실패 케이스 1: 이메일 인증을 받지 않았을 때 회원가입이 실패
     @Test
     @DisplayName("회원가입 실패 - 인증 받지 않은 이메일")
-    void t3(){
+    fun t3() {
         //given
-        String email = "test@naver.com";
-        String password = "test1234";
-        String passwordCheck = "test1234";
-        String name = "Lim";
+        val email = "test@naver.com"
+        val password = "test1234"
+        val passwordCheck = "test1234"
+        val name = "Lim"
 
         //when
-        String verified = redisUtil.getData("VERIFIED_EMAIL:"+email);
+        //검증되지 않은 이메일로 회원가입
+        //val verified = redisUtil!!.getData("VERIFIED_EMAIL:" + email)
+        val exception = assertThrows<BusinessException> {
+            userService.join(email, password, passwordCheck, name)
+        }
 
         //then
-        assertThat(verified).isEqualTo(null);
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.VALIDATION_FAILED)
     }
 
     //실패 케이스 2: 이미 등록된 이메일일 때 회원가입이 실패
     @Test
     @DisplayName("회원가입 실패 - 중복 이메일")
-    void t4(){
+    fun t4() {
         //given
-        String email = "test@naver.com";
-        String password = "test1234";
-        String passwordCheck = "test1234";
-        String name = "Lim";
+        val email = "test@naver.com"
+        val password = "test1234"
+        val passwordCheck = "test1234"
+        val name = "Lim"
 
-        User user = new User(email, password, name);
-        //임시 이메일 인증
-        redisUtil.setData("VERIFIED_EMAIL:" + email, "Y", JOIN_TIME);
-        userRepository.save(user);
+        val encodedPassword = passwordEncoder.encode(password)
+        val user = User(email, encodedPassword, name)
+
+        // 임시 이메일 인증
+        redisUtil.setData("VERIFIED_EMAIL:$email", "Y", JOIN_TIME)
+        userRepository.save(user)
 
         //when
-        BusinessException exception = assertThrows(BusinessException.class, () -> {
-            userService.join(email, password, passwordCheck, name);
-        });
+        val exception = assertThrows<BusinessException> {
+            userService.join(email, password, passwordCheck, name)
+        }
 
         //then
         //assertThat으로 Exception이 뜨는 것을 확인
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.VALIDATION_FAILED);
-
-    }
-
-    @Test
-    @DisplayName("회원가입 실패 - 필수값 누락")
-    void t5(){
-        //given
-        //이메일, 비밀번호, 이름 등 필수 필드가 비어 있을 때 (null 또는 빈 문자열) 유효성 검사 실패(400 Bad Request)를 확인합니다.
-
-        //when
-
-        //then
-    }
-
-    // 우선순위 낮음
-    @Test
-    @DisplayName("이름 변경 성공")
-    void t6(){
-        //given
-
-        //when
-
-        //then
-    }
-
-    @Test
-    @DisplayName("비밀번호 변경 성공")
-    void t7(){
-        //given
-
-        //when
-
-        //then
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.VALIDATION_FAILED)
     }
 
 }
