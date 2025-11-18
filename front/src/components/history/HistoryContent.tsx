@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useMemo } from "react"
+import dynamic from "next/dynamic"
 import { useHistory } from "@/hooks/history/useHistory"
 import { HistoryStats } from "@/components/history/HistoryStatsProps"
 import { Card } from "@/components/ui/card"
@@ -16,6 +17,10 @@ import { useRouter } from "next/navigation"
 import { HistoryCompare } from "@/components/history/HistoryCompare"
 import { analysisApi } from "@/lib/api/analysis"
 import { AnimatePresence, motion } from "framer-motion"
+
+const AdsenseBanner = dynamic(() => import("@/components/AdsenseBanner"), {
+  ssr: false,
+})
 
 interface HistoryContentProps {
   memberId: number
@@ -37,6 +42,7 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
   } = useHistory(memberId)
 
   const router = useRouter()
+  const historyAdSlot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_HISTORY || "history-slot"
 
   const [compareMode, setCompareMode] = useState(false)
   const [selectedRepoIds, setSelectedRepoIds] = useState<number[]>([])
@@ -336,6 +342,12 @@ export default function HistoryContent({ memberId, name }: HistoryContentProps) 
                     </div>
                   </Card>
                 ))}
+                <div className="pt-4">
+                  <AdsenseBanner
+                    adSlot={historyAdSlot}
+                    style={{ width: "100%", minHeight: 180, borderRadius: 12 }}
+                  />
+                </div>
               </div>
             )}
           </motion.div>

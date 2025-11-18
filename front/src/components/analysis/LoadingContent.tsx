@@ -1,6 +1,7 @@
 "use client"
 
 import { useSearchParams } from "next/navigation"
+import dynamic from "next/dynamic"
 import { Progress } from "@/components/ui/progress"
 import { AlertCircle, HelpCircle } from "lucide-react"
 import LoadingHeader from "@/components/analysis/LoadingHeader"
@@ -8,16 +9,28 @@ import LoadingStepList from "@/components/analysis/LoadingStepList"
 import LoadingInfoBox from "@/components/analysis/LoadingInfoBox"
 import { useAnalysisProgress } from "@/hooks/analysis/useLoadingProgress"
 
+const AdsenseBanner = dynamic(() => import("@/components/AdsenseBanner"), {
+  ssr: false,
+})
+
 export default function LoadingContent() {
   const searchParams = useSearchParams()
   const repoUrl = searchParams.get("repoUrl")
 
   const { progress, currentStep, steps, statusMessage, error } = useAnalysisProgress(repoUrl)
+  const sideSlot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ANALYSIS_SIDE || "analysis-side-slot"
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="mx-auto max-w-2xl">
+        <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)_220px]">
+          <aside className="hidden lg:block">
+            <AdsenseBanner
+              adSlot={`${sideSlot}-left`}
+              style={{ width: "100%", minHeight: 320, borderRadius: 12 }}
+            />
+          </aside>
+          <div className="mx-auto max-w-2xl w-full">
           <LoadingHeader repoUrl={repoUrl} />
           {error && (
             <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
@@ -64,6 +77,13 @@ export default function LoadingContent() {
           </>
           
           )}
+          </div>
+          <aside className="hidden lg:block">
+            <AdsenseBanner
+              adSlot={`${sideSlot}-right`}
+              style={{ width: "100%", minHeight: 320, borderRadius: 12 }}
+            />
+          </aside>
         </div>
       </div>
     </div>
