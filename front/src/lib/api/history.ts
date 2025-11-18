@@ -1,6 +1,6 @@
 // repository 도메인 API
 import type { RepositoryResponse } from "@/types/history"
-import type { CommunityResponse, PageResponse } from "@/types/myRepo";
+import type { CommunityResponse, PageResponse } from "@/types/history";
 
 export async function fetchHistory(memberId: number): Promise<RepositoryResponse[]> {
   const res = await fetch(`http://localhost:8080/api/analysis/repositories`, {
