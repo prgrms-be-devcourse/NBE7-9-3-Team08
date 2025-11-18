@@ -4,6 +4,7 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
+    optimizeCss: false
   },
   async rewrites() {
     if (process.env.NEXT_PUBLIC_DEV_PROXY === 'true') {
