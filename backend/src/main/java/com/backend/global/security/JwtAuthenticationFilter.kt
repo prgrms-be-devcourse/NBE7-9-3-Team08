@@ -43,7 +43,7 @@ class JwtAuthenticationFilter(
 
         // 인증 관련 API
         ExcludedRequest("/api/login", "POST"),
-        ExcludedRequest("/api/auth", "POST"),
+        ExcludedRequest("/api/auth", null),
         ExcludedRequest("/api/verify", "POST"),
         ExcludedRequest("/api/user", "POST"),
         ExcludedRequest("/api/reissue", null),
@@ -65,6 +65,12 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
+
+        if (request.method.equals("OPTIONS", ignoreCase = true)) {
+            filterChain.doFilter(request, response)
+            return
+        }
+
         val requestURI = request.requestURI
         val method = request.method
 

@@ -2,6 +2,7 @@ package com.backend.global.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -18,6 +19,7 @@ class SecurityConfig {
     @Throws(Exception::class)
     fun filterChain(http: HttpSecurity, jwtAuthenticationFilter: JwtAuthenticationFilter): SecurityFilterChain {
         http // JWT 인증을 사용하므로 세션을 사용하지 않음 (Stateless)
+            .cors { }
             .sessionManagement(Customizer { session->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             })
@@ -32,6 +34,7 @@ class SecurityConfig {
 
             .authorizeHttpRequests(Customizer { auth ->
                 auth
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(
                         "/api/login",  //로그인
                         "/api/auth",  //이메인 인증코드 전송
