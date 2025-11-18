@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -70,6 +71,8 @@ class UserController(
         val email: String,
 
         @field:NotBlank(message = "비밀번호는 필수 입력값 입니다.")
+        @field:Pattern(regexp = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+=-]).{8,}$",
+            message = "비밀번호는 8자 이상이며, 영문, 숫자, 특수문자를 반드시 포함해야 합니다.")
         val password: String,
 
         @field:NotBlank(message = "비밀번호 확인은 필수 입력값 입니다.")

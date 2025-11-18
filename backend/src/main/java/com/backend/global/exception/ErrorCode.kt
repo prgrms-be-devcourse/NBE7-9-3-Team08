@@ -25,6 +25,7 @@ enum class ErrorCode(
     EMAIL_NOT_FOUND("U006", HttpStatus.NOT_FOUND, "해당 이메일은 없는 계정입니다."),
     ALREADY_REGISTERED_EMAIL("U007", HttpStatus.BAD_REQUEST, "이미 회원가입된 이메일입니다."),
     EXPIRATION_ERROR("U008", HttpStatus.BAD_REQUEST, "refreshToken 유효 기간 설정 오류입니다."),
+    REFRESH_TOKEN_ERROR("U009", HttpStatus.UNAUTHORIZED, "잘못된 refreshToken이거나 만료된 refreshToken입니다."),
 
     // ========== analysis 도메인 에러 ==========
     INVALID_GITHUB_URL("A001", HttpStatus.BAD_REQUEST, "올바른 GitHub 저장소 URL이 아닙니다."),

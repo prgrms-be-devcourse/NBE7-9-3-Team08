@@ -56,7 +56,7 @@ public class UserServiceTest {
         userRepository.save(user);
 
         //then
-        assertThat(userRepository.findById(user.id).get()).isEqualTo(user);
+        assertThat(userRepository.findById(user.getId()).get()).isEqualTo(user);
 
     }
 
@@ -85,7 +85,7 @@ public class UserServiceTest {
 
     //실패 케이스 1: 이메일 인증을 받지 않았을 때 회원가입이 실패
     @Test
-    @DisplayName("이메일 인증을 받은 이메일로 회원가입 진행")
+    @DisplayName("회원가입 실패 - 인증 받지 않은 이메일")
     void t3(){
         //given
         String email = "test@naver.com";
@@ -102,7 +102,7 @@ public class UserServiceTest {
 
     //실패 케이스 2: 이미 등록된 이메일일 때 회원가입이 실패
     @Test
-    @DisplayName("이미 등록된 이메일일 때 회원가입 진행")
+    @DisplayName("회원가입 실패 - 중복 이메일")
     void t4(){
         //given
         String email = "test@naver.com";
@@ -124,9 +124,38 @@ public class UserServiceTest {
         //assertThat으로 Exception이 뜨는 것을 확인
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.VALIDATION_FAILED);
 
-
     }
 
+    @Test
+    @DisplayName("회원가입 실패 - 필수값 누락")
+    void t5(){
+        //given
+        //이메일, 비밀번호, 이름 등 필수 필드가 비어 있을 때 (null 또는 빈 문자열) 유효성 검사 실패(400 Bad Request)를 확인합니다.
 
-    
+        //when
+
+        //then
+    }
+
+    // 우선순위 낮음
+    @Test
+    @DisplayName("이름 변경 성공")
+    void t6(){
+        //given
+
+        //when
+
+        //then
+    }
+
+    @Test
+    @DisplayName("비밀번호 변경 성공")
+    void t7(){
+        //given
+
+        //when
+
+        //then
+    }
+
 }

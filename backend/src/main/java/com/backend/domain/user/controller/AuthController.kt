@@ -18,9 +18,7 @@ import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 class AuthController(
@@ -159,5 +157,70 @@ class AuthController(
         val cookies: Array<Cookie> = request.cookies ?: return null
 
         return cookies.firstOrNull{it.name == "accessToken"}?.value
+    }
+
+    //토큰 재발급
+    //jwt가 만료되었을때 호출됨
+    //@PostMapping("/api/reissue")
+    @RequestMapping(value = ["/api/reissue"], method = [RequestMethod.POST, RequestMethod.GET])
+    fun reissue(
+        request: HttpServletRequest,
+        response: HttpServletResponse
+    ): ApiResponse<String>{
+        println("재발급 api 진입")
+        val refreshToken: String? = refreshTokenUtil.getRefreshToken(request)
+        if(refreshToken.isNullOrBlank()){
+            throw BusinessException(ErrorCode.REFRESH_TOKEN_ERROR)
+        }
+        println("refreshToken확인 완료")
+
+        //서명, 만료일 확인
+        if(refreshTokenUtil.refreshTokenValidation(refreshToken)){
+            //사용자 식별
+            val userId = refreshTokenUtil.getId(request)
+            if(userId == 0L){
+                println("사용자 식별 실패")
+                throw BusinessException(ErrorCode.REFRESH_TOKEN_ERROR)
+            }
+
+            //토큰 쌍 발급 + redis 업데이트
+            val tokens: List<String> = jwtService.reissue(userId, refreshToken)
+            println("===== jwt, refreshToken 재발급 ==========")
+            val newAccessToken: String? = tokens.getOrNull(0)
+            val newRefreshToken: String? = tokens.getOrNull(1)
+
+            //토큰이 유효한지 확인
+            if (newAccessToken == null || newRefreshToken == null) {
+                return ApiResponse.error(ResponseCode.UNAUTHORIZED)
+            }
+
+            //쿠키 업데이트 및 응답
+            val accessCookie = Cookie("accessToken", newAccessToken)
+            accessCookie.isHttpOnly = true // JavaScript 접근 방지 (XSS 공격 방어)
+            accessCookie.secure = false //HTTPS 통신에서만 전송
+            accessCookie.path = "/"
+            accessCookie.maxAge = tokenValidityMilliSeconds / 1000 //쿠키는 초단위
+
+            response.addCookie(accessCookie) //응답에 쿠키 추가
+
+            val refreshCookie = Cookie("refreshToken", newRefreshToken)
+            refreshCookie.isHttpOnly = true // JavaScript 접근 방지 (XSS 공격 방어)
+            refreshCookie.secure = false //HTTPS 통신에서만 전송
+            refreshCookie.path = "/"
+            var refreshTokenMaxAge = 0
+            try {
+                refreshTokenMaxAge = Math.toIntExact(refreshTokenValidityMilliSeconds / 1000)
+            } catch (e: ArithmeticException) {
+                throw BusinessException(ErrorCode.EXPIRATION_ERROR)
+            }
+
+            refreshCookie.maxAge = refreshTokenMaxAge
+
+            response.addCookie(refreshCookie)
+        }else{
+            throw BusinessException(ErrorCode.REFRESH_TOKEN_ERROR)
+        }
+
+        return ApiResponse.success("token 재발급 완료")
     }
 }

@@ -48,6 +48,7 @@ class JwtAuthenticationFilter(
         ExcludedRequest("/api/auth", "POST"),
         ExcludedRequest("/api/verify", "POST"),
         ExcludedRequest("/api/user", "POST"),
+        ExcludedRequest("/api/reissue", null),
 
         // 커뮤니티 관련 API
         ExcludedRequest("/api/community/**", null),
@@ -66,6 +67,7 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
+        println(">>> Request received: ${request.method} ${request.requestURI}")
         val requestURI = request.requestURI
         val method = request.method
 
@@ -77,7 +79,6 @@ class JwtAuthenticationFilter(
                 val methodMatches = ex.method == null || ex.method.equals(method, ignoreCase = true)
                 pathMatches && methodMatches
             }
-
         if (excluded) {
             filterChain.doFilter(request, response)
             return

@@ -59,7 +59,7 @@ class UserControllerTest {
         User user = userService.join(email, password, passwordCheck, name);
 
         assertThat(user).isNotNull();
-        assertThat(user.email).isEqualTo(email);
-        assertThat(user.name).isEqualTo(name);
+        assertThat(user.getEmail()).isEqualTo(email);
+        assertThat(user.getName()).isEqualTo(name);
     }
 }
