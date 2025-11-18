@@ -1,181 +1,142 @@
-package com.backend.domain.user.service;
+package com.backend.domain.user.service
 
+import com.backend.domain.user.util.JwtUtil
+import com.backend.global.security.JwtAuthenticationFilter
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.security.Keys
+import jakarta.annotation.PostConstruct
+import jakarta.servlet.http.Cookie
+import jakarta.servlet.http.HttpServletRequest
+import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Tag
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.transaction.annotation.Transactional
+import java.lang.reflect.InvocationTargetException
+import java.nio.charset.StandardCharsets
+import java.security.Key
+import java.util.*
 
-import com.backend.domain.user.util.JwtUtil;
-import com.backend.domain.user.util.RedisUtil;
-import com.backend.global.security.JwtAuthenticationFilter;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.crypto.SecretKey;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
 @Tag("redis")
-public class JwtServiceTest {
+class JwtServiceTest {
     @Autowired
-    private JwtUtil jwtUtil;
+    private lateinit var jwtUtil: JwtUtil
+
     @Autowired
-    private JwtService jwtService;
-    @Autowired
-    private RedisUtil redisUtil;
+    private lateinit var jwtService: JwtService
 
+    @Value("\${jwt.secret}")
+    private lateinit var secretKey: String
 
-    @Value("${jwt.secret}")
-    private String secretKey;
-
-    @Value("${jwt.access-token-expiration-in-milliseconds}")
-    private int tokenValidityMilliSeconds;
+    @Value("\${jwt.access-token-expiration-in-milliseconds}")
+    private var tokenValidityMilliSeconds: Long = 0
 
     //SecretKey를 Base64로 인코딩하여 SecretKey객체로 변환
-    private SecretKey key;
+    private lateinit var key: Key
 
-    @PostConstruct  //의존성 주입이 될때 딱 1번만 실행되기 때문에 key값은 이후로 변하지 않음
-    public void init() {
-        this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-        System.out.println(key);
+    @PostConstruct
+    //의존성 주입이 될때 딱 1번만 실행되기 때문에 key값은 이후로 변하지 않음
+    fun init() {
+        this.key = Keys.hmacShaKeyFor(secretKey.toByteArray(StandardCharsets.UTF_8))
+        println(key)
     }
 
     @Test
     @DisplayName("Jwt 생성")
-    void t1(){
+    fun t1() {
         //given
-        Map<String, Object> claims = new HashMap<>();
-        claims.put(Claims.SUBJECT, "test1234@naver.com");
-        claims.put("name", "LIM");
-        claims.put("userId", 4L);
-        Date now = new Date();
-        Date expiration =  new Date(now.getTime() + tokenValidityMilliSeconds);
+        val claims: Map<String, Any> = mapOf(
+            Claims.SUBJECT to "test1234@naver.com",
+            "name" to "LIM",
+            "userId" to "4"
+        )
+        val now = Date()
+        val expiration = Date(now.time + tokenValidityMilliSeconds)
 
         //when
-        String jwt = Jwts.builder()
-                .claims(claims)
-                .issuedAt(now)
-                .expiration(expiration)
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+        val jwt = Jwts.builder()
+            .claims(claims)
+            .issuedAt(now)
+            .expiration(expiration)
+            .signWith(key)
+            .compact()
 
-        Claims parsedClaims = jwtUtil.parseClaims(jwt);
+        val parsedClaims = jwtUtil.parseClaims(jwt)
 
 
         //then
-        assertThat(parsedClaims.get("userId", Long.class)).isEqualTo(4);
-        assertThat(parsedClaims.get("name", String.class)).isEqualTo("LIM");
-        assertThat(parsedClaims.getSubject()).isEqualTo("test1234@naver.com");
+        Assertions.assertThat(parsedClaims.get("userId", String::class.java)).isEqualTo("4")
+        Assertions.assertThat(parsedClaims.get("name", String::class.java)).isEqualTo("LIM")
+        Assertions.assertThat(parsedClaims.subject).isEqualTo("test1234@naver.com")
+
         //assertThat(parsedClaims.getExpiration().getTime()).isEqualTo(expiration.getTime());
         //assertThat(parsedClaims.getIssuedAt().getTime()).isEqualTo(now.getTime());
-
     }
 
     @Test
     @DisplayName("refreshToken 생성")
-    void t2(){
+    fun t2() {
         //given
-        Map<String, Object> claims = new HashMap<>();
-        claims.put(Claims.SUBJECT, String.valueOf(4L));
-        String jti = UUID.randomUUID().toString();
-        claims.put(Claims.ID, jti);
+        val jti: String = UUID.randomUUID().toString()
+        val claims: Map<String?, Any?> = mapOf(
+            Claims.SUBJECT to 4L.toString(),
+            Claims.ID to jti
+        )
 
-        Date now = new Date();
-        Date expiration =  new Date(now.getTime() + 604800000);
+        val now = Date()
+        val expiration = Date(now.time + 604800000L)
 
         //when
-        String refreshToken = Jwts.builder()
-                .claims(claims)
-                .issuedAt(now)
-                .expiration(expiration)
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+        val refreshToken = Jwts.builder()
+            .claims(claims)
+            .issuedAt(now)
+            .expiration(expiration)
+            .signWith(key)
+            .compact()
 
-        Claims parsedClaims = jwtUtil.parseClaims(refreshToken);
+        val parsedClaims = jwtUtil.parseClaims(refreshToken)
 
         //then
-        assertThat(parsedClaims.getId()).isEqualTo(jti);
-        assertThat(parsedClaims.getSubject()).isEqualTo("4");
-
+        Assertions.assertThat(parsedClaims.id).isEqualTo(jti)
+        Assertions.assertThat(parsedClaims.subject).isEqualTo("4")
     }
 
 
     @Test
     @DisplayName("쿠키 읽어오기")
-    void t3() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    @Throws(NoSuchMethodException::class, InvocationTargetException::class, IllegalAccessException::class)
+    fun t3() {
         //given
-        MockHttpServletRequest request = new  MockHttpServletRequest();
+        val request = MockHttpServletRequest()
 
-        String expectedToken = "jwt";
-        Cookie accessToken = new Cookie("accessToken", expectedToken);
+        val expectedToken = "jwt"
+        val accessToken = Cookie("accessToken", expectedToken)
 
-        request.setCookies(accessToken);
+        request.setCookies(accessToken)
 
         //when
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil, jwtService);
+        val filter = JwtAuthenticationFilter(jwtUtil, jwtService)
         // Reflection을 사용하여 private 메서드 접근
-        Method method = JwtAuthenticationFilter.class.getDeclaredMethod("extractTokenFromCookie", HttpServletRequest.class);
-        method.setAccessible(true); // private 접근 제한 해제
+        val method = JwtAuthenticationFilter::class.java.getDeclaredMethod(
+            "extractTokenFromCookie",
+            HttpServletRequest::class.java
+        )
+        method.setAccessible(true) // private 접근 제한 해제
 
-        String extractedToken = (String) method.invoke(filter, request);
-
-        //then
-        assertThat(extractedToken).isEqualTo(expectedToken);
-    }
-
-    @Test
-    @DisplayName("로그인 성공")
-    void t4(){
-        //given
-        //유효한 이메일과 정확한 비밀번호로 로그인 시도 시, accessToken과 refreshToken이 정상적으로 발급되는지 확인합니다.
-
-        //when
-        //발급된 accessToken이 유효한 형식인지, 클레임(claims)에 사용자 정보(ID, 이메일 등)가 올바르게 담겨 있는지 확인합니다.
+        val extractedToken = method.invoke(filter, request) as String?
 
         //then
-        //refreshToken이 Redis나 DB에 정상적으로 저장되는지 확인합니다.
-    }
-
-    @Test
-    @DisplayName("로그인 실패 - 잘못된 비밀번호")
-    void t5(){
-        //given
-        //유효한 이메일이지만 틀린 비밀번호로 시도했을 때, 로그인 실패 에러(401 Unauthorized)가 발생하는지 확인합니다.
-
-        //when
-
-        //then
-    }
-
-    @Test
-    @DisplayName("로그인 실패 - 존재하지 않는 사용자")
-    void t6(){
-        //given
-        //DB에 존재하지 않는 이메일로 로그인 시도 시, 실패 에러(401 Unauthorized)가 발생하는지 확인합니다.
-
-        //when
-
-        //then
+        Assertions.assertThat(extractedToken).isEqualTo(expectedToken)
     }
 }
 
