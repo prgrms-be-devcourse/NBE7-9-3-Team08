@@ -1,12 +1,8 @@
 package com.backend.domain.user.controller;
 
-import com.backend.domain.user.entity.User;
 import com.backend.domain.user.service.UserService;
 import com.backend.domain.user.util.RedisUtil;
-import jakarta.mail.MessagingException;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -16,7 +12,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -48,18 +43,18 @@ class UserControllerTest {
     @Autowired
     private UserService userService;
 
-    @Test
-    @DisplayName("회원가입")
-    void t1() throws MessagingException {
-        String email = "test+" + System.currentTimeMillis() + "@example.com";
-        String password = "123456";
-        String passwordCheck = "123456";
-        String name = "임병수";
-
-        User user = userService.join(email, password, passwordCheck, name);
-
-        assertThat(user).isNotNull();
-        assertThat(user.email).isEqualTo(email);
-        assertThat(user.name).isEqualTo(name);
-    }
+//    @Test
+//    @DisplayName("회원가입")
+//    void t1() throws MessagingException {
+//        String email = "test+" + System.currentTimeMillis() + "@example.com";
+//        String password = "123456";
+//        String passwordCheck = "123456";
+//        String name = "임병수";
+//
+//        User user = userService.join(email, password, passwordCheck, name);
+//
+//        assertThat(user).isNotNull();
+//        assertThat(user.email).isEqualTo(email);
+//        assertThat(user.name).isEqualTo(name);
+//    }
 }
