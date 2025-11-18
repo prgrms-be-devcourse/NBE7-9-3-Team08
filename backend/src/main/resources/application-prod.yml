@@ -13,7 +13,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update #TODO: 수정 필요
+      ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
@@ -29,20 +29,9 @@ spring:
       password: ${REDIS_PASSWORD:}
       timeout: 3000ms
 
-  mail:
-    host: smtp.sendgrid.net
-    port: 587
-    username: apikey
-    password: ${SENDGRID_API_KEY}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
+sendgrid:
+  api-key: ${SENDGRID_API_KEY}
+  from-email: ${SENDGRID_FROM_EMAIL}
 
 logging:
   level:
@@ -55,7 +44,7 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
 
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:https://your-frontend.vercel.app} #TODO: 수정 필요
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:https://nbe-7-9-3-team08.vercel.app}
 
 github:
   api:

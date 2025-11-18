@@ -231,6 +231,11 @@ export default function SignupPage() {
                             인증하기
                           </Button>
                         </div>
+                        <div>
+                          <p className="text-xs text-destructive">
+                            이메일이 보이지 않으면 스팸함을 확인해 주세요.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}
