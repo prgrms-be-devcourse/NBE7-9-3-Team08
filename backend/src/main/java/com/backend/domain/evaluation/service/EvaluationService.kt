@@ -29,6 +29,46 @@ class EvaluationService(
 
     private val log = LoggerFactory.getLogger(EvaluationService::class.java)
 
+    companion object {
+        private const val MIN_SCORE = 0
+        private const val MAX_README_SCORE = 30   // 프롬프트 기준
+        private const val MAX_TEST_SCORE = 30
+        private const val MAX_COMMIT_SCORE = 25
+        private const val MAX_CICD_SCORE = 15
+    }
+
+    /**
+     * OpenAI 점수 변환기 - 너무 작거나 크게 나왔을 때 대비
+     */
+
+    private fun normalizeScores(raw: Scores): Scores {
+        fun clamp(value: Int, max: Int): Int =
+            when {
+                value < MIN_SCORE -> MIN_SCORE
+                value > max -> max
+                else -> value
+            }
+
+        val normalized = Scores(
+            readme = clamp(raw.readme, MAX_README_SCORE),
+            test = clamp(raw.test, MAX_TEST_SCORE),
+            commit = clamp(raw.commit, MAX_COMMIT_SCORE),
+            cicd = clamp(raw.cicd, MAX_CICD_SCORE),
+        )
+
+        // LLM이 규칙을 어긴 경우 로그로 확인할 수 있게
+        if (normalized != raw) {
+            log.warn(
+                "AI scores out of range. raw={}, normalized={}",
+                raw,
+                normalized,
+            )
+        }
+
+        return normalized
+    }
+
+
     /**
      * RepositoryData + userId 를 받아서
      * 1) OpenAI로 품질 평가를 요청하고
@@ -62,7 +102,7 @@ class EvaluationService(
         // AnalysisResult 먼저 저장
         val saved = analysisResultRepository.save(analysis)
 
-        val sc: Scores = ai.scores
+        val sc: Scores = normalizeScores(ai.scores)
 
         // 팩토리 메서드 사용
         val score = Score.create(
