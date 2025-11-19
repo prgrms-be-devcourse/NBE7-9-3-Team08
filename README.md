@@ -15,6 +15,7 @@
 - **객관적인 평가 기준**: AI 기반 정량적 점수(0-100점)와 정성적 피드백 제공
 - **구체적인 개선 방향**: "README에 설치 방법 추가", "테스트 코드 작성" 등 실질적인 가이드 제시
 - **커뮤니티**: 오픈 커뮤니티 기반으로 우수 사례를 공유할 수 있는 플랫폼 구축
+- **kotlin 변환**: kotlin의 언어적 이점을 이용해 기존 로직 개선, 기능 고도화에 집중
 
   
 ### 👥 타겟 사용자
@@ -25,18 +26,21 @@
 
 ### 📅 개발 기간 & 팀 구성
 
-- **개발 기간**: 2025-10-10 ~ 2025-10-27 (3주)
+- **개발 기간**: 2025-11-13 ~ 2025-11-19 (1주)
 - **팀 구성**: 4인 (Full-stack)
   - 임병수: User 도메인 (회원가입, 로그인, 인증/인가)
   - 우성현: Evaluation 도메인 (OpenAI API 연동)
   - 오혜승: Analysis, Repository 도메인 (GitHub API 연동)
   - 양희원: Analysis, Community 도메인 (게시판, 댓글)
 
-### 📹 시연 영상
-[![시연 영상](https://img.youtube.com/vi/1ism7BSkffM/0.jpg)](https://youtu.be/1ism7BSkffM)
+### 🗂️ 2차 프로젝트
+<a href="https://github.com/prgrms-be-devcourse/NBE7-9-2-Team08">🖥️2차 프로젝트 바로가기</a>
+
+### 🌐 웹 사이트 링크
+<a herf="https://nbe-7-9-3-team08.vercel.app/">📈PortfolioIQ📋</a>
 
 ### 📊 시스템 아키텍처
-<img src="https://github.com/user-attachments/assets/e91daac0-b6d2-4e53-8fde-7bfebe061468" width="60%" alt="8_시스템_구성도" />
+<img width="60%" alt="3차_시스템_아키텍처" src="https://github.com/user-attachments/assets/4bf46cf8-0962-457e-9d15-397fb10c573f" />
 
 ---
 
@@ -88,6 +92,12 @@
 - Version Control: Git/GitHub (GitHub Flow)
 - Testing: JUnit 5, Mockito, Spring Security Test
 - IDE: IntelliJ IDEA, Cursor
+```
+
+### Release
+```
+- Front-hosting : Vercel
+- Back-hosting : Railway
 ```
 
 ---
@@ -146,6 +156,11 @@ MAIL_PASSWORD=xxxx xxxx xxxx xxxx
 
 # JWT
 SECRET_KEY=생성된_32자_이상의_랜덤_키
+
+# SendGrid
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SENDGRID_FROM_EMAIL=회원가입_인증_메일_보내는_이메일
+
 ```
 
 **⚠️ 보안 주의사항**
