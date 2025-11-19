@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.util.*
 
 @ExtendWith(io.mockk.junit5.MockKExtension::class)
 class RepositoryServiceUnitTest {
@@ -360,10 +361,12 @@ class RepositoryServiceUnitTest {
     @Test
     @DisplayName("ensureRepository → 기존 Repository 있으면 save 호출 없이 ID만 반환")
     fun testEnsureRepositoryExisting() {
-        val existing = mockk<Repositories>()
-        every { existing.id } returns 5L
+        val existing = mockk<Repositories>().apply {
+            every { id } returns 5L
+            every { deleted } returns false
+        }
 
-        every { repositoryJpaRepository.findByHtmlUrlAndUserId(any(), any()) } returns existing
+        every { repositoryJpaRepository.findIncludingDeleted(any(), any()) } returns existing
 
         val result = repositoryService.ensureRepository(
             userId = 1L,
@@ -376,16 +379,39 @@ class RepositoryServiceUnitTest {
     }
 
     @Test
-    @DisplayName("ensureRepository → 기존 Repository 없으면 placeholder 저장 후 ID 반환")
+    @DisplayName("ensureRepository → deleted=true이면 복구 후 save 호출, ID 반환")
+    fun testEnsureRepositoryRestore() {
+        val existing = mockk<Repositories>(relaxed = true).apply {
+            every { id } returns 7L
+            every { deleted } returns true
+        }
+
+        every { repositoryJpaRepository.findIncludingDeleted(any(), any()) } returns existing
+        every { repositoryJpaRepository.save(existing) } returns existing
+
+        val result = repositoryService.ensureRepository(
+            userId = 1L,
+            githubUrl = "https://github.com/test/repo",
+            repoName = "repo"
+        )
+
+        assertThat(result).isEqualTo(7L)
+        verify(exactly = 1) { repositoryJpaRepository.save(existing) }
+    }
+
+    @Test
+    @DisplayName("ensureRepository → 기존 없으면 placeholder 생성 후 ID 반환")
     fun testEnsureRepositoryNew() {
-        every { repositoryJpaRepository.findByHtmlUrlAndUserId(any(), any()) } returns null
-        every { userRepository.findById(any()) } returns java.util.Optional.of(testUser)
+        every { repositoryJpaRepository.findIncludingDeleted(any(), any()) } returns null
+        every { userRepository.findById(any()) } returns Optional.of(testUser)
 
         val placeholder = Repositories.createMinimal(
             user = testUser,
             htmlUrl = "https://github.com/test/repo",
             name = "repo"
-        ).apply { setFieldValue("id", 11L) }
+        ).apply {
+            setFieldValue("id", 11L)
+        }
 
         every { repositoryJpaRepository.save(any()) } returns placeholder
 
@@ -397,14 +423,16 @@ class RepositoryServiceUnitTest {
     @Test
     @DisplayName("ensureRepository → save 결과 ID null이면 REPOSITORY_INVALID_STATE 예외")
     fun testEnsureRepositoryInvalidState() {
-        every { repositoryJpaRepository.findByHtmlUrlAndUserId(any(), any()) } returns null
-        every { userRepository.findById(any()) } returns java.util.Optional.of(testUser)
+        every { repositoryJpaRepository.findIncludingDeleted(any(), any()) } returns null
+        every { userRepository.findById(any()) } returns Optional.of(testUser)
 
         val placeholder = Repositories.createMinimal(
             user = testUser,
             htmlUrl = "https://github.com/test/repo",
             name = "repo"
-        ).apply { setFieldValue("id", null) }
+        ).apply {
+            setFieldValue("id", null)
+        }
 
         every { repositoryJpaRepository.save(any()) } returns placeholder
 
