@@ -36,8 +36,11 @@
 ### 🗂️ 2차 프로젝트
 <a href="https://github.com/prgrms-be-devcourse/NBE7-9-2-Team08">🖥️2차 프로젝트 바로가기</a>
 
-### 🌐 웹 사이트 링크
-<a herf="https://nbe-7-9-3-team08.vercel.app/">📈PortfolioIQ📋</a>
+### 🌐 배포 링크
+<a href="https://nbe-7-9-3-team08.vercel.app/">PortfolioIQ - AI 기반 GitHub 저장소 분석</a>
+
+### 📽️ 시연 영상
+[![Video](https://img.youtube.com/vi/NfBTND3UU6g/0.jpg)](https://youtu.be/NfBTND3UU6g)
 
 ### 📊 시스템 아키텍처
 <img width="60%" alt="3차_시스템_아키텍처" src="https://github.com/user-attachments/assets/4bf46cf8-0962-457e-9d15-397fb10c573f" />
