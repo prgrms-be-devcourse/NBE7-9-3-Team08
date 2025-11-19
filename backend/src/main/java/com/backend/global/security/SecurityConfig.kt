@@ -2,6 +2,7 @@ package com.backend.global.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -10,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsConfiguration
 
 @Configuration
 @EnableWebSecurity
@@ -18,6 +20,7 @@ class SecurityConfig {
     @Throws(Exception::class)
     fun filterChain(http: HttpSecurity, jwtAuthenticationFilter: JwtAuthenticationFilter): SecurityFilterChain {
         http // JWT 인증을 사용하므로 세션을 사용하지 않음 (Stateless)
+            .cors(Customizer.withDefaults())
             .sessionManagement(Customizer { session->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             })
@@ -32,6 +35,7 @@ class SecurityConfig {
 
             .authorizeHttpRequests(Customizer { auth ->
                 auth
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(
                         "/api/login",  //로그인
                         "/api/auth",  //이메인 인증코드 전송
@@ -44,7 +48,6 @@ class SecurityConfig {
                         "/h2-console/**" // H2 콘솔 허용
                     ).permitAll()
                     .requestMatchers(
-                        "/api/analysis/stream/**",
                         "/api/analysis/repositories/{repositoriesId}",
                         "/api/analysis/repositories/{repositoryId}/results/{analysisId}",
                         "/api/repositories/**",

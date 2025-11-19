@@ -9,4 +9,4 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
 EXPOSE ${PORT:-8080}
-ENTRYPOINT ["sh", "-c", "java -jar -Dserver.port=${PORT:-8080} app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Duser.timezone=Asia/Seoul -Dserver.port=${PORT:-8080} -jar app.jar"]

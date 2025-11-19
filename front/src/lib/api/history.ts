@@ -1,18 +1,10 @@
 // repository 도메인 API
-import type { RepositoryResponse } from "@/types/history"
-import type { CommunityResponse, PageResponse } from "@/types/history";
+import { http } from './client';
+import type { RepositoryResponse, CommunityResponse, PageResponse } from '@/types/history';
 
 export async function fetchHistory(memberId: number): Promise<RepositoryResponse[]> {
-  const res = await fetch(`http://localhost:8080/api/analysis/repositories`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-    cache: "no-store",
-    credentials: "include", 
-  })
-
-  if (!res.ok) throw new Error("히스토리 데이터를 불러오는 데 실패했습니다.")
-  const result = await res.json();
-  return result.data;
+  void memberId;
+  return http.get<RepositoryResponse[]>('/analysis/repositories');
 }
 
 export async function fetchMyRepoSearch(
@@ -21,22 +13,12 @@ export async function fetchMyRepoSearch(
   content: string,
   sort: string
 ): Promise<PageResponse<CommunityResponse>> {
-  
-  const url = new URL("http://localhost:8080/api/analysis/search/myRepo");
-  url.searchParams.set("page", String(page));
-  url.searchParams.set("size", String(size));
-  url.searchParams.set("content", content);
-  url.searchParams.set("sort", sort);
+  const query = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+    content,
+    sort,
+  }).toString();
 
-  const res = await fetch(url.toString(), {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-    cache: "no-store",
-    credentials: "include",
-  });
-
-  if (!res.ok) throw new Error("검색 데이터를 불러오는 데 실패했습니다.");
-
-  const result = await res.json();
-  return result.data; // ApiResponse.data => PageResponseDTO
+  return http.get<PageResponse<CommunityResponse>>(`/analysis/search/myRepo?${query}`);
 }

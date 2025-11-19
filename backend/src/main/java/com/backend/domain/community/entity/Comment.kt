@@ -6,7 +6,8 @@ import jakarta.persistence.*
 import org.hibernate.annotations.SQLDelete
 
 @Entity
-@SQLDelete(sql = "UPDATE Comment SET deleted = true WHERE id = ?")
+@Table(name = "comment")
+@SQLDelete(sql = "UPDATE comment SET deleted = true WHERE id = ?")
 class Comment(
     // 댓글 id
     @Id

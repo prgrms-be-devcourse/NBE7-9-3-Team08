@@ -33,8 +33,6 @@ export default function LoginPage() {
       // 로그인 응답에서 사용자 정보 저장
       auth.loginWithToken(res.user);
       
-      toast.push('로그인 성공');
-      
       // 페이지 리로드하여 상태 즉시 반영
       window.location.href = '/';
     } catch (e: any) {
