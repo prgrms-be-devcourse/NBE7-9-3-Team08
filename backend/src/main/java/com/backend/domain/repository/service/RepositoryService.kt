@@ -197,8 +197,13 @@ class RepositoryService(
 
     @Transactional
     fun ensureRepository(userId: Long, githubUrl: String, repoName: String): Long {
-        val existing = repositoryJpaRepository.findByHtmlUrlAndUserId(githubUrl, userId)
+        val existing = repositoryJpaRepository.findIncludingDeleted(githubUrl, userId)
         if (existing != null) {
+            if (existing.deleted) {
+                existing.deleted = false
+                repositoryJpaRepository.save(existing)
+            }
+
             return existing.id ?: throw BusinessException(ErrorCode.REPOSITORY_INVALID_STATE)
         }
 
