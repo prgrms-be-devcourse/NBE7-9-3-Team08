@@ -37,7 +37,7 @@ class OpenAiGateway(
         """.trimIndent()
 
         val params = ResponseCreateParams.builder()
-            .model(ChatModel.GPT_5_NANO)
+            .model(ChatModel.GPT_5_MINI)
             .input(input)
             .build()
 
