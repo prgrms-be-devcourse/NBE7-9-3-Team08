@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import type { CSSProperties } from "react";
 
 declare global {
@@ -20,6 +20,8 @@ export default function AdsenseBanner({ adSlot, style }: AdsenseBannerProps) {
   const [forcePreview, setForcePreview] = useState(
     () => process.env.NODE_ENV !== "production"
   );
+  const [adLoaded, setAdLoaded] = useState(false);
+  const insRef = useRef<HTMLModElement | null>(null);
 
   useEffect(() => {
     if (process.env.NODE_ENV === "production") {
@@ -31,12 +33,19 @@ export default function AdsenseBanner({ adSlot, style }: AdsenseBannerProps) {
     }
   }, []);
 
-  const showPlaceholder = useMemo(() => {
-    return forcePreview || !clientId;
-  }, [forcePreview, clientId]);
+  useEffect(() => {
+    setAdLoaded(false);
+  }, [adSlot, clientId, forcePreview]);
+
+  const shouldRenderAd = !forcePreview && !!clientId;
+
+  const showFallback = useMemo(() => {
+    if (!shouldRenderAd) return true;
+    return !adLoaded;
+  }, [shouldRenderAd, adLoaded]);
 
   useEffect(() => {
-    if (showPlaceholder) return;
+    if (!shouldRenderAd) return;
 
     try {
       if (typeof window !== "undefined") {
@@ -45,42 +54,78 @@ export default function AdsenseBanner({ adSlot, style }: AdsenseBannerProps) {
     } catch (e) {
       console.error("Adsense error", e);
     }
-  }, [showPlaceholder]);
+  }, [shouldRenderAd, adSlot]);
 
-  if (showPlaceholder) {
-    return (
-      <div
-        aria-label="광고 영역(로컬 미리보기)"
-        style={{
-          ...mergedStyle,
-          minHeight: mergedStyle?.minHeight ?? 120,
-          border: "1px dashed #94a3b8",
-          borderRadius: 8,
-          color: "#0f172a",
-          backgroundColor: "rgba(148, 163, 184, 0.16)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 14,
-          fontWeight: 600,
-          textTransform: "uppercase",
-          letterSpacing: 1,
-        }}
-      >
-        Ad Placeholder
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!shouldRenderAd) return;
+    const target = insRef.current;
+    if (!target) return;
+
+    const observer = new MutationObserver(() => {
+      if (target.childElementCount > 0) {
+        setAdLoaded(true);
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(target, { childList: true });
+    return () => observer.disconnect();
+  }, [shouldRenderAd, adSlot]);
+
+  const containerStyle: CSSProperties = {
+    ...mergedStyle,
+    border: "1px solid rgba(15, 23, 42, 0.1)",
+    borderRadius: mergedStyle.borderRadius ?? 12,
+    backgroundColor: "#fff",
+    position: "relative",
+    overflow: "hidden",
+  };
 
   return (
-    <ins
-      className="adsbygoogle"
-      style={mergedStyle}
-      data-ad-client={clientId}
-      data-ad-slot={adSlot}
-      data-ad-format="auto"
-      data-full-width-responsive="true"
-    />
+    <div style={containerStyle}>
+      <a
+        href="https://programmers.co.kr/"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: showFallback ? "flex" : "none",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 16,
+          background: "#fff",
+          zIndex: 2,
+        }}
+        aria-label="프로그래머스 프로모션"
+      >
+        <img
+          src="/programmers.png"
+          alt="프로그래머스 광고"
+          style={{
+            maxWidth: "100%",
+            maxHeight: "100%",
+            objectFit: "contain",
+          }}
+        />
+      </a>
+      {shouldRenderAd && (
+        <ins
+          ref={insRef}
+          className="adsbygoogle"
+          style={{
+            display: "block",
+            width: "100%",
+            height: "100%",
+            minHeight: mergedStyle.minHeight ?? 120,
+          }}
+          data-ad-client={clientId}
+          data-ad-slot={adSlot}
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
+      )}
+    </div>
   );
 }
 
