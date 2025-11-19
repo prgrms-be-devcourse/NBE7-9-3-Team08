@@ -11,7 +11,6 @@ import com.backend.global.exception.BusinessException
 import com.backend.global.exception.ErrorCode
 import com.backend.global.response.ApiResponse
 import com.backend.global.response.ResponseCode
-import io.lettuce.core.KillArgs.Builder.user
 import jakarta.mail.MessagingException
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
@@ -39,10 +38,13 @@ class AuthController(
     @Value("\${jwt.cookie-secure}")
     private var cookieSecure: Boolean = false
 
+    @Value("\${jwt.same-site}")
+    private var sameSite: String = "Lax"
+
     // SameSite=None + Secure 옵션 적용
     private fun sameSiteHeader(name: String, value: String?, maxAge: Int): String {
         val secureFlag = if (cookieSecure) "Secure" else ""
-        return "$name=$value; Path=/; Max-Age=$maxAge; HttpOnly; $secureFlag; SameSite=None".trim()
+        return "$name=$value; Path=/; Max-Age=$maxAge; HttpOnly; $secureFlag; SameSite=$sameSite".trim()
     }
 
     //입력받은 이메일에 인증코드를 보냅니다.
